@@ -59,3 +59,13 @@ export async function lookupStatus(orderId: string) {
   if (!res.ok || !body.transaction_status) return null;
   return { missing: false as const, ...body, transaction_status: body.transaction_status };
 }
+
+/** Close an unpaid Midtrans transaction so its QR / VA can no longer be paid. */
+export async function expireTransaction(orderId: string) {
+  const res = await fetch(`${CORE}/${encodeURIComponent(orderId)}/expire`, { method: "POST", headers: { Authorization: auth(), Accept: "application/json" }, cache: "no-store" }).catch(() => null);
+  if (!res) return { ok: false as const, code: "network" };
+  const body = (await res.json().catch(() => null)) as { status_code?: string; transaction_status?: string } | null;
+  // 407 = already expired; both mean the payment can no longer happen
+  const ok = body?.transaction_status === "expire" || body?.status_code === "407" || body?.status_code === "200";
+  return { ok, code: body?.status_code ?? String(res.status) };
+}

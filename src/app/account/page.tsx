@@ -6,6 +6,7 @@ import { OrderStatusBadge } from "@/components/status-badge";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { jst, yen } from "@/lib/format";
 import type { Order } from "@/lib/orders";
+import { reconcileOrder } from "@/lib/reconcile";
 
 export const metadata: Metadata = { title: "Account" };
 export const dynamic = "force-dynamic";
@@ -13,7 +14,13 @@ export const dynamic = "force-dynamic";
 export default async function AccountPage() {
   const { user } = await currentUser();
   const sb = await supabaseServer();
-  const orders = sb ? ((await sb.from("orders").select("id, receipt_no, total_jpy, status, created_at").order("created_at", { ascending: false }).limit(50)).data as Order[] | null) ?? [] : [];
+  const load = async () => (sb ? ((await sb.from("orders").select("id, receipt_no, total_jpy, status, created_at").order("created_at", { ascending: false }).limit(50)).data as Order[] | null) ?? [] : []);
+  let orders = await load();
+  const pending = orders.filter((o) => o.status === "pending").slice(0, 5);
+  if (pending.length) {
+    await Promise.all(pending.map((o) => reconcileOrder(o.id).catch(() => {})));
+    orders = await load();
+  }
   return (
     <>
       <SiteHeader />

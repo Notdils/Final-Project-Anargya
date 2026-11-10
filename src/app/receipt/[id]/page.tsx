@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SlimFooter } from "@/components/site-footer";
 import { OrderStatusBadge } from "@/components/status-badge";
 import { PrintButton } from "@/components/print-button";
+import { ChangePayment } from "@/components/change-payment";
 import { getOrder } from "@/lib/orders";
 import { reconcileOrder } from "@/lib/reconcile";
 import { jst, rupiah, yen } from "@/lib/format";
@@ -48,10 +49,15 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
                         ? open
                           ? `Your order is held until ${jst(o.pay_expires_at!)}. If you already paid, refresh in a moment.`
                           : "We are confirming the payment with Midtrans. Refresh in a moment."
-                        : "No money was taken. You can place the order again from the marketplace."}
+                        : "No money was taken. Your parts are still available in the marketplace."}
                   </p>
                 </div>
-                {open && <a href={o.snap_redirect_url!} className="btn btn-ochre w-fit shrink-0">Continue payment</a>}
+                {open && (
+                  <div className="flex flex-wrap items-start gap-2">
+                    <a href={o.snap_redirect_url!} className="btn btn-ochre w-fit shrink-0">Continue payment</a>
+                    <ChangePayment orderId={o.id} />
+                  </div>
+                )}
               </div>
             </div>
 

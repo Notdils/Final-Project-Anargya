@@ -10,6 +10,8 @@ type Ctx = {
   setQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
   clear: () => void;
+  /** Put several lines back at once (e.g. restoring an abandoned order). */
+  merge: (items: CartLine[]) => void;
 };
 
 const KEY = "anargya-cart-v1";
@@ -60,6 +62,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setQty: (id, qty) => persist(lines.map((l) => (l.id === id ? { ...l, qty: clamp(qty) } : l))),
       remove: (id) => persist(lines.filter((l) => l.id !== id)),
       clear: () => persist([]),
+      merge: (items) => {
+        const next = [...lines];
+        for (const it of items) {
+          const i = next.findIndex((l) => l.id === it.id);
+          if (i >= 0) next[i] = { ...next[i], qty: clamp(next[i].qty + it.qty) };
+          else next.push({ id: it.id, qty: clamp(it.qty) });
+        }
+        persist(next);
+      },
     };
   }, [lines, ready, persist]);
 
