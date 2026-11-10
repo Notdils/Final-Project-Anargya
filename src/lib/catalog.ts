@@ -1,6 +1,12 @@
 import "server-only";
-import { supabaseServer } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, hasSupabase } from "@/lib/env";
 import { PLACEHOLDER_PRODUCTS, type Product } from "@/lib/data";
+
+// The catalog is public (RLS: active products are readable by anyone), so it is read with a
+// session-less client. This works at build time (generateStaticParams) and keeps pages cacheable.
+const publicClient = () =>
+  hasSupabase ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
 
 type Row = {
   id: string; slug: string; code: string; name: string; category: Product["category"];
@@ -18,7 +24,7 @@ const toProduct = (r: Row): Product => ({
 });
 
 export async function listProducts(): Promise<Product[]> {
-  const sb = await supabaseServer();
+  const sb = publicClient();
   if (!sb) return PLACEHOLDER_PRODUCTS;
   const { data, error } = await sb.from("products").select("*").eq("active", true).order("code");
   if (error || !data) return PLACEHOLDER_PRODUCTS;

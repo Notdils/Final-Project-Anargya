@@ -203,6 +203,10 @@ end $$;
 revoke all on function public.mark_order_paid(uuid, text, text) from public, anon, authenticated;
 revoke all on function public.mark_order_status(uuid, text, text) from public, anon, authenticated;
 revoke all on function public.hit_rate_limit(text, integer) from public, anon, authenticated;
+-- explicit grants for the server (secret / service_role key)
+grant execute on function public.mark_order_paid(uuid, text, text) to service_role;
+grant execute on function public.mark_order_status(uuid, text, text) to service_role;
+grant execute on function public.hit_rate_limit(text, integer) to service_role;
 
 -- ---------- funnel for admin dashboard ----------
 create or replace function public.funnel_counts(p_from timestamptz, p_to timestamptz)

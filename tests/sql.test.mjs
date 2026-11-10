@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 const db = new PGlite();
 const run = (q, p) => db.query(q, p);
 await db.exec(`
-create role anon; create role authenticated;
+create role anon; create role authenticated; create role service_role;
 create schema auth;
 create table auth.users (id uuid primary key, email text, raw_app_meta_data jsonb default '{}');
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('test.uid', true),'')::uuid $$;
