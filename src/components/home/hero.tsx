@@ -110,7 +110,7 @@ export function Hero() {
               designed to race.
             </h1>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link href="/marketplace" className="btn btn-ochre">Explore marketplace</Link>
+              <Link href="/marketplace" className="btn btn-teal">Explore marketplace</Link>
               <Link href="/about" className="btn btn-outline-dark">Our story</Link>
             </div>
           </div>

@@ -8,7 +8,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         <Link href="/" className="absolute left-10 top-8 text-base font-semibold tracking-[0.12em]" tabIndex={-1}>ANARGYA</Link>
         <div className="absolute inset-x-20 top-1/2 h-[45%] -translate-y-1/2 rounded-lg border border-dashed border-stage-line xl:h-[40%]">
           {["left-0 top-0 border-l-[1.5px] border-t-[1.5px]", "right-0 top-0 border-r-[1.5px] border-t-[1.5px]", "bottom-0 left-0 border-b-[1.5px] border-l-[1.5px]", "bottom-0 right-0 border-b-[1.5px] border-r-[1.5px]"].map((c) => (
-            <span key={c} className={`absolute -m-3 h-4 w-4 border-ochre ${c}`} />
+            <span key={c} className={`absolute -m-3 h-4 w-4 border-teal ${c}`} />
           ))}
           <span className="eyebrow absolute inset-0 grid place-items-center text-neutral-700">E21 / 3D model</span>
         </div>

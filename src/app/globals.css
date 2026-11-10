@@ -71,6 +71,14 @@ body {
   .btn-ochre:hover {
     background: var(--color-ochre-dark);
   }
+  /* Primary CTA on dark (stage) surfaces: ochre on black reads wrong, so dark areas use teal. */
+  .btn-teal {
+    background: var(--color-teal);
+    color: #fff;
+  }
+  .btn-teal:hover {
+    background: var(--color-teal-dark);
+  }
   .btn-outline {
     border: 1px solid var(--color-line);
     background: #fff;

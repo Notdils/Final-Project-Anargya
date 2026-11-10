@@ -89,7 +89,7 @@ export function HeaderClient({
           <Link href={accountHref} className={`btn hidden md:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"}`}>
             {accountLabel}
           </Link>
-          <Link href="/marketplace" className="btn btn-ochre hidden md:inline-flex">
+          <Link href="/marketplace" className={`btn hidden md:inline-flex ${dark ? "btn-teal" : "btn-ochre"}`}>
             Shop parts
           </Link>
           <button

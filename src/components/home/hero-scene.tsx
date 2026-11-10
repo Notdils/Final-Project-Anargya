@@ -1,10 +1,14 @@
 "use client";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Bounds, Center, ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 
-function E21() {
+const TEAL = new THREE.Color("#006f66");
+// Glow is light, not UI ink: same hue, pushed brighter and kept out of tone mapping.
+const GLOW = TEAL.clone().multiplyScalar(1.9);
+
+function E21({ onSize }: { onSize: (s: THREE.Vector3) => void }) {
   const { scene } = useGLTF("/models/e21.glb");
   const model = useMemo(() => {
     const s = scene.clone(true);
@@ -18,10 +22,68 @@ function E21() {
     });
     return s;
   }, [scene]);
+  useEffect(() => onSize(new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3())), [model, onSize]);
   return (
     <Center top>
       <primitive object={model} />
     </Center>
+  );
+}
+
+/** Radial halo drawn once into a canvas: brightest at the rim, fading both ways. */
+function useHalo() {
+  return useMemo(() => {
+    const c = document.createElement("canvas");
+    c.width = c.height = 256;
+    const g = c.getContext("2d")!;
+    const r = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+    const t = `${Math.round(GLOW.r * 255)}, ${Math.round(GLOW.g * 255)}, ${Math.round(GLOW.b * 255)}`;
+    r.addColorStop(0, `rgba(${t}, 0.10)`);
+    r.addColorStop(0.55, `rgba(${t}, 0.04)`);
+    r.addColorStop(0.7, `rgba(${t}, 0.55)`);
+    r.addColorStop(0.76, `rgba(${t}, 0.18)`);
+    r.addColorStop(1, `rgba(${t}, 0)`);
+    g.fillStyle = r;
+    g.fillRect(0, 0, 256, 256);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }, []);
+}
+
+/** Display plinth under the car: dark disc, lit teal rim, soft floor glow. */
+function Platform({ radius }: { radius: number }) {
+  const halo = useHalo();
+  const h = radius * 0.035;
+  return (
+    <group>
+      <mesh position={[0, -h / 2, 0]} receiveShadow>
+        <cylinderGeometry args={[radius, radius * 1.01, h, 96]} />
+        <meshStandardMaterial color="#0b0b0b" metalness={0.7} roughness={0.35} />
+      </mesh>
+      <mesh rotation-x={Math.PI / 2} position={[0, 0.002, 0]}>
+        <torusGeometry args={[radius * 0.995, radius * 0.006, 12, 160]} />
+        <meshBasicMaterial color={GLOW} toneMapped={false} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, -h - 0.002, 0]}>
+        <planeGeometry args={[radius * 2.7, radius * 2.7]} />
+        <meshBasicMaterial map={halo} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.003, 0]}>
+        <ringGeometry args={[radius * 0.9, radius * 0.995, 128]} />
+        <meshBasicMaterial color={GLOW} transparent opacity={0.08} toneMapped={false} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Tighter framing on wide screens; portrait screens need room so the nose and wing stay in view. */
+function Framed({ children }: { children: React.ReactNode }) {
+  const aspect = useThree((st) => st.size.width / st.size.height);
+  return (
+    <Bounds fit observe margin={aspect < 1.2 ? 1.02 : 0.78}>
+      {children}
+    </Bounds>
   );
 }
 
@@ -38,6 +100,7 @@ function ZoomRig({ zoom }: { zoom: number }) {
 
 export default function HeroScene({ rotating, zoom = 1 }: { rotating: boolean; zoom?: number }) {
   useEffect(() => () => useGLTF.clear("/models/e21.glb"), []);
+  const [size, setSize] = useState<THREE.Vector3 | null>(null);
   return (
     <Canvas
       dpr={[1, 1.75]}
@@ -51,16 +114,18 @@ export default function HeroScene({ rotating, zoom = 1 }: { rotating: boolean; z
       <ambientLight intensity={0.15} />
       <spotLight position={[4, 8, 4]} angle={0.35} penumbra={1} intensity={60} castShadow />
       <Suspense fallback={null}>
-        <Bounds fit clip observe margin={0.92}>
-          <E21 />
-        </Bounds>
-        <ContactShadows position={[0, 0, 0]} opacity={0.7} scale={14} blur={2.6} far={4} resolution={512} color="#000000" />
+        {/* platform sits outside Bounds so the camera frames the car, not the plinth */}
+        <Framed>
+          <E21 onSize={setSize} />
+        </Framed>
+        {size && <Platform radius={Math.max(size.x, size.z) * 0.56} />}
+        <ContactShadows position={[0, 0.004, 0]} opacity={0.7} scale={14} blur={2.6} far={4} resolution={512} color="#000000" />
         {/* dark studio: softboxes only, no external HDR download */}
         <Environment resolution={256} frames={1}>
           <Lightformer intensity={2.2} form="rect" position={[0, 5, -2]} scale={[10, 2, 1]} rotation-x={Math.PI / 2} />
           <Lightformer intensity={1.2} form="rect" position={[-5, 1.5, 1]} scale={[6, 2, 1]} rotation-y={Math.PI / 2} />
           <Lightformer intensity={1.2} form="rect" position={[5, 1.5, -1]} scale={[6, 2, 1]} rotation-y={-Math.PI / 2} />
-          <Lightformer intensity={0.6} form="ring" color="#d08d24" position={[0, 2, 6]} scale={3} />
+          <Lightformer intensity={0.6} form="ring" color="#006f66" position={[0, 2, 6]} scale={3} />
         </Environment>
       </Suspense>
       <ZoomRig zoom={zoom} />

@@ -11,7 +11,7 @@ export function PartViewer({ name, code, modelUrl }: { name: string; code: strin
       <div className="absolute inset-x-8 bottom-16 top-12 md:inset-x-14 md:bottom-20 md:top-14">
         <span aria-hidden className="pointer-events-none absolute -inset-3">
           {["left-0 top-0 border-l-[1.5px] border-t-[1.5px]", "right-0 top-0 border-r-[1.5px] border-t-[1.5px]", "bottom-0 left-0 border-b-[1.5px] border-l-[1.5px]", "bottom-0 right-0 border-b-[1.5px] border-r-[1.5px]"].map((c) => (
-            <span key={c} className={`absolute h-4 w-4 border-ochre ${c}`} />
+            <span key={c} className={`absolute h-4 w-4 border-teal ${c}`} />
           ))}
         </span>
         <div className="grid h-full place-items-center rounded-lg border border-dashed border-stage-line font-mono text-xs uppercase tracking-wider text-neutral-600">

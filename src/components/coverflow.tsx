@@ -10,7 +10,7 @@ import { PartRender, StockBadge } from "./product";
 const ICON: Record<Category, typeof Wind> = { aero: Wind, electrical: Zap, chassis: Box, drivetrain: Cog, suspension: Disc };
 
 function Brackets() {
-  const c = "absolute h-4 w-4 border-ochre";
+  const c = "absolute h-4 w-4 border-teal";
   return (
     <div aria-hidden className="pointer-events-none absolute -inset-3">
       <span className={`${c} left-0 top-0 border-l-[1.5px] border-t-[1.5px]`} />
@@ -46,7 +46,7 @@ function Card({ p, active }: { p: Product; active: boolean }) {
           </div>
           <div className="flex items-center justify-between border-t border-stage-line pt-4">
             <span className="font-mono font-medium">{yen(p.priceJpy)}</span>
-            <Link href={`/marketplace/${p.slug}`} className="btn btn-ochre">View part</Link>
+            <Link href={`/marketplace/${p.slug}`} className="btn btn-teal">View part</Link>
           </div>
         </>
       )}
