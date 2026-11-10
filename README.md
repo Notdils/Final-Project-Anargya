@@ -40,7 +40,7 @@ Without Supabase env vars the site still renders with the placeholder catalog (a
 ## Supabase setup
 
 1. Create a new Supabase project.
-2. SQL editor: run `supabase/migrations/0001_schema.sql`, then `0002_seed.sql`.
+2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0004`).
 3. Auth → URL configuration: set Site URL to the deployed domain and add `https://<domain>/auth/callback` to Redirect URLs (password reset and email confirmation links land there).
 4. Register an account on the site, then make it admin (SQL editor):
    ```sql
@@ -57,10 +57,20 @@ Security notes:
 - Role comes from `app_metadata` (users cannot edit it), checked in middleware, server code, and RLS.
 - `SUPABASE_SERVICE_ROLE_KEY` is server only. Put it in Vercel env vars, never in the repo.
 
+## Demo for judging
+
+1. Supabase → Authentication → Sign In / Providers → Email: turn **Confirm email** off (the built-in mailer only sends a few emails per hour).
+2. Register `juri.admin@example.com` and `juri.customer@example.com` on the site with passwords you choose.
+3. SQL editor: run `supabase/demo/demo_seed.sql`. It makes the first account admin and adds labeled demo orders (`[DEMO]`, txn `DEMO-…`) and funnel traffic, without touching stock or Midtrans.
+4. `supabase/demo/demo_cleanup.sql` removes all of it.
+5. Test payment (Midtrans sandbox, no real money): card `4811 1111 1111 1114`, any future expiry, CVV `123`, OTP `112233`.
+
+Passwords are shared with the judges outside the repo.
+
 ## Midtrans setup
 
-1. Sandbox dashboard → Settings → Access keys: copy client key and server key into env.
-2. Settings → Payment → Notification URL: `https://<domain>/api/midtrans/notify`.
+1. Sandbox dashboard → Settings → Access keys: generate a server key with **Snap Checkout: Write**, **Core API: Read**, **Expire transaction: Write**; copy it and the client key into env.
+2. Settings → Payment → Notification URL: `https://<domain>/api/midtrans/notify`. The notification only triggers a status lookup; the order is updated from what Midtrans's status API returns. If the amount differs from what we charged, the order is not marked paid and shows as **Needs review** in the admin.
 3. Set `FX_JPY_IDR` (rate confirmed by Finance). Checkout stays disabled until it is set.
 
 ## PWA / Android (TWA)

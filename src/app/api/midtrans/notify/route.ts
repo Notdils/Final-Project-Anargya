@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseService } from "@/lib/supabase/server";
 import { fetchStatus, validSignature } from "@/lib/midtrans";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { flagAmountMismatch } from "@/lib/reconcile";
 
 // Midtrans HTTP notification. Set this URL in the Midtrans dashboard:
 //   https://<domain>/api/midtrans/notify
@@ -21,7 +22,11 @@ export async function POST(req: Request) {
 
   const { data: order } = await sb.from("orders").select("id, charged_idr, status").eq("id", n.order_id).maybeSingle();
   if (!order) return NextResponse.json({ ok: true }); // unknown order: acknowledge, do nothing
-  if (Number(status.gross_amount) !== Number(order.charged_idr)) return NextResponse.json({ ok: false }, { status: 409 });
+  if (Number(status.gross_amount) !== Number(order.charged_idr)) {
+    // Acknowledge (stops retries) but do not mark paid: a person checks it from the admin.
+    await flagAmountMismatch(order.id, status.gross_amount, Number(order.charged_idr));
+    return NextResponse.json({ ok: true, flagged: true });
+  }
 
   const s = status.transaction_status;
   const paid = s === "settlement" || (s === "capture" && (status.fraud_status ?? "accept") === "accept");

@@ -6,6 +6,7 @@ import { AlertCircle, Lock } from "lucide-react";
 import { useCartLines } from "./cart-view";
 import type { Product } from "@/lib/data";
 import { rupiah, yen } from "@/lib/format";
+import type { SavedAddress } from "@/lib/orders";
 
 declare global {
   interface Window {
@@ -39,8 +40,8 @@ function Field({ id, label, error, ...rest }: { id: Fields; label: string; error
 }
 
 export function CheckoutForm({
-  products, email, fx, shippingJpy, ready, snapJs, clientKey,
-}: { products: Product[]; email: string; fx: number | null; shippingJpy: number; ready: boolean; snapJs: string; clientKey: string }) {
+  products, email, saved, fx, shippingJpy, ready, snapJs, clientKey,
+}: { products: Product[]; email: string; saved?: SavedAddress | null; fx: number | null; shippingJpy: number; ready: boolean; snapJs: string; clientKey: string }) {
   const { cart, lines, subtotal } = useCartLines(products);
   const router = useRouter();
   const [errors, setErrors] = useState<Partial<Record<Fields, string>>>({});
@@ -103,16 +104,17 @@ export function CheckoutForm({
           </fieldset>
           <fieldset className="flex flex-col gap-4">
             <legend className="mb-4 text-lg font-semibold">Shipping address</legend>
+            {saved && <p className="-mt-2 text-[13px] text-muted">Filled in from your last order. Change anything that is different.</p>}
             <div className="grid gap-4 md:grid-cols-2">
-              <Field id="name" label="Full name" autoComplete="name" error={errors.name} />
-              <Field id="phone" label="Phone" type="tel" autoComplete="tel" placeholder="+81" error={errors.phone} />
+              <Field id="name" label="Full name" autoComplete="name" defaultValue={saved?.buyer_name} error={errors.name} />
+              <Field id="phone" label="Phone" type="tel" autoComplete="tel" placeholder="+81" defaultValue={saved?.phone} error={errors.phone} />
             </div>
-            <Field id="address" label="Address" autoComplete="street-address" placeholder="Street, building, unit" error={errors.address} />
+            <Field id="address" label="Address" autoComplete="street-address" placeholder="Street, building, unit" defaultValue={saved?.address} error={errors.address} />
             <div className="grid gap-4 md:grid-cols-2">
-              <Field id="city" label="City" autoComplete="address-level2" error={errors.city} />
-              <Field id="postal" label="Postal code" autoComplete="postal-code" error={errors.postal} />
+              <Field id="city" label="City" autoComplete="address-level2" defaultValue={saved?.city} error={errors.city} />
+              <Field id="postal" label="Postal code" autoComplete="postal-code" defaultValue={saved?.postal_code} error={errors.postal} />
             </div>
-            <Field id="country" label="Country" autoComplete="country-name" defaultValue="Japan" error={errors.country} />
+            <Field id="country" label="Country" autoComplete="country-name" defaultValue={saved?.country ?? "Japan"} error={errors.country} />
           </fieldset>
           <fieldset className="flex flex-col gap-3">
             <legend className="mb-3 text-lg font-semibold">Payment</legend>

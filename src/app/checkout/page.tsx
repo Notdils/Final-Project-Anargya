@@ -7,12 +7,13 @@ import { listProducts } from "@/lib/catalog";
 import { currentUser } from "@/lib/supabase/server";
 import { fxJpyIdr, hasSupabase, MIDTRANS_CLIENT_KEY, MIDTRANS_SNAP_JS } from "@/lib/env";
 import { hasMidtrans } from "@/lib/midtrans";
+import { lastAddress } from "@/lib/orders";
 
 export const metadata: Metadata = { title: "Checkout" };
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage() {
-  const [products, { user }] = await Promise.all([listProducts(), currentUser()]);
+  const [products, { user }, saved] = await Promise.all([listProducts(), currentUser(), lastAddress()]);
   const fx = fxJpyIdr();
   const ready = hasSupabase && hasMidtrans() && fx !== null;
   return (
@@ -26,6 +27,7 @@ export default async function CheckoutPage() {
         <CheckoutForm
           products={products}
           email={user?.email ?? ""}
+          saved={saved}
           fx={fx}
           shippingJpy={Math.max(0, Number(process.env.SHIPPING_FLAT_JPY) || 0)}
           ready={ready}

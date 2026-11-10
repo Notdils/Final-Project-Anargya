@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MoreHorizontal } from "lucide-react";
+import { AlertTriangle, MoreHorizontal } from "lucide-react";
 import { overview, parseDays } from "@/lib/admin";
 import { RangeSelect } from "@/components/admin/range-select";
 import { OrderStatusBadge } from "@/components/status-badge";
@@ -26,6 +26,15 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
         <h1 className="text-2xl font-semibold tracking-[-0.02em] md:text-[28px] md:leading-9">Overview</h1>
         <RangeSelect days={days} />
       </div>
+
+      {d && d.needsReview > 0 && (
+        <Link href="/admin/receipts?status=review&days=90" role="alert" className="flex items-start gap-3 rounded-lg bg-oxide-tint p-4 text-sm text-oxide hover:underline">
+          <AlertTriangle size={18} className="mt-0.5 shrink-0" aria-hidden />
+          <span>
+            <strong>{d.needsReview} {d.needsReview === 1 ? "order needs" : "orders need"} review.</strong> Midtrans reported a different amount than we charged. They stay unpaid until Finance checks them in the Midtrans dashboard.
+          </span>
+        </Link>
+      )}
 
       <ul className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         {kpis.map(([k, v, s]) => (

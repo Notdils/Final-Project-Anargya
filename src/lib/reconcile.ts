@@ -2,6 +2,19 @@ import "server-only";
 import { supabaseService } from "@/lib/supabase/server";
 import { hasMidtrans, lookupStatus } from "@/lib/midtrans";
 
+/**
+ * Midtrans reports a different amount than we charged: never mark it paid automatically.
+ * Keep the order pending and flag it so Finance checks it in the Midtrans dashboard.
+ */
+export async function flagAmountMismatch(orderId: string, gotIdr: string | number | undefined, expectedIdr: number) {
+  const sb = supabaseService();
+  if (!sb) return;
+  await sb
+    .from("orders")
+    .update({ needs_review: true, review_note: `Midtrans amount ${gotIdr ?? "unknown"} IDR, expected ${expectedIdr} IDR` })
+    .eq("id", orderId);
+}
+
 // Grace after the deadline so a payment finished in the last second still lands via the webhook.
 const GRACE_MS = 10 * 60 * 1000;
 
@@ -17,6 +30,7 @@ export async function reconcileStale() {
     .from("orders")
     .select("id, charged_idr, pay_expires_at")
     .eq("status", "pending")
+    .eq("needs_review", false) // flagged orders wait for a person, not for the clock
     .lt("pay_expires_at", new Date(Date.now() - GRACE_MS).toISOString())
     .limit(20);
   for (const o of data ?? []) await sync(o);
@@ -26,7 +40,7 @@ export async function reconcileStale() {
 export async function reconcileOrder(id: string) {
   const sb = supabaseService();
   if (!sb || !hasMidtrans()) return;
-  const { data } = await sb.from("orders").select("id, charged_idr, pay_expires_at").eq("id", id).eq("status", "pending").maybeSingle();
+  const { data } = await sb.from("orders").select("id, charged_idr, pay_expires_at").eq("id", id).eq("status", "pending").eq("needs_review", false).maybeSingle();
   if (data) await sync(data);
 }
 
@@ -42,7 +56,7 @@ async function sync(o: { id: string; charged_idr: number; pay_expires_at: string
       return;
     }
     const s = st.transaction_status;
-    if (Number(st.gross_amount) !== Number(o.charged_idr)) return;
+    if (Number(st.gross_amount) !== Number(o.charged_idr)) return flagAmountMismatch(o.id, st.gross_amount, Number(o.charged_idr));
     if (s === "settlement" || (s === "capture" && (st.fraud_status ?? "accept") === "accept"))
       await sb.rpc("mark_order_paid", { p_order: o.id, p_txn: st.transaction_id, p_method: st.payment_type });
     else if (["deny", "cancel", "failure"].includes(s))

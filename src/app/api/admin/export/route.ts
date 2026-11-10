@@ -6,7 +6,7 @@ import { parseDays, parseStatus, receiptsForExport } from "@/lib/admin";
 const COLS = [
   ["receipt_no", "Receipt no"], ["created_at", "Created (UTC)"], ["paid_at", "Paid at (UTC)"], ["buyer_name", "Buyer"], ["email", "Email"],
   ["items", "Items"], ["qty", "Qty"], ["subtotal_jpy", "Subtotal JPY"], ["shipping_jpy", "Shipping JPY"], ["total_jpy", "Total JPY"],
-  ["charged_idr", "Charged IDR"], ["fx_rate", "FX IDR/JPY"], ["method", "Method"], ["midtrans_txn_id", "Midtrans txn"], ["status", "Status"], ["oversold", "Oversold (refund or restock)"],
+  ["charged_idr", "Charged IDR"], ["fx_rate", "FX IDR/JPY"], ["method", "Method"], ["midtrans_txn_id", "Midtrans txn"], ["status", "Status"], ["oversold", "Oversold (refund or restock)"], ["needs_review", "Needs review"], ["review_note", "Review note"],
 ] as const;
 
 // Block CSV/Excel formula injection from user-entered fields.

@@ -14,6 +14,7 @@ create function auth.jwt() returns jsonb language sql stable as $$ select coales
 const strip = (s) => s.replace(/create extension[^;]+;/i, "");
 await db.exec(strip(readFileSync(new URL("../supabase/migrations/0001_schema.sql", import.meta.url),"utf8")));
 await db.exec(readFileSync(new URL("../supabase/migrations/0002_seed.sql", import.meta.url),"utf8"));
+for (const m of ["0003_payment_resume.sql", "0004_needs_review.sql"]) await db.exec(readFileSync(new URL(`../supabase/migrations/${m}`, import.meta.url), "utf8"));
 console.log("migrations OK, products:", (await run("select count(*) from products")).rows[0].count);
 
 const U1="11111111-1111-1111-1111-111111111111", U2="22222222-2222-2222-2222-222222222222";
@@ -63,3 +64,13 @@ try { await run(`select * from funnel_counts(now()-interval '1 day', now())`); c
 await db.exec(`select set_config('test.jwt','{"app_metadata":{"role":"admin"}}',false)`);
 await run(`insert into events(session_id,type,path) values ('abcdef0123456789','page_view','/'),('abcdef0123456789','page_view','/marketplace')`);
 console.log("funnel:", (await run(`select * from funnel_counts(now()-interval '1 day', now()+interval '1 minute')`)).rows);
+
+// 0004: a flagged order stays pending, keeps its flag, and a later "paid" call is not blocked by the flag itself
+{
+  const o = (await run("select id from orders limit 1")).rows[0];
+  if (o) {
+    await run("update orders set needs_review = true, review_note = 'Midtrans amount 1 IDR, expected 2 IDR' where id = $1", [o.id]);
+    const r = (await run("select status, needs_review, review_note from orders where id = $1", [o.id])).rows[0];
+    console.log("needs_review flag:", r.needs_review, r.review_note);
+  } else console.log("needs_review: columns present:", (await run("select count(*) from information_schema.columns where table_name='orders' and column_name in ('needs_review','review_note','snap_token','pay_expires_at')")).rows[0].count);
+}

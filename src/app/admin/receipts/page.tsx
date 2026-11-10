@@ -45,6 +45,7 @@ export default async function AdminReceipts({ searchParams }: { searchParams: Pr
             <option value="pending">Pending</option>
             <option value="failed">Failed</option>
             <option value="expired">Expired</option>
+            <option value="review">Needs review</option>
           </select>
         </label>
         <button className="btn btn-outline">Apply</button>
@@ -74,7 +75,7 @@ export default async function AdminReceipts({ searchParams }: { searchParams: Pr
                     <td className="px-4 py-3 text-right font-mono">{yen(o.total_jpy)}</td>
                     <td className="px-4 py-3 text-right font-mono">{rupiah(o.charged_idr)}</td>
                     <td className="px-4 py-3">{o.method ?? "—"}</td>
-                    <td className="px-4 py-3"><div className="flex flex-col items-start gap-1"><OrderStatusBadge status={o.status} />{o.oversold && <span className="inline-flex items-center gap-1 rounded bg-oxide px-1.5 py-0.5 text-xs font-medium text-white"><AlertTriangle size={12} aria-hidden />Refund or restock</span>}</div></td>
+                    <td className="px-4 py-3"><div className="flex flex-col items-start gap-1"><OrderStatusBadge status={o.status} />{o.oversold && <span className="inline-flex items-center gap-1 rounded bg-oxide px-1.5 py-0.5 text-xs font-medium text-white"><AlertTriangle size={12} aria-hidden />Refund or restock</span>}{o.needs_review && <span title={o.review_note ?? undefined} className="inline-flex items-center gap-1 rounded bg-oxide px-1.5 py-0.5 text-xs font-medium text-white"><AlertTriangle size={12} aria-hidden />Needs review</span>}{o.needs_review && o.review_note && <span className="max-w-[200px] text-xs text-oxide">{o.review_note}</span>}</div></td>
                   </tr>
                 ))}
               </tbody>

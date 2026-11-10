@@ -7,19 +7,20 @@ export const RANGES = [7, 30, 90] as const;
 export const parseDays = (v?: string) => (RANGES.includes(Number(v) as 7) ? Number(v) : 30);
 const since = (days: number) => new Date(Date.now() - days * 864e5).toISOString();
 
-export type ReceiptFilter = { q?: string; status?: OrderStatus | "all"; days: number; page: number };
+export type ReceiptFilter = { q?: string; status?: OrderStatus | "all" | "review"; days: number; page: number };
 export const PAGE_SIZE = 20;
 const STATUSES: OrderStatus[] = ["pending", "paid", "failed", "expired"];
-export const parseStatus = (v?: string): OrderStatus | "all" => (STATUSES.includes(v as OrderStatus) ? (v as OrderStatus) : "all");
+export const parseStatus = (v?: string): OrderStatus | "all" | "review" => (v === "review" ? "review" : STATUSES.includes(v as OrderStatus) ? (v as OrderStatus) : "all");
 
 export async function overview(days: number) {
   const sb = await supabaseServer();
   if (!sb) return null;
   await reconcileStale().catch(() => {});
   const from = since(days), to = new Date().toISOString();
-  const [orders, funnel] = await Promise.all([
+  const [orders, funnel, review] = await Promise.all([
     sb.from("orders").select("id, receipt_no, buyer_name, total_jpy, status, created_at").gte("created_at", from).order("created_at", { ascending: false }),
     sb.rpc("funnel_counts", { p_from: from, p_to: to }),
+    sb.from("orders").select("id", { count: "exact", head: true }).eq("needs_review", true),
   ]);
   const list = (orders.data ?? []) as Pick<Order, "id" | "receipt_no" | "buyer_name" | "total_jpy" | "status" | "created_at">[];
   const paid = list.filter((o) => o.status === "paid");
@@ -33,6 +34,7 @@ export async function overview(days: number) {
     conversion: home ? (paidN / home) * 100 : null,
     funnel: steps,
     recent: list.slice(0, 5),
+    needsReview: review.count ?? 0,
   };
 }
 
@@ -40,7 +42,8 @@ export async function overview(days: number) {
 type Q = any; // Supabase's builder generics are too deep for a shared helper; inputs are validated above.
 function applyFilters(q: Q, f: ReceiptFilter): Q {
   let x = q.gte("created_at", since(f.days));
-  if (f.status && f.status !== "all") x = x.eq("status", f.status);
+  if (f.status === "review") x = x.eq("needs_review", true);
+  else if (f.status && f.status !== "all") x = x.eq("status", f.status);
   const term = f.q?.trim().replace(/[%,()*]/g, "");
   if (term) x = x.or(`receipt_no.ilike.%${term}%,buyer_name.ilike.%${term}%,email.ilike.%${term}%`);
   return x;
