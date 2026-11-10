@@ -1,0 +1,254 @@
+@import "tailwindcss";
+
+/*
+  Anargya Corp color roles (see Figma "Color system (roles)")
+  60% neutral canvas (white sections, black stage sections)
+  30% teal: structure and identity (footer, active states, icons, links, success)
+  10% ochre: primary actions only, text on ochre is always ink
+  oxide: urgency and errors only, always with icon + text
+*/
+@theme {
+  --color-ink: #0a0a0a;
+  --color-muted: #737373;
+  --color-line: #e5e5e5;
+  --color-surface: #fafafa;
+  --color-surface-2: #f5f5f5;
+  --color-stage: #000000;
+  --color-stage-2: #111111;
+  --color-stage-line: #262626;
+
+  --color-teal: #006f66;
+  --color-teal-dark: #005a53;
+  --color-teal-tint: #e6f1f0;
+  --color-ochre: #d08d24;
+  --color-ochre-dark: #b97a1c;
+  --color-ochre-tint: #faf1e3;
+  --color-oxide: #791600;
+  --color-oxide-tint: #f2e8e6;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color: var(--color-ink);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 2px;
+}
+
+/* Buttons: 8px radius, 4/8 spacing */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .btn-lg {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .btn-ochre {
+    background: var(--color-ochre);
+    color: var(--color-ink);
+  }
+  .btn-ochre:hover {
+    background: var(--color-ochre-dark);
+  }
+  .btn-outline {
+    border: 1px solid var(--color-line);
+    background: #fff;
+    color: var(--color-ink);
+  }
+  .btn-outline:hover {
+    background: var(--color-surface);
+  }
+  .btn-outline-dark {
+    border: 1px solid #404040;
+    color: #fff;
+  }
+  .btn-outline-dark:hover {
+    background: #171717;
+  }
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .input {
+    width: 100%;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 20px;
+    background: #fff;
+  }
+  .input[aria-invalid="true"] {
+    border-color: var(--color-oxide);
+    border-width: 1.5px;
+  }
+  .container-x {
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+  @media (min-width: 768px) {
+    .container-x {
+      padding-inline: 32px;
+    }
+  }
+  @media (min-width: 1200px) {
+    .container-x {
+      padding-inline: 64px;
+    }
+  }
+}
+
+/* ---------- Z fly-through (motion-parallax) ---------- */
+.mp {
+  position: relative;
+  height: 100vh;
+  background: #000;
+}
+.mp--live {
+  height: var(--mp-length, 350vh);
+}
+.mp__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+.mp__title {
+  position: relative;
+  z-index: 1000;
+  mix-blend-mode: difference;
+  margin: 0;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-size: clamp(2.5rem, 8vw, 6.5rem);
+  line-height: 1.1;
+  text-align: center;
+  grid-area: 1 / 1;
+}
+.mp__title {
+  display: grid;
+}
+.mp__line {
+  grid-area: 1 / 1;
+  display: block;
+  padding-inline: 20px;
+}
+.mp__word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.08em;
+  margin: 0 0.12em;
+}
+.mp__word > span {
+  display: inline-block;
+}
+/* without JS (or reduced motion) only the closing line is shown, statically */
+.mp:not(.mp--live) .mp__line--a {
+  display: none;
+}
+.mp--live .mp__word > span {
+  transform: translateY(110%);
+}
+.mp__obj,
+.mp__plane {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform, opacity;
+  opacity: 0;
+}
+.mp__plane {
+  overflow: visible;
+  color: #fff;
+}
+.mp__plane path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.22;
+  vector-effect: non-scaling-stroke;
+}
+@media (max-width: 768px) {
+  .mp {
+    --mp-length: 250vh;
+  }
+  .mp__obj[data-mobile="hide"] {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp--live {
+    height: 100vh;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+.scroll-cue {
+  animation: nudge 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue {
+    animation: none;
+  }
+}
