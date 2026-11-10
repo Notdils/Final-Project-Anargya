@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Menu, ShoppingCart, X } from "lucide-react";
 import { useCart } from "./cart";
+import { useAuth } from "./auth-state";
 
 const LINKS = [
   { href: "/", label: "Home", key: "home" },
@@ -13,14 +14,11 @@ const LINKS = [
 export function HeaderClient({
   variant,
   active,
-  signedIn,
-  isAdmin,
 }: {
   variant: "solid" | "overlay";
   active?: string;
-  signedIn: boolean;
-  isAdmin: boolean;
 }) {
+  const { ready: authReady, signedIn, isAdmin } = useAuth();
   const { count, ready } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -86,7 +84,7 @@ export function HeaderClient({
               <span className="rounded-lg bg-teal px-1.5 font-mono text-xs leading-4 text-white">{count}</span>
             )}
           </Link>
-          <Link href={accountHref} className={`btn hidden md:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"}`}>
+          <Link href={accountHref} className={`btn hidden md:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"} ${authReady ? "" : "invisible"}`}>
             {accountLabel}
           </Link>
           <Link href="/marketplace" className={`btn hidden md:inline-flex ${dark ? "btn-teal" : "btn-ochre"}`}>

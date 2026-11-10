@@ -6,6 +6,7 @@ import { Hero } from "@/components/home/hero";
 import { FlyThrough } from "@/components/home/fly-through";
 import { Coverflow } from "@/components/coverflow";
 import { listProducts } from "@/lib/catalog";
+import { GuestOnly } from "@/components/auth-state";
 
 export const revalidate = 300;
 
@@ -80,7 +81,7 @@ export default async function Home() {
               Source parts for your next build.
             </h2>
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-              <Link href="/register" className="btn btn-ochre">Create an account</Link>
+              <GuestOnly><Link href="/register" className="btn btn-ochre">Create an account</Link></GuestOnly>
               <Link href="/marketplace" className="btn btn-outline">Browse marketplace</Link>
             </div>
           </div>

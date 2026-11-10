@@ -46,5 +46,17 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|models/|icons/|sw.js|manifest.webmanifest|favicon.ico|api/events|api/midtrans).*)"],
+  // Only routes that gate access or redirect signed-in users. Public pages skip this so they stay
+  // static and make no Supabase round trip; the browser client keeps the session cookie fresh.
+  matcher: [
+    "/checkout/:path*",
+    "/account/:path*",
+    "/receipt/:path*",
+    "/app",
+    "/reset-password",
+    "/admin/:path*",
+    "/api/admin/:path*",
+    "/login",
+    "/register",
+  ],
 };
