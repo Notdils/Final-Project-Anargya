@@ -1,5 +1,5 @@
 "use client";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { Bounds, Center, ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import { Suspense, useEffect, useMemo } from "react";
 import * as THREE from "three";
@@ -25,7 +25,18 @@ function E21() {
   );
 }
 
-export default function HeroScene({ rotating }: { rotating: boolean }) {
+/** Zoom by narrowing the lens (camera.zoom), eased, so Bounds' framing stays intact. */
+function ZoomRig({ zoom }: { zoom: number }) {
+  useFrame(({ camera }, dt) => {
+    const cam = camera as THREE.PerspectiveCamera;
+    if (Math.abs(cam.zoom - zoom) < 0.001) return;
+    cam.zoom = THREE.MathUtils.damp(cam.zoom, zoom, 10, dt);
+    cam.updateProjectionMatrix();
+  });
+  return null;
+}
+
+export default function HeroScene({ rotating, zoom = 1 }: { rotating: boolean; zoom?: number }) {
   useEffect(() => () => useGLTF.clear("/models/e21.glb"), []);
   return (
     <Canvas
@@ -40,7 +51,7 @@ export default function HeroScene({ rotating }: { rotating: boolean }) {
       <ambientLight intensity={0.15} />
       <spotLight position={[4, 8, 4]} angle={0.35} penumbra={1} intensity={60} castShadow />
       <Suspense fallback={null}>
-        <Bounds fit clip observe margin={1.15}>
+        <Bounds fit clip observe margin={0.92}>
           <E21 />
         </Bounds>
         <ContactShadows position={[0, 0, 0]} opacity={0.7} scale={14} blur={2.6} far={4} resolution={512} color="#000000" />
@@ -52,6 +63,7 @@ export default function HeroScene({ rotating }: { rotating: boolean }) {
           <Lightformer intensity={0.6} form="ring" color="#d08d24" position={[0, 2, 6]} scale={3} />
         </Environment>
       </Suspense>
+      <ZoomRig zoom={zoom} />
       <OrbitControls
         makeDefault
         enablePan={false}

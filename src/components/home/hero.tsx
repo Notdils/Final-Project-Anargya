@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Component, useEffect, useState, type ReactNode } from "react";
-import { ChevronDown, Pause, Play } from "lucide-react";
+import { ChevronDown, Pause, Play, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
 const HeroScene = dynamic(() => import("./hero-scene"), {
   ssr: false,
@@ -50,6 +50,9 @@ function hasWebGL() {
 export function Hero() {
   const [rotating, setRotating] = useState(true);
   const [gl, setGl] = useState<boolean | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const ZMIN = 0.75, ZMAX = 2.25, STEP = 0.25;
+  const zoomBy = (d: number) => setZoom((z) => Math.min(ZMAX, Math.max(ZMIN, Math.round((z + d) * 100) / 100)));
   const [cue, setCue] = useState(true);
 
   useEffect(() => {
@@ -67,20 +70,35 @@ export function Hero() {
           <SceneFallback />
         ) : gl ? (
           <SceneBoundary>
-            <HeroScene rotating={rotating} />
+            <HeroScene rotating={rotating} zoom={zoom} />
           </SceneBoundary>
         ) : null}
       </div>
 
-      <button
-        type="button"
-        onClick={() => setRotating((r) => !r)}
-        aria-pressed={!rotating}
-        aria-label={rotating ? "Pause rotation" : "Resume rotation"}
-        className="btn btn-outline-dark absolute right-5 top-20 px-2 md:right-8 xl:right-16"
-      >
-        {rotating ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
-      </button>
+      {gl && (
+        <div role="group" aria-label="3D view controls" className="absolute right-5 top-20 flex flex-col gap-2 md:right-8 xl:right-16">
+          <button
+            type="button"
+            onClick={() => setRotating((r) => !r)}
+            aria-pressed={!rotating}
+            aria-label={rotating ? "Pause rotation" : "Resume rotation"}
+            className="btn btn-outline-dark px-2"
+          >
+            {rotating ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
+          </button>
+          <button type="button" onClick={() => zoomBy(STEP)} disabled={zoom >= ZMAX} aria-label="Zoom in" className="btn btn-outline-dark px-2">
+            <ZoomIn size={16} aria-hidden />
+          </button>
+          <button type="button" onClick={() => zoomBy(-STEP)} disabled={zoom <= ZMIN} aria-label="Zoom out" className="btn btn-outline-dark px-2">
+            <ZoomOut size={16} aria-hidden />
+          </button>
+          {zoom !== 1 && (
+            <button type="button" onClick={() => setZoom(1)} aria-label="Reset zoom" className="btn btn-outline-dark px-2">
+              <RotateCcw size={16} aria-hidden />
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="container-x pointer-events-none absolute inset-x-0 bottom-0 pb-14 md:pb-16">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
