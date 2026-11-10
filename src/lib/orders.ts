@@ -7,7 +7,7 @@ export type Order = {
   id: string; receipt_no: string; user_id: string; email: string; buyer_name: string; phone: string;
   address: string; city: string; postal_code: string; country: string;
   subtotal_jpy: number; shipping_jpy: number; total_jpy: number; fx_rate: number; charged_idr: number;
-  status: OrderStatus; oversold?: boolean; method: string | null; midtrans_txn_id: string | null; created_at: string; paid_at: string | null;
+  status: OrderStatus; oversold?: boolean; snap_redirect_url?: string | null; pay_expires_at?: string | null; method: string | null; midtrans_txn_id: string | null; created_at: string; paid_at: string | null;
   order_items?: OrderItem[];
 };
 

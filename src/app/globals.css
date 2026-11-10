@@ -252,3 +252,7 @@ body {
     animation: none;
   }
 }
+
+/* Sticky footer: short pages (account, cart, receipt) keep the footer at the bottom. */
+body { display: flex; flex-direction: column; min-height: 100svh; }
+body > main, body > #main { flex: 1 0 auto; }

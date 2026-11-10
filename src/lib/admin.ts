@@ -1,4 +1,5 @@
 import "server-only";
+import { reconcileStale } from "@/lib/reconcile";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { Order, OrderStatus } from "@/lib/orders";
 
@@ -14,6 +15,7 @@ export const parseStatus = (v?: string): OrderStatus | "all" => (STATUSES.includ
 export async function overview(days: number) {
   const sb = await supabaseServer();
   if (!sb) return null;
+  await reconcileStale().catch(() => {});
   const from = since(days), to = new Date().toISOString();
   const [orders, funnel] = await Promise.all([
     sb.from("orders").select("id, receipt_no, buyer_name, total_jpy, status, created_at").gte("created_at", from).order("created_at", { ascending: false }),

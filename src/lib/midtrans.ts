@@ -9,6 +9,9 @@ const serverKey = () => process.env.MIDTRANS_SERVER_KEY ?? "";
 export const hasMidtrans = () => Boolean(serverKey() && process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY);
 const auth = () => "Basic " + Buffer.from(serverKey() + ":").toString("base64");
 
+/** Minutes a buyer has to finish paying. Shown on the receipt; the order expires after this. */
+export const PAY_WINDOW_MIN = 60;
+
 export async function createSnap(input: {
   orderId: string;
   grossIdr: number;
@@ -23,7 +26,7 @@ export async function createSnap(input: {
       customer_details: { first_name: input.customer.name, email: input.customer.email, phone: input.customer.phone },
       credit_card: { secure: true },
       callbacks: { finish: input.finishUrl },
-      expiry: { unit: "hours", duration: 24 },
+      expiry: { unit: "minutes", duration: PAY_WINDOW_MIN },
     }),
     cache: "no-store",
   });
@@ -41,4 +44,18 @@ export async function fetchStatus(orderId: string) {
   const res = await fetch(`${CORE}/${encodeURIComponent(orderId)}/status`, { headers: { Authorization: auth(), Accept: "application/json" }, cache: "no-store" });
   if (!res.ok) return null;
   return (await res.json()) as { transaction_status: string; fraud_status?: string; transaction_id: string; payment_type: string; gross_amount: string };
+}
+
+/**
+ * Status lookup that tells "no transaction at Midtrans" (buyer closed Snap before choosing a method)
+ * apart from a network or auth failure. Returns null only when we could not ask.
+ */
+export async function lookupStatus(orderId: string) {
+  const res = await fetch(`${CORE}/${encodeURIComponent(orderId)}/status`, { headers: { Authorization: auth(), Accept: "application/json" }, cache: "no-store" }).catch(() => null);
+  if (!res) return null;
+  const body = (await res.json().catch(() => null)) as { status_code?: string; transaction_status?: string; fraud_status?: string; transaction_id?: string; payment_type?: string; gross_amount?: string } | null;
+  if (!body) return null;
+  if (res.status === 404 || body.status_code === "404") return { missing: true as const };
+  if (!res.ok || !body.transaction_status) return null;
+  return { missing: false as const, ...body, transaction_status: body.transaction_status };
 }

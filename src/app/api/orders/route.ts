@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { currentUser, supabaseServer } from "@/lib/supabase/server";
+import { currentUser, supabaseServer, supabaseService } from "@/lib/supabase/server";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { fxJpyIdr } from "@/lib/env";
-import { createSnap, hasMidtrans } from "@/lib/midtrans";
+import { PAY_WINDOW_MIN, createSnap, hasMidtrans } from "@/lib/midtrans";
 
 const Body = z.object({
   items: z.array(z.object({ id: z.string().min(1).max(40), qty: z.number().int().min(1).max(20) })).min(1).max(20),
@@ -57,6 +57,11 @@ export async function POST(req: Request) {
       customer: { name: parsed.data.contact.name, email: parsed.data.contact.email, phone: parsed.data.contact.phone },
       finishUrl: `${origin}/receipt/${order.order_id}`,
     });
+    // Kept so the buyer can resume from the receipt if they close the popup.
+    await supabaseService()
+      ?.from("orders")
+      .update({ snap_token: snap.token, snap_redirect_url: snap.redirect_url, pay_expires_at: new Date(Date.now() + PAY_WINDOW_MIN * 60_000).toISOString() })
+      .eq("id", order.order_id);
     return NextResponse.json({ orderId: order.order_id, token: snap.token, redirectUrl: snap.redirect_url });
   } catch {
     return NextResponse.json({ error: "Payment gateway unavailable. Your order was saved as pending.", orderId: order.order_id }, { status: 502 });

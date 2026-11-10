@@ -7,6 +7,7 @@ import { SlimFooter } from "@/components/site-footer";
 import { OrderStatusBadge } from "@/components/status-badge";
 import { PrintButton } from "@/components/print-button";
 import { getOrder } from "@/lib/orders";
+import { reconcileOrder } from "@/lib/reconcile";
 import { jst, rupiah, yen } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Receipt", robots: { index: false } };
@@ -20,8 +21,14 @@ const BANNER = {
 } as const;
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const o = await getOrder((await params).id);
+  const id = (await params).id;
+  let o = await getOrder(id);
   if (!o) notFound();
+  if (o.status === "pending") {
+    await reconcileOrder(o.id);
+    o = (await getOrder(id)) ?? o;
+  }
+  const open = o.status === "pending" && Boolean(o.snap_redirect_url) && (!o.pay_expires_at || new Date(o.pay_expires_at).getTime() > Date.now());
   const b = BANNER[o.status];
   return (
     <>
@@ -31,11 +38,20 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           <div className="flex w-full max-w-[720px] flex-col gap-6">
             <div role="status" className={`flex gap-3 rounded-lg p-4 print:hidden ${b.cls}`}>
               {b.icon}
-              <div>
-                <p className={`font-semibold ${b.tcls}`}>{b.title}</p>
-                <p className="text-sm text-[#404040]">
-                  {o.status === "paid" ? `A copy of this receipt is available in your account (${o.email}).` : o.status === "pending" ? "This page updates once Midtrans confirms the payment. Refresh in a moment." : "No money was taken. You can place the order again from your cart."}
-                </p>
+              <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className={`font-semibold ${b.tcls}`}>{b.title}</p>
+                  <p className="text-sm text-[#404040]">
+                    {o.status === "paid"
+                      ? `A copy of this receipt is available in your account (${o.email}).`
+                      : o.status === "pending"
+                        ? open
+                          ? `Your order is held until ${jst(o.pay_expires_at!)}. If you already paid, refresh in a moment.`
+                          : "We are confirming the payment with Midtrans. Refresh in a moment."
+                        : "No money was taken. You can place the order again from the marketplace."}
+                  </p>
+                </div>
+                {open && <a href={o.snap_redirect_url!} className="btn btn-ochre w-fit shrink-0">Continue payment</a>}
               </div>
             </div>
 
@@ -60,7 +76,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
               <hr className="border-line" />
               <dl className="grid gap-3 text-sm md:grid-cols-3 md:gap-6">
                 <div><dt className="eyebrow text-muted">Issued</dt><dd>{jst(o.paid_at ?? o.created_at)}</dd></div>
-                <div><dt className="eyebrow text-muted">Billed to</dt><dd>{o.buyer_name}<br />{o.email}</dd></div>
+                <div><dt className="eyebrow text-muted">Billed to</dt><dd className="[overflow-wrap:anywhere]">{o.buyer_name}<br />{o.email}</dd></div>
                 <div><dt className="eyebrow text-muted">Payment</dt><dd>Midtrans{o.method ? ` · ${o.method}` : ""}<br /><span className="font-mono text-xs">{o.midtrans_txn_id ?? "awaiting"}</span></dd></div>
               </dl>
               <hr className="border-line" />
