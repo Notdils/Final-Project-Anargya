@@ -1,7 +1,31 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertCircle, Check, Eye, EyeOff } from "lucide-react";
+
+export function Req() {
+  return (
+    <>
+      <span aria-hidden className="ml-0.5 text-oxide">*</span>
+      <span className="sr-only"> (required)</span>
+    </>
+  );
+}
+
+/** Re-checks native validity (plus any extra rule) on every input change, to gate the submit button. */
+export function useReady(extra: (form: HTMLFormElement) => boolean = () => true) {
+  const ref = useRef<HTMLFormElement>(null);
+  const [ready, setReady] = useState(false);
+  const run = (f: HTMLFormElement | null) => f && setReady(f.checkValidity() && extra(f));
+  // Browser autofill may fill fields without an input event; re-check shortly after mount.
+  useEffect(() => {
+    const t = [100, 600, 1500].map((ms) => setTimeout(() => run(ref.current), ms));
+    return () => t.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const check = (e: React.SyntheticEvent<HTMLFormElement>) => run(e.currentTarget);
+  return { ready, check, ref };
+}
 
 function Input({ id, label, error, hint, right, type = "text", ...rest }: { id: string; label: string; error?: string; hint?: string; right?: React.ReactNode } & React.InputHTMLAttributes<HTMLInputElement>) {
   const [show, setShow] = useState(false);
@@ -9,7 +33,7 @@ function Input({ id, label, error, hint, right, type = "text", ...rest }: { id: 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <label htmlFor={id} className="text-sm font-medium">{label}</label>
+        <label htmlFor={id} className="text-sm font-medium">{label}{rest.required && <Req />}</label>
         {right}
       </div>
       <div className="relative">
@@ -36,8 +60,10 @@ function Alert({ children }: { children: React.ReactNode }) {
 export function LoginForm({ next, linkError }: { next?: string; linkError?: boolean }) {
   const [err, setErr] = useState(linkError ? "That link is invalid or expired. Request a new one." : "");
   const [busy, setBusy] = useState(false);
+  const { ready, check, ref } = useReady();
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!ready) return;
     setErr("");
     setBusy(true);
     const fd = new FormData(e.currentTarget);
@@ -53,7 +79,7 @@ export function LoginForm({ next, linkError }: { next?: string; linkError?: bool
     }
   }
   return (
-    <form onSubmit={submit} className="flex flex-col gap-6" noValidate>
+    <form ref={ref} onSubmit={submit} onInput={check} onChange={check} onFocus={check} className="flex flex-col gap-6" noValidate>
       <div className="flex flex-col gap-2">
         <h1 className="text-[32px] font-semibold leading-10 tracking-[-0.02em]">Log in</h1>
         <p className="text-sm text-muted">Order parts and download your receipts.</p>
@@ -63,7 +89,7 @@ export function LoginForm({ next, linkError }: { next?: string; linkError?: bool
         <Input id="email" label="Email" type="email" autoComplete="email" required placeholder="you@company.com" />
         <Input id="password" label="Password" type="password" autoComplete="current-password" required right={<Link href="/forgot-password" className="text-[13px] font-medium text-teal hover:underline">Forgot password?</Link>} />
       </div>
-      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy}>{busy ? "Logging in…" : "Log in"}</button>
+      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy || !ready}>{busy ? "Logging in…" : "Log in"}</button>
       <p className="text-center text-sm text-muted">No account? <Link href="/register" className="font-medium text-teal hover:underline">Create one</Link></p>
     </form>
   );
@@ -75,8 +101,16 @@ export function RegisterForm() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [terms, setTerms] = useState(false);
+  const [mismatch, setMismatch] = useState(false);
+  const { ready, check, ref } = useReady((f) => {
+    const pw = (f.elements.namedItem("password") as HTMLInputElement).value;
+    const cf = (f.elements.namedItem("confirm") as HTMLInputElement).value;
+    setMismatch(cf.length > 0 && pw !== cf);
+    return pw === cf;
+  });
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!ready || !terms) return;
     setErr("");
     setFields({});
     setBusy(true);
@@ -106,27 +140,27 @@ export function RegisterForm() {
       </div>
     );
   return (
-    <form onSubmit={submit} className="flex flex-col gap-6" noValidate>
+    <form ref={ref} onSubmit={submit} onInput={check} onChange={check} onFocus={check} className="flex flex-col gap-6" noValidate>
       <div className="flex flex-col gap-2">
         <h1 className="text-[32px] font-semibold leading-10 tracking-[-0.02em]">Create an account</h1>
         <p className="text-sm text-muted">Anyone can register to buy parts. Admin access is granted by the team.</p>
       </div>
       {err && <Alert>{err}</Alert>}
       <div className="flex flex-col gap-4">
-        <Input id="name" label="Full name" autoComplete="name" error={fields.name} />
-        <Input id="email" label="Email" type="email" autoComplete="email" placeholder="you@company.com" error={fields.email} />
-        <Input id="password" label="Password" type="password" autoComplete="new-password" hint="At least 8 characters." error={fields.password} />
-        <Input id="confirm" label="Confirm password" type="password" autoComplete="new-password" error={fields.confirm} />
+        <Input id="name" label="Full name" autoComplete="name" required error={fields.name} />
+        <Input id="email" label="Email" type="email" autoComplete="email" required placeholder="you@company.com" error={fields.email} />
+        <Input id="password" label="Password" type="password" autoComplete="new-password" required minLength={8} hint="At least 8 characters." error={fields.password} />
+        <Input id="confirm" label="Confirm password" type="password" autoComplete="new-password" required error={fields.confirm ?? (mismatch ? "Passwords do not match." : undefined)} />
         <label className="flex cursor-pointer items-start gap-2 text-sm">
-          <input type="checkbox" className="peer sr-only" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
+          <input type="checkbox" required aria-required className="peer sr-only" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
           <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded border border-[#d4d4d4] peer-checked:border-teal peer-checked:bg-teal peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-teal">
             {terms && <Check size={12} strokeWidth={3} className="text-white" aria-hidden />}
           </span>
-          I agree to the terms and privacy policy.
+          <span>I agree to the terms and privacy policy.<Req /></span>
         </label>
         {fields.terms && <p className="text-[13px] text-oxide">{fields.terms}</p>}
       </div>
-      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy}>{busy ? "Creating…" : "Create account"}</button>
+      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy || !ready || !terms}>{busy ? "Creating…" : "Create account"}</button>
       <p className="text-center text-sm text-muted">Already have an account? <Link href="/login" className="font-medium text-teal hover:underline">Log in</Link></p>
     </form>
   );

@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Component, useEffect, useState, type ReactNode } from "react";
 import { ChevronDown, Pause, Play } from "lucide-react";
 
 const HeroScene = dynamic(() => import("./hero-scene"), {
@@ -19,11 +19,41 @@ const SPECS = [
   ["Mass", "[PLACEHOLDER]"],
 ] as const;
 
+function SceneFallback() {
+  return (
+    <div className="grid h-full place-items-center">
+      <span className="eyebrow text-neutral-600">3D preview unavailable on this device</span>
+    </div>
+  );
+}
+
+// A device without WebGL (or a GPU crash) must not take the whole page down.
+class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? <SceneFallback /> : this.props.children;
+  }
+}
+
+function hasWebGL() {
+  try {
+    const c = document.createElement("canvas");
+    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
+
 export function Hero() {
   const [rotating, setRotating] = useState(true);
+  const [gl, setGl] = useState<boolean | null>(null);
   const [cue, setCue] = useState(true);
 
   useEffect(() => {
+    setGl(hasWebGL());
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) setRotating(false);
     const on = () => scrollY > 40 && setCue(false);
     addEventListener("scroll", on, { passive: true });
@@ -33,7 +63,13 @@ export function Hero() {
   return (
     <section aria-labelledby="hero-title" className="relative h-svh min-h-[640px] overflow-hidden bg-stage text-white">
       <div className="absolute inset-x-0 bottom-[296px] top-16 md:bottom-[240px] xl:bottom-[200px]" aria-label="E21 3D model. Drag to rotate." role="img">
-        <HeroScene rotating={rotating} />
+        {gl === false ? (
+          <SceneFallback />
+        ) : gl ? (
+          <SceneBoundary>
+            <HeroScene rotating={rotating} />
+          </SceneBoundary>
+        ) : null}
       </div>
 
       <button

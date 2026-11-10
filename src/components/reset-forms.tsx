@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AlertCircle } from "lucide-react";
+import { Req, useReady } from "@/components/auth-forms";
 
 const Alert = ({ children }: { children: React.ReactNode }) => (
   <p role="alert" className="flex items-start gap-2 rounded-lg bg-oxide-tint p-3 text-sm text-oxide"><AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden />{children}</p>
@@ -11,8 +12,10 @@ export function ForgotForm() {
   const [err, setErr] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const { ready, check, ref } = useReady();
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!ready) return;
     setErr("");
     setBusy(true);
     try {
@@ -35,17 +38,17 @@ export function ForgotForm() {
       </div>
     );
   return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-6">
+    <form ref={ref} onSubmit={submit} onInput={check} onFocus={check} noValidate className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-[32px] font-semibold leading-10 tracking-[-0.02em]">Reset password</h1>
         <p className="text-sm text-muted">Enter your account email and we will send you a reset link.</p>
       </div>
       {err && <Alert>{err}</Alert>}
       <div className="flex flex-col gap-2">
-        <label htmlFor="email" className="text-sm font-medium">Email</label>
+        <label htmlFor="email" className="text-sm font-medium">Email<Req /></label>
         <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder="you@company.com" />
       </div>
-      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</button>
+      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy || !ready}>{busy ? "Sending…" : "Send reset link"}</button>
       <p className="text-center text-sm text-muted"><Link href="/login" className="font-medium text-teal hover:underline">Back to log in</Link></p>
     </form>
   );
@@ -55,8 +58,16 @@ export function ResetForm() {
   const [err, setErr] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [mismatch, setMismatch] = useState(false);
+  const { ready, check, ref } = useReady((f) => {
+    const pw = (f.elements.namedItem("password") as HTMLInputElement).value;
+    const cf = (f.elements.namedItem("confirm") as HTMLInputElement).value;
+    setMismatch(cf.length > 0 && pw !== cf);
+    return pw === cf;
+  });
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!ready) return;
     setErr("");
     setFields({});
     setBusy(true);
@@ -76,15 +87,16 @@ export function ResetForm() {
       setBusy(false);
     }
   }
+  const msg = (id: "password" | "confirm") => fields[id] ?? (id === "confirm" && mismatch ? "Passwords do not match." : undefined);
   const field = (id: "password" | "confirm", label: string, hint?: string) => (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-sm font-medium">{label}</label>
-      <input id={id} name={id} type="password" autoComplete="new-password" className="input" aria-invalid={Boolean(fields[id])} aria-describedby={`${id}-msg`} />
-      {fields[id] ? <p id={`${id}-msg`} className="flex items-center gap-1.5 text-[13px] text-oxide"><AlertCircle size={14} aria-hidden />{fields[id]}</p> : hint ? <p id={`${id}-msg`} className="text-[13px] text-muted">{hint}</p> : null}
+      <label htmlFor={id} className="text-sm font-medium">{label}<Req /></label>
+      <input id={id} name={id} type="password" autoComplete="new-password" required minLength={id === "password" ? 8 : undefined} className="input" aria-invalid={Boolean(msg(id))} aria-describedby={`${id}-msg`} />
+      {msg(id) ? <p id={`${id}-msg`} className="flex items-center gap-1.5 text-[13px] text-oxide"><AlertCircle size={14} aria-hidden />{msg(id)}</p> : hint ? <p id={`${id}-msg`} className="text-[13px] text-muted">{hint}</p> : null}
     </div>
   );
   return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-6">
+    <form ref={ref} onSubmit={submit} onInput={check} onFocus={check} noValidate className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-[32px] font-semibold leading-10 tracking-[-0.02em]">Set a new password</h1>
         <p className="text-sm text-muted">You are signed in from the reset link. Choose a new password.</p>
@@ -94,7 +106,7 @@ export function ResetForm() {
         {field("password", "New password", "At least 8 characters.")}
         {field("confirm", "Confirm new password")}
       </div>
-      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy}>{busy ? "Saving…" : "Save password"}</button>
+      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy || !ready}>{busy ? "Saving…" : "Save password"}</button>
     </form>
   );
 }
