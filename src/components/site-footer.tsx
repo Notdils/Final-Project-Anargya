@@ -13,7 +13,7 @@ export function SiteFooter() {
               <li><Link href="/login" className="hover:underline">Log in</Link></li>
             </ul>
           </nav>
-          <p className="text-sm text-white/70">© 2026 Anargya Corp.</p>
+          <p className="text-sm text-white/90">© 2026 Anargya Corp.</p>
         </div>
         <p
           aria-hidden
@@ -31,7 +31,7 @@ export function SlimFooter() {
     <footer className="bg-teal text-white">
       <div className="container-x flex items-center justify-between py-6">
         <span className="text-sm font-semibold tracking-[0.12em]">ANARGYA</span>
-        <span className="text-xs text-white/70">© 2026 Anargya Corp.</span>
+        <span className="text-xs text-white/90">© 2026 Anargya Corp.</span>
       </div>
     </footer>
   );

@@ -86,8 +86,8 @@ export function MarketplaceGrid({ products }: { products: Product[] }) {
 
   return (
     <div className="mt-6 flex flex-col gap-4 md:mt-8">
-      <div className="flex items-center gap-2">
-        <label className="relative flex-1">
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="relative w-full md:w-auto md:flex-1">
           <span className="sr-only">Search parts</span>
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" aria-hidden />
           <input className="input pl-9" type="search" placeholder="Search parts" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
@@ -131,11 +131,11 @@ export function MarketplaceGrid({ products }: { products: Product[] }) {
           )}
           {pages > 1 && (
             <nav aria-label="Pagination" className="flex items-center justify-center gap-1">
-              <button type="button" className="btn px-3" disabled={cur === 1} onClick={() => setPage(cur - 1)}><ChevronLeft size={16} aria-hidden /><span className="hidden md:inline">Previous</span></button>
+              <button type="button" aria-label="Previous page" className="btn px-3" disabled={cur === 1} onClick={() => setPage(cur - 1)}><ChevronLeft size={16} aria-hidden /><span className="hidden md:inline">Previous</span></button>
               {Array.from({ length: pages }, (_, k) => k + 1).map((n) => (
                 <button key={n} type="button" aria-current={n === cur ? "page" : undefined} onClick={() => setPage(n)} className={`btn px-3 ${n === cur ? "border border-teal text-teal" : ""}`}>{n}</button>
               ))}
-              <button type="button" className="btn px-3" disabled={cur === pages} onClick={() => setPage(cur + 1)}><span className="hidden md:inline">Next</span><ChevronRight size={16} aria-hidden /></button>
+              <button type="button" aria-label="Next page" className="btn px-3" disabled={cur === pages} onClick={() => setPage(cur + 1)}><span className="hidden md:inline">Next</span><ChevronRight size={16} aria-hidden /></button>
             </nav>
           )}
         </div>

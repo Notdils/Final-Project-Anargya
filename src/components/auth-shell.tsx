@@ -10,7 +10,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           {["left-0 top-0 border-l-[1.5px] border-t-[1.5px]", "right-0 top-0 border-r-[1.5px] border-t-[1.5px]", "bottom-0 left-0 border-b-[1.5px] border-l-[1.5px]", "bottom-0 right-0 border-b-[1.5px] border-r-[1.5px]"].map((c) => (
             <span key={c} className={`absolute -m-3 h-4 w-4 border-teal ${c}`} />
           ))}
-          <span className="eyebrow absolute inset-0 grid place-items-center text-neutral-700">E21 / 3D model</span>
+          <span className="eyebrow absolute inset-0 grid place-items-center text-neutral-400">E21 / 3D model</span>
         </div>
         <p className="absolute bottom-10 left-10 text-[32px] font-semibold leading-10 tracking-[-0.02em]">Engineering-led.<br />Partner-built.</p>
       </aside>

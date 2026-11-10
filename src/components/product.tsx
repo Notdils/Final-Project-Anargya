@@ -34,7 +34,7 @@ export function PartRender({ dark = false, label = "Part render" }: { dark?: boo
   return (
     <div
       className={`grid h-full w-full place-items-center rounded-lg border border-dashed font-mono text-xs uppercase tracking-wider ${
-        dark ? "border-stage-line text-neutral-600" : "border-transparent bg-surface-2 text-neutral-400"
+        dark ? "border-stage-line text-neutral-400" : "border-transparent bg-surface-2 text-neutral-500"
       }`}
     >
       {label}

@@ -45,6 +45,7 @@ export function HeaderClient({
 
   return (
     <header
+      data-dark={dark ? "" : undefined}
       className={`fixed inset-x-0 top-0 z-[1100] transition-colors duration-200 ${
         dark ? "bg-transparent text-white" : "border-b border-line bg-white/95 text-ink backdrop-blur"
       }`}

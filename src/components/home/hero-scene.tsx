@@ -89,21 +89,26 @@ function Framed({ children }: { children: React.ReactNode }) {
 
 /** Zoom by narrowing the lens (camera.zoom), eased, so Bounds' framing stays intact. */
 function ZoomRig({ zoom }: { zoom: number }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => invalidate(), [zoom, invalidate]);
   useFrame(({ camera }, dt) => {
     const cam = camera as THREE.PerspectiveCamera;
     if (Math.abs(cam.zoom - zoom) < 0.001) return;
     cam.zoom = THREE.MathUtils.damp(cam.zoom, zoom, 10, dt);
     cam.updateProjectionMatrix();
+    invalidate(); // keep easing while on demand
   });
   return null;
 }
 
-export default function HeroScene({ rotating, zoom = 1 }: { rotating: boolean; zoom?: number }) {
+export default function HeroScene({ rotating, zoom = 1, active = true }: { rotating: boolean; zoom?: number; active?: boolean }) {
   useEffect(() => () => useGLTF.clear("/models/e21.glb"), []);
   const [size, setSize] = useState<THREE.Vector3 | null>(null);
   return (
     <Canvas
-      dpr={[1, 1.75]}
+      dpr={[1, 1.5]}
+      // Render continuously only while auto-rotating on screen; otherwise only on interaction.
+      frameloop={!active ? "never" : rotating ? "always" : "demand"}
       camera={{ position: [5.5, 1.8, 6.5], fov: 26 }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       onCreated={({ gl }) => {
@@ -121,7 +126,7 @@ export default function HeroScene({ rotating, zoom = 1 }: { rotating: boolean; z
           <E21 onSize={setSize} />
         </Framed>
         {size && <Platform radius={Math.max(size.x, size.z) * 0.56} />}
-        <ContactShadows position={[0, 0.004, 0]} opacity={0.7} scale={14} blur={2.6} far={4} resolution={512} color="#000000" />
+        <ContactShadows frames={1} position={[0, 0.004, 0]} opacity={0.7} scale={14} blur={2.6} far={4} resolution={512} color="#000000" />
         {/* dark studio: softboxes only, no external HDR download */}
         <Environment resolution={256} frames={1}>
           <Lightformer intensity={1.3} form="rect" position={[0, 5, -2]} scale={[10, 2, 1]} rotation-x={Math.PI / 2} />

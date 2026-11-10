@@ -96,7 +96,7 @@ export function Coverflow({ products, headingId = "featured-title" }: { products
             key={`${p.id}-${pos}`}
             type="button"
             onClick={() => go(pos)}
-            aria-label={`Show ${p.name}`}
+            aria-label={`${p.code} ${p.name}`}
             className={`absolute top-1/2 h-[440px] w-[calc(100vw-80px)] -translate-y-1/2 opacity-35 transition-all duration-500 hover:opacity-50 md:h-[520px] md:w-[300px] xl:w-[360px] ${
               pos < 0 ? "right-[calc(100vw-28px)] md:right-[calc(50%+200px+32px)] xl:right-[calc(50%+240px+32px)]" : "left-[calc(100vw-28px)] md:left-[calc(50%+200px+32px)] xl:left-[calc(50%+240px+32px)]"
             } ${reduce ? "transition-none" : ""}`}

@@ -34,7 +34,7 @@ export default function About() {
                 [PLACEHOLDER] One sentence positioning: a Japan-based design house for electric formula vehicles and their systems.
               </p>
             </div>
-            <figure className="grid h-[280px] place-items-center rounded-xl bg-[#171717] font-mono text-xs uppercase tracking-wider text-neutral-600 md:h-[440px] xl:h-[560px]">
+            <figure className="grid h-[280px] place-items-center rounded-xl bg-[#171717] font-mono text-xs uppercase tracking-wider text-neutral-400 md:h-[440px] xl:h-[560px]">
               Studio / workshop photo
             </figure>
           </div>

@@ -1,14 +1,14 @@
 "use client";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Component, useEffect, useState, type ReactNode } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown, Pause, Play, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
 const HeroScene = dynamic(() => import("./hero-scene"), {
   ssr: false,
   loading: () => (
     <div className="grid h-full place-items-center">
-      <span className="eyebrow text-neutral-600">Loading E21</span>
+      <span className="eyebrow text-neutral-400">Loading E21</span>
     </div>
   ),
 });
@@ -22,7 +22,7 @@ const SPECS = [
 function SceneFallback() {
   return (
     <div className="grid h-full place-items-center">
-      <span className="eyebrow text-neutral-600">3D preview unavailable on this device</span>
+      <span className="eyebrow text-neutral-400">3D preview unavailable on this device</span>
     </div>
   );
 }
@@ -51,6 +51,16 @@ export function Hero() {
   const [rotating, setRotating] = useState(true);
   const [gl, setGl] = useState<boolean | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [inView, setInView] = useState(true);
+  const sectionRef = useRef<HTMLElement>(null);
+  // Stop rendering the 3D scene once the hero scrolls out of view.
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin: "100px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const ZMIN = 0.75, ZMAX = 2.25, STEP = 0.25;
   const zoomBy = (d: number) => setZoom((z) => Math.min(ZMAX, Math.max(ZMIN, Math.round((z + d) * 100) / 100)));
   const [cue, setCue] = useState(true);
@@ -64,13 +74,13 @@ export function Hero() {
   }, []);
 
   return (
-    <section aria-labelledby="hero-title" className="relative h-svh min-h-[640px] overflow-hidden bg-stage text-white">
-      <div className="absolute inset-x-0 bottom-[296px] top-16 md:bottom-[240px] xl:bottom-[200px]" aria-label="E21 3D model. Drag to rotate." role="img">
+    <section ref={sectionRef} aria-labelledby="hero-title" className="relative h-svh min-h-[640px] overflow-hidden bg-stage text-white">
+      <div className="absolute inset-x-0 bottom-[296px] top-16 [mask-image:linear-gradient(to_bottom,black_82%,transparent)] md:bottom-[240px] xl:bottom-[200px]" aria-label="E21 3D model. Drag to rotate." role="img">
         {gl === false ? (
           <SceneFallback />
         ) : gl ? (
           <SceneBoundary>
-            <HeroScene rotating={rotating} zoom={zoom} />
+            <HeroScene rotating={rotating} zoom={zoom} active={inView} />
           </SceneBoundary>
         ) : null}
       </div>
@@ -117,7 +127,7 @@ export function Hero() {
           <dl className="pointer-events-auto hidden gap-8 md:flex">
             {SPECS.map(([k, v]) => (
               <div key={k} className="flex flex-col gap-1">
-                <dt className="eyebrow text-neutral-500">{k}</dt>
+                <dt className="eyebrow text-neutral-400">{k}</dt>
                 <dd className="font-medium">{v}</dd>
               </div>
             ))}
@@ -127,7 +137,7 @@ export function Hero() {
 
       <div
         aria-hidden
-        className={`absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-neutral-400 transition-opacity duration-300 md:bottom-6 ${cue ? "opacity-100" : "opacity-0"}`}
+        className={`absolute bottom-4 left-1/2 flex -translate-x-1/2 md:hidden xl:flex flex-col items-center gap-1 text-neutral-400 transition-opacity duration-300 md:bottom-6 ${cue ? "opacity-100" : "opacity-0"}`}
       >
         <span className="eyebrow hidden md:block">Scroll</span>
         <ChevronDown size={20} className="scroll-cue" />

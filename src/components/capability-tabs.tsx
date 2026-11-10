@@ -52,7 +52,8 @@ export function CapabilityTabs() {
           </button>
         ))}
       </div>
-      <ul role="tabpanel" id={`${id}-p-${tab}`} aria-labelledby={`${id}-t-${tab}`} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div role="tabpanel" id={`${id}-p-${tab}`} aria-labelledby={`${id}-t-${tab}`}>
+      <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {CAPS[tab].map(([h, s]) => (
           <li key={h} className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-6">
             <h3 className="font-medium">{h}</h3>
@@ -60,6 +61,7 @@ export function CapabilityTabs() {
           </li>
         ))}
       </ul>
+      </div>
     </div>
   );
 }

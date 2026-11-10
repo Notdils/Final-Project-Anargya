@@ -18,8 +18,8 @@ export function PartViewer({ name, code, modelUrl }: { name: string; code: strin
           {modelUrl ? "Loading model" : "Part 3D model (render in progress)"}
         </div>
       </div>
-      <span className="eyebrow absolute bottom-6 left-5 text-neutral-500">{code}</span>
-      <span className="eyebrow absolute bottom-6 left-1/2 hidden -translate-x-1/2 text-neutral-600 md:block">Drag to rotate</span>
+      <span className="eyebrow absolute bottom-6 left-5 text-neutral-400">{code}</span>
+      <span className="eyebrow absolute bottom-6 left-1/2 hidden -translate-x-1/2 text-neutral-400 md:block">Drag to rotate</span>
       <div className="absolute bottom-4 right-4 flex gap-1">
         <button type="button" className={ctl} disabled={disabled} aria-label="Zoom out"><ZoomOut size={16} aria-hidden /></button>
         <button type="button" className={ctl} disabled={disabled} aria-label="Zoom in"><ZoomIn size={16} aria-hidden /></button>
