@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server";
 import { supabaseService } from "@/lib/supabase/server";
 import { fetchStatus, validSignature } from "@/lib/midtrans";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 // Midtrans HTTP notification. Set this URL in the Midtrans dashboard:
 //   https://<domain>/api/midtrans/notify
 export async function POST(req: Request) {
+  if (!(await rateLimit(`notify:${await clientIp()}`, 120, 60))) return NextResponse.json({ ok: false }, { status: 429 });
   const n = await req.json().catch(() => null);
-  if (!n?.order_id || !n?.signature_key || !validSignature(n)) return NextResponse.json({ ok: false }, { status: 401 });
+  if (typeof n?.order_id !== "string" || !/^[0-9a-f-]{36}$/i.test(n.order_id)) return NextResponse.json({ ok: true, ignored: true }); // not one of our orders (e.g. dashboard test ping)
 
-  const status = await fetchStatus(n.order_id); // never trust the body alone
+  // The body is only a trigger. A scoped (generated) server key may not match the key Midtrans
+  // signs with, so the signature is logged, not required. The authority is the status we fetch
+  // from Midtrans ourselves, authenticated with our server key.
+  if (!n.signature_key || !validSignature(n)) console.warn("midtrans notify: signature mismatch", n.order_id);
+
+  const status = await fetchStatus(n.order_id);
   const sb = supabaseService();
   if (!status || !sb) return NextResponse.json({ ok: false }, { status: 503 });
 
