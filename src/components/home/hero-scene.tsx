@@ -17,7 +17,7 @@ function E21({ onSize }: { onSize: (s: THREE.Vector3) => void }) {
       if (m.isMesh) {
         m.castShadow = true;
         const mat = m.material as THREE.MeshStandardMaterial;
-        if (mat && "envMapIntensity" in mat) mat.envMapIntensity = 1.1;
+        if (mat && "envMapIntensity" in mat) mat.envMapIntensity = 0.45; // low reflections: the car reads as a silhouette with lit edges
       }
     });
     return s;
@@ -59,7 +59,7 @@ function Platform({ radius }: { radius: number }) {
     <group>
       <mesh position={[0, -h / 2, 0]} receiveShadow>
         <cylinderGeometry args={[radius, radius * 1.01, h, 96]} />
-        <meshStandardMaterial color="#0b0b0b" metalness={0.7} roughness={0.35} />
+        <meshStandardMaterial color="#070707" metalness={0.3} roughness={0.75} />
       </mesh>
       <mesh rotation-x={Math.PI / 2} position={[0, 0.002, 0]}>
         <torusGeometry args={[radius * 0.995, radius * 0.006, 12, 160]} />
@@ -108,11 +108,13 @@ export default function HeroScene({ rotating, zoom = 1 }: { rotating: boolean; z
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.toneMappingExposure = 1.05;
+        gl.toneMappingExposure = 0.95;
       }}
     >
-      <ambientLight intensity={0.15} />
-      <spotLight position={[4, 8, 4]} angle={0.35} penumbra={1} intensity={60} castShadow />
+      <ambientLight intensity={0.08} />
+      <spotLight position={[4, 8, 4]} angle={0.35} penumbra={1} intensity={45} castShadow />
+      {/* faint teal underglow from the plinth rim */}
+      <pointLight position={[0, 0.25, 0]} color="#006f66" intensity={6} distance={6} decay={2} />
       <Suspense fallback={null}>
         {/* platform sits outside Bounds so the camera frames the car, not the plinth */}
         <Framed>
@@ -122,10 +124,10 @@ export default function HeroScene({ rotating, zoom = 1 }: { rotating: boolean; z
         <ContactShadows position={[0, 0.004, 0]} opacity={0.7} scale={14} blur={2.6} far={4} resolution={512} color="#000000" />
         {/* dark studio: softboxes only, no external HDR download */}
         <Environment resolution={256} frames={1}>
-          <Lightformer intensity={2.2} form="rect" position={[0, 5, -2]} scale={[10, 2, 1]} rotation-x={Math.PI / 2} />
-          <Lightformer intensity={1.2} form="rect" position={[-5, 1.5, 1]} scale={[6, 2, 1]} rotation-y={Math.PI / 2} />
-          <Lightformer intensity={1.2} form="rect" position={[5, 1.5, -1]} scale={[6, 2, 1]} rotation-y={-Math.PI / 2} />
-          <Lightformer intensity={0.6} form="ring" color="#006f66" position={[0, 2, 6]} scale={3} />
+          <Lightformer intensity={1.3} form="rect" position={[0, 5, -2]} scale={[10, 2, 1]} rotation-x={Math.PI / 2} />
+          <Lightformer intensity={0.45} form="rect" position={[-5, 1.5, 1]} scale={[6, 2, 1]} rotation-y={Math.PI / 2} />
+          <Lightformer intensity={0.45} form="rect" position={[5, 1.5, -1]} scale={[6, 2, 1]} rotation-y={-Math.PI / 2} />
+          <Lightformer intensity={0.9} form="ring" color="#006f66" position={[0, 2, 6]} scale={3} />
         </Environment>
       </Suspense>
       <ZoomRig zoom={zoom} />
