@@ -7,9 +7,10 @@ import { AlertCircle, CalendarDays, Clock, Lock } from "lucide-react";
 import { Req, useReady } from "./auth-forms";
 import { useAuth } from "./auth-state";
 import { Price } from "./price";
-import { SLOTS, TOPICS, bookableDates, dateLabel } from "@/lib/booking";
+import { JST_TZ, SLOTS, TOPICS, bookableDates, dateLabel, slotInZone, zoneCity } from "@/lib/booking";
 import { rupiah } from "@/lib/format";
 import { useLocale, useLp, useT } from "@/i18n/client";
+import { PaymentResult } from "@/components/payment-result";
 
 type FieldKey = "name" | "email" | "phone" | "organisation" | "topic" | "date" | "time";
 type Fields = Partial<Record<FieldKey, string[]>>;
@@ -38,8 +39,20 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
     opts ? new Intl.DateTimeFormat(locale === "ja" ? "ja-JP" : "en-GB", { ...opts, timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`)) : dateLabel(d, locale === "ja" ? "ja-JP" : "en-GB");
 
   const dates = useMemo(() => bookableDates(), []);
+  const [result, setResult] = useState<{ state: "paid" | "pending"; go: () => void } | null>(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  // Time zone only changes how slots are displayed; bookings are stored and checked in JST on the server.
+  const [tz, setTz] = useState(JST_TZ);
+  const [zones, setZones] = useState<string[]>([JST_TZ]);
+  useEffect(() => {
+    const mine = Intl.DateTimeFormat().resolvedOptions().timeZone || JST_TZ;
+    setTz(mine);
+    const all = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
+    setZones([...new Set([mine, JST_TZ, ...all])]);
+  }, []);
+  const loc = locale === "ja" ? "ja-JP" : "en-GB";
+  const local = tz !== JST_TZ;
   const [taken, setTaken] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -87,7 +100,7 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
         return;
       }
       const go = () => router.push(L(`/consulting/booking/${data.id}`));
-      if (window.snap) window.snap.pay(data.token, { onSuccess: go, onPending: go, onClose: go, onError: () => setErr(t("Payment failed. You can try again.")) });
+      if (window.snap) window.snap.pay(data.token, { onSuccess: () => setResult({ state: "paid", go }), onPending: () => setResult({ state: "pending", go }), onClose: go, onError: () => setErr(t("Payment failed. You can try again.")) });
       else window.location.href = data.redirectUrl;
     } catch {
       setErr(t("Network error. Try again."));
@@ -101,6 +114,7 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
 
   return (
     <>
+      <PaymentResult state={result?.state ?? null} onView={() => result?.go()} viewLabel="View booking" />
       {canPay && <Script src={snapJs} data-client-key={clientKey} strategy="afterInteractive" />}
       <form ref={ref} onSubmit={submit} onInput={check} onChange={check} noValidate className="grid flex-1 items-start gap-4 md:gap-6 xl:grid-cols-[1fr_1fr_320px]">
         {/* 1. slot */}
@@ -123,20 +137,32 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
           </div>
           {fe("date") && <p className="text-[13px] text-oxide">{t(fe("date")!)}</p>}
           <div className="flex flex-col gap-2 border-t border-line pt-4">
-            <p className="flex items-center gap-2 font-semibold"><Clock size={18} className="text-teal" aria-hidden />{t("Time (JST)")}<Req /></p>
-            <div className="grid grid-cols-4 gap-1.5" role="radiogroup" aria-label={t("Time (JST)")}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="flex items-center gap-2 font-semibold"><Clock size={18} className="text-teal" aria-hidden />{t("Time")}<Req /></p>
+              <label className="flex items-center gap-2 text-xs text-muted">
+                {t("Your time zone")}
+                <select className="input h-8 min-h-0 w-auto max-w-[180px] py-0 text-xs" value={tz} onChange={(e) => setTz(e.target.value)}>
+                  {zones.map((z) => <option key={z} value={z}>{z === JST_TZ ? `${zoneCity(z)} (JST)` : zoneCity(z)}</option>)}
+                </select>
+              </label>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5" role="radiogroup" aria-label={t("Time")}>
               {SLOTS.map((s) => {
                 const off = !date || taken.has(`${date} ${s}`);
                 return (
                   <label key={s} className={`${chip} font-mono ${off ? "cursor-not-allowed border-line text-neutral-400 line-through" : "cursor-pointer"} ${time === s ? "border-teal bg-teal text-white" : off ? "" : "border-line hover:border-teal"}`}>
                     <input type="radio" name="time-pick" value={s} className="sr-only" disabled={off} checked={time === s} onChange={() => setTime(s)} />
-                    {s}
+                    {local && date ? (() => {
+                      const z = slotInZone(date, s, tz, loc);
+                      return <span className="flex flex-col items-center leading-tight"><span>{z.time}</span><span className={`text-[10px] ${time === s ? "text-white/80" : "text-muted"}`}>{s} JST{z.shift ? ` (${z.shift > 0 ? "+" : "−"}${Math.abs(z.shift)}d)` : ""}</span></span>;
+                    })() : s}
                     {off && date && <span className="sr-only"> {t("(taken)")}</span>}
                   </label>
                 );
               })}
             </div>
             {fe("time") && <p className="text-[13px] text-oxide">{t(fe("time")!)}</p>}
+            {local && date && <p className="text-xs text-muted">{t("Big numbers are {city} time. (−1d) means the day before in your time zone.", { city: zoneCity(tz) })}</p>}
             <p className="text-xs text-muted">{t("Taken times are crossed out.")}</p>
           </div>
         </fieldset>
@@ -170,16 +196,16 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
           <dl className="flex flex-col gap-2 text-sm">
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Session")}</dt><dd className="text-right">{t("30-minute video call")}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Date")}</dt><dd className="text-right">{date ? dl(date) : "-"}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-muted">{t("Time")}</dt><dd className="font-mono">{time ? `${time} JST` : "-"}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-muted">{t("Time")}</dt><dd className="text-right font-mono">{time ? (local && date ? <>{(() => { const z = slotInZone(date, time, tz, loc); return `${z.day ? `${z.day}, ` : ""}${z.time} ${zoneCity(tz)}`; })()}<span className="block text-xs text-muted">{time} JST</span></> : `${time} JST`) : "-"}</dd></div>
             <div className="flex justify-between gap-3 border-t border-line pt-2"><dt className="font-semibold">{t("Fee")}</dt><dd className="font-medium">{feeUsd ? <Price usd={feeUsd} /> : t("Not set")}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Charged in IDR")}</dt><dd className="font-mono">{feeUsd && fx ? `≈ ${rupiah(Math.ceil(feeUsd * fx))}` : t("Rate not set")}</dd></div>
           </dl>
           {!canPay && <p role="status" className="rounded-lg bg-ochre-tint p-3 text-[13px]">{t("Paid booking is not configured yet (CONSULT_FEE_USD, FX_USD_IDR or Midtrans keys missing).")}</p>}
           {err && <p role="alert" className="flex items-start gap-2 rounded-lg bg-oxide-tint p-3 text-sm text-oxide"><AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden />{err}</p>}
           {authReady && !signedIn ? (
-            <Link href={L(`/login?next=${encodeURIComponent(L("/consulting"))}`)} className="btn btn-ochre btn-lg w-full">{t("Log in to book")}</Link>
+            <Link href={L(`/login?next=${encodeURIComponent(L("/consulting"))}`)} className="btn btn-teal btn-lg w-full">{t("Log in to book")}</Link>
           ) : (
-            <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={!formOk || !canPay || busy || !authReady}>{t(busy ? "Opening Midtrans…" : "Pay and book")}</button>
+            <button type="submit" className="btn btn-pay btn-lg w-full" disabled={!formOk || !canPay || busy || !authReady}>{t(busy ? "Opening Midtrans…" : "Pay and book")}</button>
           )}
           <p className="flex items-start gap-1.5 text-xs text-muted"><Lock size={14} className="mt-0.5 shrink-0 text-teal" aria-hidden />{t("The slot is held for 15 minutes while you pay. Unpaid bookings are released automatically.")}</p>
         </aside>

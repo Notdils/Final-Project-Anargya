@@ -55,7 +55,7 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
                 </div>
                 {open && (
                   <div className="flex flex-wrap items-start gap-2">
-                    <a href={o.snap_redirect_url!} className="btn btn-ochre w-fit shrink-0">{t("Continue payment")}</a>
+                    <a href={o.snap_redirect_url!} className="btn btn-pay w-fit shrink-0">{t("Continue payment")}</a>
                     <ChangePayment orderId={o.id} />
                   </div>
                 )}
@@ -126,6 +126,7 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
                 {o.total_usd != null ? (
                   <>
                     <div className="flex justify-between"><dt className="text-muted">{t("Subtotal")}</dt><dd className="font-mono">{usd(Number(o.subtotal_usd))}</dd></div>
+                    {Number(o.discount_usd) > 0 && <div className="flex justify-between"><dt className="text-muted">{t("Voucher")} <span className="font-mono">{o.voucher_code}</span></dt><dd className="font-mono">−{usd(Number(o.discount_usd))}</dd></div>}
                     <div className="flex justify-between"><dt className="text-muted">{t("Shipping")}</dt><dd className="font-mono">{Number(o.shipping_usd) ? usd(Number(o.shipping_usd)) : t("Included")}</dd></div>
                     <div className="flex justify-between"><dt className="font-semibold">{t("Total (USD)")}</dt><dd className="font-mono font-medium">{usd(Number(o.total_usd))}</dd></div>
                     <div className="flex justify-between"><dt className="text-muted">{t("Charged (IDR)")}</dt><dd className="font-mono">{rupiah(o.charged_idr)}</dd></div>
@@ -144,8 +145,8 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
             </article>
 
             <div className="flex flex-col gap-3 sm:flex-row print:hidden">
-              <PrintButton />
-              <Link href={L("/marketplace")} className="btn btn-ochre btn-lg">{t("Continue shopping")}</Link>
+              <PrintButton filename={`Invoice ${o.receipt_no}`} />
+              <Link href={L("/marketplace")} className="btn btn-teal btn-lg">{t("Continue shopping")}</Link>
             </div>
           </div>
         </div>

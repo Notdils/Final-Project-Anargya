@@ -1,5 +1,4 @@
 import "server-only";
-import { reconcileStale } from "@/lib/reconcile";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { Order, OrderStatus } from "@/lib/orders";
 
@@ -12,31 +11,6 @@ export const PAGE_SIZE = 20;
 const STATUSES: OrderStatus[] = ["pending", "paid", "failed", "expired"];
 export const parseStatus = (v?: string): OrderStatus | "all" | "review" => (v === "review" ? "review" : STATUSES.includes(v as OrderStatus) ? (v as OrderStatus) : "all");
 
-export async function overview(days: number) {
-  const sb = await supabaseServer();
-  if (!sb) return null;
-  await reconcileStale().catch(() => {});
-  const from = since(days), to = new Date().toISOString();
-  const [orders, funnel, review] = await Promise.all([
-    sb.from("orders").select("id, receipt_no, buyer_name, total_jpy, total_usd, status, created_at").gte("created_at", from).order("created_at", { ascending: false }),
-    sb.rpc("funnel_counts", { p_from: from, p_to: to }),
-    sb.from("orders").select("id", { count: "exact", head: true }).eq("needs_review", true),
-  ]);
-  const list = (orders.data ?? []) as Pick<Order, "id" | "receipt_no" | "buyer_name" | "total_jpy" | "total_usd" | "status" | "created_at">[];
-  const paid = list.filter((o) => o.status === "paid");
-  const steps = ((funnel.data ?? []) as { step: string; sessions: number }[]).map((s) => ({ step: s.step, n: Number(s.sessions) }));
-  const home = steps.find((s) => s.step === "home")?.n ?? 0;
-  const paidN = steps.find((s) => s.step === "paid")?.n ?? paid.length;
-  return {
-    revenue: paid.reduce((s, o) => s + Number(o.total_usd ?? 0), 0), // USD; older JPY test orders are not counted
-    paid: paid.length,
-    pending: list.filter((o) => o.status === "pending").length,
-    conversion: home ? (paidN / home) * 100 : null,
-    funnel: steps,
-    recent: list.slice(0, 5),
-    needsReview: review.count ?? 0,
-  };
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Q = any; // Supabase's builder generics are too deep for a shared helper; inputs are validated above.

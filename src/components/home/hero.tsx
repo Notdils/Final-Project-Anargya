@@ -120,9 +120,9 @@ export function Hero() {
           <div className="pointer-events-auto flex flex-col gap-4 md:gap-6">
             <p className="eyebrow text-neutral-400">{t("[CITY], Japan · Formula EV design")}</p>
             <h1 id="hero-title" className="text-[40px] font-semibold leading-[44px] tracking-[-0.03em] md:text-[56px] md:leading-[56px] xl:text-[72px] xl:leading-[72px]">
-              {t("Formula EV,")}
+              {t("Formula EV parts")}
               <br />
-              {t("designed to race.")}
+              {t("and engineering support.")}
             </h1>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link href={L("/marketplace")} className="btn btn-teal">{t("Explore marketplace")}</Link>

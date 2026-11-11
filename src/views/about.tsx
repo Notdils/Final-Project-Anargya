@@ -102,7 +102,7 @@ export default function AboutView({ locale }: { locale: Locale }) {
         <section aria-labelledby="cta-title" className="bg-surface py-12 md:py-24">
           <div className="container-x flex flex-col items-center gap-6 text-center">
             <h2 id="cta-title" className="text-2xl font-semibold tracking-[-0.02em] md:text-[32px] md:leading-10">{t("See what we build.")}</h2>
-            <Link href={L("/marketplace")} className="btn btn-ochre w-full sm:w-auto">{t("Browse the marketplace")}</Link>
+            <Link href={L("/marketplace")} className="btn btn-teal w-full sm:w-auto">{t("Browse the marketplace")}</Link>
           </div>
         </section>
       </main>

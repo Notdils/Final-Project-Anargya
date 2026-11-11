@@ -95,7 +95,7 @@ export function LoginForm({ next, linkError }: { next?: string; linkError?: bool
         <Input id="email" label="Email" type="email" autoComplete="email" required placeholder={t("you@company.com")} />
         <Input id="password" label="Password" type="password" autoComplete="current-password" required right={<Link href={L("/forgot-password")} className="text-[13px] font-medium text-teal hover:underline">{t("Forgot password?")}</Link>} />
       </div>
-      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy || !ready}>{t(busy ? "Logging in…" : "Log in")}</button>
+      <button type="submit" className="btn btn-teal btn-lg w-full" disabled={busy || !ready}>{t(busy ? "Logging in…" : "Log in")}</button>
       <p className="text-center text-sm text-muted">{t("No account?")} <Link href={L("/register")} className="font-medium text-teal hover:underline">{t("Create one")}</Link></p>
     </form>
   );
@@ -168,7 +168,7 @@ export function RegisterForm() {
         </label>
         {fields.terms && <p className="text-[13px] text-oxide">{t(fields.terms)}</p>}
       </div>
-      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy || !ready || !terms}>{t(busy ? "Creating…" : "Create account")}</button>
+      <button type="submit" className="btn btn-teal btn-lg w-full" disabled={busy || !ready || !terms}>{t(busy ? "Creating…" : "Create account")}</button>
       <p className="text-center text-sm text-muted">{t("Already have an account?")} <Link href={L("/login")} className="font-medium text-teal hover:underline">{t("Log in")}</Link></p>
     </form>
   );

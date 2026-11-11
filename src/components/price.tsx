@@ -1,15 +1,14 @@
 "use client";
-import { priceParts } from "@/lib/money";
-import { useLocale } from "@/i18n/client";
+import { formatIn, usd as fmtUsd } from "@/lib/money";
+import { useCurrency } from "@/components/currency";
 
-/** USD price with the JPY reference beside it (JPY first on Japanese pages). */
-export function Price({ usd, locale, className = "", subClassName = "text-xs text-muted" }: { usd: number; locale?: "en" | "ja"; className?: string; subClassName?: string }) {
-  const ctx = useLocale();
-  const { main, sub } = priceParts(usd, locale ?? ctx);
+/** Price in the visitor's display currency (header switch). Stored prices are USD; other currencies are converted. */
+export function Price({ usd, className = "" }: { usd: number; locale?: "en" | "ja"; className?: string; subClassName?: string }) {
+  const { ccy, rates } = useCurrency();
+  const { text, ccy: shown } = formatIn(usd, ccy, rates);
   return (
-    <span className={`inline-flex flex-wrap items-baseline gap-x-1.5 ${className}`}>
-      <span className="font-mono">{main}</span>
-      {sub && <span className={`font-mono ${subClassName}`}>{sub}</span>}
+    <span className={`font-mono ${className}`} title={shown === "USD" ? undefined : `${fmtUsd(usd)} USD`}>
+      {text}
     </span>
   );
 }

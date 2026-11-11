@@ -39,6 +39,7 @@ export const ADMIN_SECTIONS = [
   { href: "/admin/receipts", label: "Receipts", perm: "receipts.read" },
   { href: "/admin/bookings", label: "Bookings", perm: "bookings.read" },
   { href: "/admin/products", label: "Products", perm: "products.read" },
+  { href: "/admin/vouchers", label: "Vouchers", perm: "products.write" },
   { href: "/admin/shipping", label: "Shipping", perm: "shipping.manage" },
   { href: "/admin/users", label: "Users", perm: "users.manage" },
 ] as const satisfies readonly { href: string; label: string; perm: Perm }[];
@@ -48,6 +49,7 @@ const API_PERMS: [RegExp, Perm][] = [
   [/^\/api\/admin\/orders/, "orders.fulfil"],
   [/^\/api\/admin\/bookings/, "bookings.manage"],
   [/^\/api\/admin\/products/, "products.write"],
+  [/^\/api\/admin\/vouchers/, "products.write"],
   [/^\/api\/admin\/users/, "users.manage"],
   [/^\/api\/admin\/shipping/, "shipping.manage"],
 ];

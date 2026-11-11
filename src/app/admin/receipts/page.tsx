@@ -1,6 +1,7 @@
 import { guardPage } from "@/lib/admin-guard";
 import Link from "next/link";
-import { AlertTriangle, ChevronLeft, ChevronRight, Download, Search } from "lucide-react";
+import { AlertTriangle, Download, Search } from "lucide-react";
+import { Pagination } from "@/components/admin/pagination";
 import { PAGE_SIZE, parseDays, parseStatus, receipts } from "@/lib/admin";
 import { RangeSelect } from "@/components/admin/range-select";
 import { OrderStatusBadge } from "@/components/status-badge";
@@ -21,7 +22,6 @@ export default async function AdminReceipts({ searchParams }: { searchParams: Pr
     Object.entries(extra).forEach(([k, v]) => p.set(k, String(v)));
     return p.toString();
   };
-  const pages = Math.max(1, Math.ceil((r?.total ?? 0) / PAGE_SIZE));
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,7 +29,7 @@ export default async function AdminReceipts({ searchParams }: { searchParams: Pr
         <h1 className="text-2xl font-semibold tracking-[-0.02em] md:text-[28px] md:leading-9">Receipts</h1>
         <div className="flex gap-2">
           <a href={`/api/admin/export?${qs({ format: "csv" })}`} className="btn btn-outline"><Download size={16} aria-hidden />Export CSV</a>
-          <a href={`/api/admin/export?${qs({ format: "xlsx" })}`} className="btn btn-ochre"><Download size={16} aria-hidden />Export XLSX</a>
+          <a href={`/api/admin/export?${qs({ format: "xlsx" })}`} className="btn btn-teal"><Download size={16} aria-hidden />Export XLSX</a>
         </div>
       </div>
 
@@ -84,13 +84,7 @@ export default async function AdminReceipts({ searchParams }: { searchParams: Pr
               </tbody>
             </table>
           </div>
-          <nav aria-label="Pagination" className="flex items-center justify-between">
-            <p className="text-[13px] text-muted">{r.total} receipts</p>
-            <div className="flex gap-1">
-              <Link aria-disabled={f.page <= 1} href={`/admin/receipts?${qs({ page: f.page - 1 })}`} className="btn btn-outline px-2 aria-disabled:pointer-events-none aria-disabled:opacity-40" aria-label="Previous page"><ChevronLeft size={16} aria-hidden /></Link>
-              <Link aria-disabled={f.page >= pages} href={`/admin/receipts?${qs({ page: f.page + 1 })}`} className="btn btn-outline px-2 aria-disabled:pointer-events-none aria-disabled:opacity-40" aria-label="Next page"><ChevronRight size={16} aria-hidden /></Link>
-            </div>
-          </nav>
+          <Pagination page={f.page} pageSize={PAGE_SIZE} total={r.total} href={(page) => `/admin/receipts?${qs({ page })}`} noun="receipts" />
         </>
       ) : (
         <p className="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">No receipts match these filters.</p>

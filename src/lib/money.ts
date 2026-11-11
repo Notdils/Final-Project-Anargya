@@ -23,3 +23,18 @@ export function priceParts(amountUsd: number, locale: "en" | "ja" = "en") {
 export function orderAmount(o: { total_usd?: number | string | null; total_jpy?: number | null }) {
   return o.total_usd != null ? usd(Number(o.total_usd)) : o.total_jpy != null ? yen(o.total_jpy) : "-";
 }
+
+// Display currency (header switch). Prices are stored in USD; JPY and IDR are converted for display only.
+export type Currency = "USD" | "JPY" | "IDR";
+export const CURRENCIES: Currency[] = ["USD", "JPY", "IDR"];
+export type Rates = { JPY: number | null; IDR: number | null };
+
+/** Formats a USD amount in the chosen currency; falls back to USD when that rate is not set. */
+export function formatIn(amountUsd: number, ccy: Currency, rates: Rates) {
+  const r = ccy === "USD" ? 1 : rates[ccy];
+  if (!r) return { text: usd(amountUsd), ccy: "USD" as Currency };
+  const v = Number(amountUsd) * r;
+  if (ccy === "JPY") return { text: yen(v), ccy };
+  if (ccy === "IDR") return { text: `Rp${Math.round(v).toLocaleString("id-ID")}`, ccy };
+  return { text: usd(v), ccy };
+}

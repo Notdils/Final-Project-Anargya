@@ -6,10 +6,13 @@ import { CartProvider } from "@/components/cart";
 import { Tracker } from "@/components/tracker";
 import { SwRegister } from "@/components/sw-register";
 import { LocaleProvider } from "@/i18n/client";
+import { CurrencyProvider } from "@/components/currency";
+import { FX_USD_JPY } from "@/lib/money";
+import { fxUsdIdr } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: { default: "Anargya Corp", template: "%s · Anargya Corp" },
-  description: "Formula EV parts, designed to race. Engineering-led, partner-built.",
+  description: "Formula EV parts and engineering consulting from Japan.",
   applicationName: "Anargya Corp",
   appleWebApp: { capable: true, title: "Anargya", statusBarStyle: "black-translucent" },
   icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
@@ -28,7 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[2000] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2">
           Skip to content
         </a>
-        <LocaleProvider><CartProvider>{children}</CartProvider></LocaleProvider>
+        <LocaleProvider><CurrencyProvider rates={{ JPY: FX_USD_JPY, IDR: fxUsdIdr() }}><CartProvider>{children}</CartProvider></CurrencyProvider></LocaleProvider>
         <Tracker />
         <SwRegister />
       </body>

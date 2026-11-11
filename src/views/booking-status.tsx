@@ -51,7 +51,7 @@ export default async function BookingStatusView({ id, locale }: { id: string; lo
                   <p className={`font-semibold ${banner.tcls}`}>{banner.title}</p>
                   <p className="text-sm text-[#404040]">{banner.body}</p>
                 </div>
-                {open && <a href={b.snap_redirect_url!} className="btn btn-ochre w-fit">{t("Continue payment")}</a>}
+                {open && <a href={b.snap_redirect_url!} className="btn btn-pay w-fit">{t("Continue payment")}</a>}
               </div>
             </div>
             <article className="flex flex-col gap-4 rounded-xl border border-line p-5 md:p-8">
@@ -65,7 +65,7 @@ export default async function BookingStatusView({ id, locale }: { id: string; lo
               </dl>
             </article>
             <div className="flex flex-col gap-3 sm:flex-row">
-              {b.pay_status !== "paid" && b.pay_status !== "pending" && <Link href={L("/consulting")} className="btn btn-ochre btn-lg">{t("Book another time")}</Link>}
+              {b.pay_status !== "paid" && b.pay_status !== "pending" && <Link href={L("/consulting")} className="btn btn-teal btn-lg">{t("Book another time")}</Link>}
               <Link href={L("/account")} className="btn btn-outline btn-lg">{t("Your account")}</Link>
             </div>
           </div>

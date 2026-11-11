@@ -79,10 +79,26 @@ body {
   .btn-ochre:hover {
     background: var(--color-ochre-dark);
   }
-  /* Primary CTA on dark (stage) surfaces: ochre on black reads wrong, so dark areas use teal. */
+  /* Primary CTA everywhere (ochre buttons were moved to teal, 11 Nov). */
   .btn-teal {
     background: var(--color-teal);
     color: #fff;
+  }
+  /* Payment and destructive actions use universal colors (outside the brand palette, on purpose):
+     green = pay, red = cancel / decline. Both pass 4.5:1 with white text. */
+  .btn-pay {
+    background: #15803D;
+    color: #fff;
+  }
+  .btn-pay:hover {
+    background: #166534;
+  }
+  .btn-danger {
+    background: #B91C1C;
+    color: #fff;
+  }
+  .btn-danger:hover {
+    background: #991B1B;
   }
   .btn-teal:hover {
     background: var(--color-teal-dark);
@@ -279,3 +295,11 @@ body {
 /* Sticky footer: short pages (account, cart, receipt) keep the footer at the bottom. */
 body { display: flex; flex-direction: column; min-height: 100svh; }
 body > main, body > #main { flex: 1 0 auto; }
+
+/* Payment success check: circle draws, then the tick. */
+.pay-check circle { stroke-dasharray: 183; stroke-dashoffset: 183; animation: pay-draw 0.5s ease-out forwards; }
+.pay-check path { stroke-dasharray: 40; stroke-dashoffset: 40; animation: pay-draw 0.35s 0.45s ease-out forwards; }
+@keyframes pay-draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .pay-check circle, .pay-check path { animation: none; stroke-dashoffset: 0; }
+}

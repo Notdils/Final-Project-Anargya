@@ -26,6 +26,11 @@ export function UsersManager({ users, meId }: { users: AdminUser[]; meId: string
     const t = q.trim().toLowerCase();
     return (!t || u.email.toLowerCase().includes(t) || (u.name ?? "").toLowerCase().includes(t)) && (roleF === "all" || (roleF === "staff" ? u.role !== "customer" : u.role === roleF));
   }), [users, q, roleF]);
+  const SIZE = 20;
+  const [page, setPage] = useState(1);
+  const pages = Math.max(1, Math.ceil(shown.length / SIZE));
+  const cur = Math.min(page, pages); // filters shrink the list: stay on a page that exists
+  const pageRows = shown.slice((cur - 1) * SIZE, cur * SIZE);
 
   useEffect(() => {
     const close = () => setMenu(null);
@@ -66,7 +71,7 @@ export function UsersManager({ users, meId }: { users: AdminUser[]; meId: string
             <th className="px-2 py-3 font-medium">Bookings</th><th className="px-2 py-3 font-medium">Joined</th><th className="px-2 py-3 font-medium">Last sign-in</th><th className="w-12" />
           </tr></thead>
           <tbody>
-            {shown.map((u) => (
+            {pageRows.map((u) => (
               <tr key={u.id} className="border-t border-line">
                 <td className="px-4 py-3">
                   <span className="flex items-center gap-3">
@@ -95,6 +100,16 @@ export function UsersManager({ users, meId }: { users: AdminUser[]; meId: string
         </table>
         {shown.length === 0 && <p className="border-t border-line p-8 text-center text-sm text-muted">No users match.</p>}
       </div>
+      <nav aria-label="Pagination" className="flex items-center justify-between gap-3">
+        <p className="text-[13px] text-muted">Showing <span className="font-mono">{shown.length ? (cur - 1) * SIZE + 1 : 0}–{Math.min(shown.length, cur * SIZE)}</span> of <span className="font-mono">{shown.length}</span> users</p>
+        {pages > 1 && (
+          <div className="flex items-center gap-1">
+            <button type="button" className="btn btn-outline px-3 text-sm" disabled={cur <= 1} onClick={() => setPage(cur - 1)}>Previous</button>
+            <span className="px-2 font-mono text-sm">{cur} / {pages}</span>
+            <button type="button" className="btn btn-outline px-3 text-sm" disabled={cur >= pages} onClick={() => setPage(cur + 1)}>Next</button>
+          </div>
+        )}
+      </nav>
       <p className="text-xs text-muted">A new role applies the next time the user signs in or within an hour. Every change is recorded in the audit log.</p>
       {toast && <p role="status" className="fixed bottom-5 right-5 z-[1300] rounded-lg bg-ink px-4 py-2 text-sm text-white">{toast}</p>}
       {dialog && <RoleDialog u={dialog} onClose={() => setDialog(null)} onDone={(m) => { setDialog(null); flash(m); router.refresh(); }} />}

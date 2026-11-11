@@ -51,7 +51,7 @@ export function ForgotForm() {
         <label htmlFor="email" className="text-sm font-medium">{t("Email")}<Req /></label>
         <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder={t("you@company.com")} />
       </div>
-      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy || !ready}>{t(busy ? "Sending…" : "Send reset link")}</button>
+      <button type="submit" className="btn btn-teal btn-lg w-full" disabled={busy || !ready}>{t(busy ? "Sending…" : "Send reset link")}</button>
       <p className="text-center text-sm text-muted"><Link href={L("/login")} className="font-medium text-teal hover:underline">{t("Back to log in")}</Link></p>
     </form>
   );
@@ -111,7 +111,7 @@ export function ResetForm() {
         {field("password", "New password", "At least 8 characters.")}
         {field("confirm", "Confirm new password")}
       </div>
-      <button type="submit" className="btn btn-ochre btn-lg w-full" disabled={busy || !ready}>{t(busy ? "Saving…" : "Save password")}</button>
+      <button type="submit" className="btn btn-teal btn-lg w-full" disabled={busy || !ready}>{t(busy ? "Saving…" : "Save password")}</button>
     </form>
   );
 }

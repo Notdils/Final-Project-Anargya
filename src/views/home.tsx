@@ -39,7 +39,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
 
         <section aria-labelledby="how-title" className="container-x py-12 md:py-24">
           <h2 id="how-title" className="mx-auto mb-8 max-w-[640px] text-center text-[28px] font-semibold leading-9 tracking-[-0.02em] md:mb-12 md:text-4xl md:leading-[44px]">
-            {t("From the design table to the partner factory")}
+            {t("How we work")}
           </h2>
           <div className="grid gap-6 md:gap-10 xl:grid-cols-[1.2fr_1fr]">
             {/* Slot for the launch poster from Graphic Design: the corporation, parts distribution, consulting, expansion. Portrait 4:5. */}
@@ -85,10 +85,10 @@ export default async function HomeView({ locale }: { locale: Locale }) {
         <section aria-labelledby="cta-title" className="bg-surface py-12 md:py-24">
           <div className="container-x flex flex-col items-center gap-6 text-center">
             <h2 id="cta-title" className="text-2xl font-semibold tracking-[-0.02em] md:text-[32px] md:leading-10">
-              {t("Source parts for your next build.")}
+              {t("Start with the marketplace.")}
             </h2>
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-              <GuestOnly><Link href={L("/register")} className="btn btn-ochre">{t("Create an account")}</Link></GuestOnly>
+              <GuestOnly><Link href={L("/register")} className="btn btn-teal">{t("Create an account")}</Link></GuestOnly>
               <Link href={L("/marketplace")} className="btn btn-outline">{t("Browse marketplace")}</Link>
             </div>
           </div>

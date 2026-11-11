@@ -11,7 +11,7 @@ const publicClient = () =>
 type Row = {
   id: string; slug: string; code: string; name: string; category: Product["category"];
   price_usd: number | string | null; unit: string | null; image_url: string | null; stock: number; lead_time: string | null; material: string | null; weight: string | null;
-  dimensions: string | null; fits: string | null; finish: string | null; description: string | null;
+  dimensions: string | null; fits: string | null; finish: string | null; description: string | null; overview?: string | null;
   featured: boolean; model_url: string | null;
 };
 
@@ -20,7 +20,7 @@ const toProduct = (r: Row): Product => ({
   id: r.id, slug: r.slug, code: r.code, name: r.name, category: r.category, priceUsd: Number(r.price_usd), unit: r.unit ?? "unit", image: r.image_url,
   stock: r.stock, leadTime: r.lead_time ?? PH, material: r.material ?? PH, weight: r.weight ?? PH,
   dimensions: r.dimensions ?? PH, fits: r.fits ?? PH, finish: r.finish ?? PH,
-  description: r.description ?? PH, featured: r.featured, modelUrl: r.model_url,
+  description: r.description ?? PH, overview: r.overview ?? r.description ?? PH, featured: r.featured, modelUrl: r.model_url,
 });
 
 export async function listProducts(): Promise<Product[]> {

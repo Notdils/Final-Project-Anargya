@@ -5,7 +5,6 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart } from "./cart";
 import { StockBadge } from "./product";
 import type { Product } from "@/lib/data";
-import { usd } from "@/lib/money";
 import { Price } from "./price";
 import { useLp, useT } from "@/i18n/client";
 
@@ -31,7 +30,7 @@ export function CartView({ products }: { products: Product[] }) {
       <div className="container-x pb-20">
         <div className="rounded-xl border border-dashed border-line p-10 text-center">
           <p className="font-medium">{t("Your cart is empty.")}</p>
-          <Link href={L("/marketplace")} className="btn btn-ochre mt-4">{t("Browse marketplace")}</Link>
+          <Link href={L("/marketplace")} className="btn btn-teal mt-4">{t("Browse marketplace")}</Link>
         </div>
       </div>
     );
@@ -47,7 +46,7 @@ export function CartView({ products }: { products: Product[] }) {
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <span className="eyebrow text-muted">{p.code}</span>
                 <Link href={L(`/marketplace/${p.slug}`)} className="font-medium hover:underline">{p.name}</Link>
-                <span className="font-mono text-sm md:hidden">{usd(p.priceUsd * qty)}</span>
+                <Price usd={p.priceUsd * qty} className="text-sm md:hidden" />
                 <StockBadge product={p} />
                 {over && <p role="alert" className="text-[13px] text-oxide">{t("Only {n} left. Lower the quantity to continue.", { n: p.stock })}</p>}
                 <div className="flex items-center gap-4">
@@ -61,7 +60,7 @@ export function CartView({ products }: { products: Product[] }) {
                   </button>
                 </div>
               </div>
-              <span className="hidden font-mono text-sm md:block">{usd(p.priceUsd * qty)}</span>
+              <Price usd={p.priceUsd * qty} className="hidden text-sm md:block" />
             </li>
           );
         })}
@@ -70,7 +69,7 @@ export function CartView({ products }: { products: Product[] }) {
       <aside aria-labelledby="sum-title" className="flex h-fit flex-col gap-4 rounded-xl border border-line bg-surface p-6">
         <h2 id="sum-title" className="text-lg font-semibold">{t("Order summary")}</h2>
         <dl className="flex flex-col gap-3 text-sm">
-          <div className="flex justify-between"><dt className="text-muted">{t("Subtotal")}</dt><dd className="font-mono">{usd(subtotal)}</dd></div>
+          <div className="flex justify-between"><dt className="text-muted">{t("Subtotal")}</dt><dd><Price usd={subtotal} /></dd></div>
           <div className="flex justify-between"><dt className="text-muted">{t("Shipping")}</dt><dd className="font-mono">{t("Calculated at checkout")}</dd></div>
           <div className="flex justify-between border-t border-line pt-3"><dt className="font-semibold">{t("Total")}</dt><dd className="font-medium"><Price usd={subtotal} /></dd></div>
         </dl>
@@ -78,7 +77,7 @@ export function CartView({ products }: { products: Product[] }) {
         <Link
           href={L("/checkout")}
           aria-disabled={lines.some((l) => l.qty > l.product.stock)}
-          className="btn btn-ochre btn-lg w-full aria-disabled:pointer-events-none"
+          className="btn btn-teal btn-lg w-full aria-disabled:pointer-events-none"
         >
           {t("Checkout")}
         </Link>

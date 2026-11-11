@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { CalendarDays, ChevronRight, MapPin, Package, UserRound } from "lucide-react";
+import { CalendarDays, ChevronRight, MapPin, Package } from "lucide-react";
+import { ProfileCard } from "@/components/profile-card";
 import { SiteHeader } from "@/components/site-header";
 import { SlimFooter } from "@/components/site-footer";
 import { OrderStatusBadge } from "@/components/status-badge";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { jst } from "@/lib/format";
-import { orderAmount, usd } from "@/lib/money";
+import { orderAmount } from "@/lib/money";
 import { lastAddress, type Order } from "@/lib/orders";
 import { reconcileOrder } from "@/lib/reconcile";
 import { TOPICS, dateLabel } from "@/lib/booking";
@@ -37,10 +38,8 @@ export default async function AccountView({ locale }: { locale: Locale }) {
     : [];
   const bookingBadge = (b: BookingRow) =>
     b.status === "confirmed" ? ["Confirmed", "bg-teal-tint text-teal"] : b.pay_status === "pending" ? ["Waiting for payment", "bg-ochre-tint text-ink"] : b.status === "cancelled" ? ["Not completed", "bg-surface-2 text-muted"] : ["Requested", "bg-ochre-tint text-ink"];
-  const paid = orders.filter((o) => o.status === "paid");
-  const spent = paid.reduce((s, o) => s + Number(o.total_usd ?? 0), 0); // USD orders only (older JPY test orders excluded)
-  const waiting = orders.filter((o) => o.status === "pending").length;
-  const name = (user?.user_metadata as { full_name?: string } | undefined)?.full_name ?? saved?.buyer_name ?? null;
+  const meta = user?.user_metadata as { full_name?: string; phone?: string } | undefined;
+  const name = meta?.full_name ?? saved?.buyer_name ?? null;
 
   return (
     <>
@@ -55,26 +54,13 @@ export default async function AccountView({ locale }: { locale: Locale }) {
             <form action="/api/auth/logout" method="post"><button className="btn btn-outline">{t("Log out")}</button></form>
           </div>
 
-          <dl className="grid grid-cols-3 gap-3 md:gap-4">
-            {[
-              ["Orders", String(orders.length)],
-              ["Paid total", usd(spent)],
-              ["Awaiting payment", String(waiting)],
-            ].map(([k, v]) => (
-              <div key={k} className="flex flex-col gap-1 rounded-xl border border-line p-4 md:p-5">
-                <dt className="text-xs text-muted md:text-sm">{t(k)}</dt>
-                <dd className="font-mono text-base font-medium md:text-2xl">{v}</dd>
-              </div>
-            ))}
-          </dl>
-
           <div className="grid gap-8 xl:grid-cols-[1fr_360px] xl:gap-12">
             <section aria-labelledby="orders-title" className="flex flex-col gap-3">
               <h2 id="orders-title" className="flex items-center gap-2 text-lg font-semibold"><Package size={18} className="text-teal" aria-hidden />{t("Orders")}</h2>
               {orders.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-line p-10 text-center">
                   <p className="font-medium">{t("No orders yet.")}</p>
-                  <Link href={L("/marketplace")} className="btn btn-ochre mt-4">{t("Browse marketplace")}</Link>
+                  <Link href={L("/marketplace")} className="btn btn-teal mt-4">{t("Browse marketplace")}</Link>
                 </div>
               ) : (
                 <ul className="flex flex-col gap-2">
@@ -124,14 +110,7 @@ export default async function AccountView({ locale }: { locale: Locale }) {
             </section>
 
             <aside className="flex flex-col gap-4">
-              <section aria-labelledby="profile-title" className="flex flex-col gap-3 rounded-xl border border-line p-5">
-                <h2 id="profile-title" className="flex items-center gap-2 font-semibold"><UserRound size={18} className="text-teal" aria-hidden />{t("Profile")}</h2>
-                <dl className="flex flex-col gap-2 text-sm">
-                  {name && <div><dt className="text-muted">{t("Name")}</dt><dd>{name}</dd></div>}
-                  <div><dt className="text-muted">{t("Email")}</dt><dd className="[overflow-wrap:anywhere]">{user?.email}</dd></div>
-                  {user?.created_at && <div><dt className="text-muted">{t("Member since")}</dt><dd>{jst(user.created_at).split(",")[0]}</dd></div>}
-                </dl>
-              </section>
+              <ProfileCard name={name} phone={meta?.phone ?? null} email={user?.email ?? ""} since={user?.created_at ? jst(user.created_at).split(",")[0] : null} />
               <section aria-labelledby="addr-title" className="flex flex-col gap-3 rounded-xl border border-line p-5">
                 <h2 id="addr-title" className="flex items-center gap-2 font-semibold"><MapPin size={18} className="text-teal" aria-hidden />{t("Shipping address")}</h2>
                 {saved ? (

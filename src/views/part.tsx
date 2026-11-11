@@ -57,7 +57,7 @@ export default async function PartView({ slug, locale }: { slug: string; locale:
         <section aria-label={t("Part details")} className="container-x pb-12 md:pb-20">
           <DetailTabs
             specs={[["Material", p.material], ["Weight", p.weight], ["Dimensions", p.dimensions], ["Fits", p.fits], ["Finish", p.finish], ["Lead time", p.leadTime]]}
-            overview={p.description}
+            overview={p.overview}
           />
         </section>
 

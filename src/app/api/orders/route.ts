@@ -23,6 +23,7 @@ const Body = z.object({
       .refine((s) => !/http:\/\//i.test(s), "Use a link that starts with https://.").optional().nullable(),
   }),
   locale: z.enum(["en", "ja"]).optional(),
+  voucher: z.string().trim().max(24).regex(/^[A-Za-z0-9-]*$/).optional().nullable(),
 });
 
 export async function POST(req: Request) {
@@ -56,8 +57,10 @@ export async function POST(req: Request) {
   // Server-only RPC (0009): rate and shipping are decided here, never by the client.
   const sb = supabaseService();
   if (!sb) return NextResponse.json({ error: "Payments are not configured yet." }, { status: 503 });
-  const { data, error } = await sb.rpc("create_order_usd_srv", { p_user: user.id, p_items: merged, p_contact: contact, p_shipping_usd: q.shippingUsd, p_fx_usd_idr: fx });
+  const { data, error } = await sb.rpc("create_order_usd_srv", { p_user: user.id, p_items: merged, p_contact: contact, p_shipping_usd: q.shippingUsd, p_fx_usd_idr: fx, p_voucher: parsed.data.voucher || null });
   if (error || !data?.[0]) {
+    const v = /^voucher: (.*)$/.exec(error?.message ?? "");
+    if (v) return NextResponse.json({ error: v[1], fields: { voucher: [v[1]] } }, { status: 409 }); // e.g. used up between preview and pay
     const msg = /insufficient stock/i.test(error?.message ?? "") ? "One of the parts just went out of stock. Update your cart." : "Could not create the order.";
     return NextResponse.json({ error: msg }, { status: 409 });
   }

@@ -43,3 +43,6 @@ next-env.d.ts
 
 # scratch files Claude moved out; safe to delete
 _to_delete/
+
+# team passwords, never commit
+ACCOUNTS.local.md

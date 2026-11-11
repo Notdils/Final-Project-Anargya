@@ -4,6 +4,55 @@ Corporate site, parts marketplace, and admin dashboard for **Anargya Corp**, a f
 
 Design source: Figma file "Anargya", page **Anargya Corp: Final Project**, sections prefixed **V3** (color roles).
 
+## Accounts and access
+
+Everything the team needs to log in, in one place. **Passwords and secret keys are never written in this repo** (it is on GitHub). They live in `ACCOUNTS.local.md` (gitignored; template below) kept on the team drive, and secret keys only in Vercel → Settings → Environment Variables.
+
+| What | Where | Login / owner | Used for |
+|---|---|---|---|
+| Code | https://github.com/Notdils/Final-Project-Anargya | GitHub `Notdils` (add members as collaborators) | Source, pull requests |
+| Hosting | Vercel project `finalproject-anargya-a` → https://finalproject-anargya-a.vercel.app | Vercel account of the repo owner | Deploys from `main`, env vars |
+| Database + auth | Supabase project (region Sydney) | Supabase account of the repo owner | Postgres, Auth, Storage `part-media` |
+| Payments | Midtrans **sandbox** dashboard (dashboard.sandbox.midtrans.com) | Midtrans sandbox account | Snap keys, notification URL, test transactions |
+| Design | Figma file "Anargya", page "Anargya Corp: Final Project" | Team Figma | UI source of truth |
+
+Site accounts (create them yourself on `/register`, then set the role in **Admin → Users** or with the SQL in *Supabase setup*):
+
+| Email | Role | Can do |
+|---|---|---|
+| `juri.admin@example.com` | admin | Everything |
+| `juri.customer@example.com` | customer | Shop, pay (sandbox), book consulting |
+| `ops@example.com` (optional) | ops | Orders, shipping, bookings |
+| `finance@example.com` (optional) | finance | Overview, receipts, exports, shipping rates |
+| `catalog@example.com` (optional) | catalog | Products |
+
+`example.com` addresses cannot receive mail, so turn **Confirm email** off in Supabase while demoing (see *Demo for judging*).
+
+Environment variables (Vercel, Production; local copy in `.env.local`):
+
+| Variable | Secret? | Where to get it |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | no (public) | Supabase → Project settings → API |
+| `SUPABASE_SERVICE_ROLE_KEY` | **yes** | Supabase → Project settings → API (service_role). Vercel only |
+| `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` | no | Midtrans sandbox → Settings → Access keys |
+| `MIDTRANS_SERVER_KEY` | **yes** | Same page. Vercel only |
+| `MIDTRANS_IS_PRODUCTION` | no | `false` |
+| `FX_USD_IDR`, `NEXT_PUBLIC_FX_USD_JPY` | no | Finance |
+| `SHIPPING_FLAT_USD`, `CONSULT_FEE_USD` | no | Finance / team |
+
+`ACCOUNTS.local.md` template (copy, fill in, keep off GitHub):
+
+```md
+| Service | Login email | Password / where it is | Notes |
+|---|---|---|---|
+| GitHub | | | |
+| Vercel | | | |
+| Supabase | | | DB password: |
+| Midtrans sandbox | | | |
+| Site: juri.admin@example.com | | | role admin |
+| Site: juri.customer@example.com | | | customer |
+```
+
 ## Stack
 
 - Next.js 15 (App Router) + React 19 + TypeScript
@@ -40,7 +89,7 @@ Without Supabase env vars the site still renders with the placeholder catalog (a
 ## Supabase setup
 
 1. Create a new Supabase project.
-2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0014`).
+2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0016`).
 3. Auth → URL configuration: set Site URL to the deployed domain and add `https://<domain>/auth/callback` to Redirect URLs (password reset and email confirmation links land there).
 4. Register an account on the site, then make it admin (SQL editor):
    ```sql
@@ -82,7 +131,7 @@ Passwords are shared with the judges outside the repo.
 
 ## Placeholders to replace
 
-Everything marked `[PLACEHOLDER]` or `[CITY]`: stock and lead times of the four parts, specs, story, mission/vision, values, business-plan slots, company address, receipt fields (pending Finance), shipping (`SHIPPING_FLAT_USD`), consulting copy, launch poster (Graphic Design), fly-through objects (waiting for the part renders), per-part 3D models (`products.model_url`; the current mapping in `0007` is a preview: diffuser on the uprights card, rear wing on the pedal box card), consultation fee (`CONSULT_FEE_USD`).
+Everything marked `[PLACEHOLDER]` or `[CITY]`: stock and lead times of the four parts, specs, story, mission/vision, values, business-plan slots, company address, receipt fields (pending Finance), shipping (`SHIPPING_FLAT_USD`), consulting copy, launch poster (Graphic Design), fly-through objects (waiting for the part renders), 3D model of the uprights / wheel hub kit (file pending; the aero card uses front wing + rear wing + diffuser, `0014`), logo next to the wordmark (`src/components/brand-mark.tsx`), footer contacts (`src/lib/contact.ts`), consultation fee (`CONSULT_FEE_USD`).
 
 ## Scripts
 
@@ -105,6 +154,10 @@ The role is stored in `app_metadata.role` (only the server can write it). Access
 | none | Customer |
 
 Shipping: checkout asks for the destination country (Asia list in `shipping_zones`) and, for Japan, East or West (`JP-EAST`, `JP-WEST`). The order API looks up the zone rate on the server; a zone without a rate uses `SHIPPING_FLAT_USD`. Ops and Finance edit rates, days and on/off in Admin → Shipping (`0013`).
+
+Vouchers (`0016`): Admin → Vouchers (catalog and admin). Percent or fixed USD off the parts subtotal (not shipping), optional minimum, cap, validity window (JST), total and per-customer limits, and which parts. Rules live in one SQL function, `voucher_discount()`, used by the checkout preview and again inside order creation with the voucher row locked. A use counts while its order is pending or paid.
+
+Currency: prices are stored in USD. The header switch shows USD, JPY or IDR (only the ones with a rate set: `NEXT_PUBLIC_FX_USD_JPY`, `FX_USD_IDR`). Midtrans charges IDR only; receipts always show the order's USD amounts and the IDR charged.
 
 To add a role, change `PERMS` in `src/lib/rbac.ts` and `has_perm()` in a new migration together. Product media go to the public Supabase Storage bucket `part-media` (created by `0011`); uploads only go through `/api/admin/products/[id]/media`, which checks the role and the file content (WebP/PNG/JPEG up to 1 MB, binary glTF up to 10 MB).
 

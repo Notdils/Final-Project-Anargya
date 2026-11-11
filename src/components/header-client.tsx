@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
+import { CurrencySwitch } from "@/components/currency";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Languages, Menu, ShoppingCart, X } from "lucide-react";
@@ -61,7 +63,8 @@ export function HeaderClient({
       }`}
     >
       <nav aria-label={t("Main")} className="container-x flex h-16 items-center justify-between">
-        <Link href={L("/")} className="text-base font-semibold tracking-[0.12em]">
+        <Link href={L("/")} className="flex items-center gap-2 text-base font-semibold tracking-[0.12em]">
+          <BrandMark />
           ANARGYA
         </Link>
 
@@ -85,6 +88,7 @@ export function HeaderClient({
         </ul>
 
         <div className="flex items-center gap-2">
+          <CurrencySwitch className={`btn hidden p-0 md:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"}`} />
           <a
             href={switchHref}
             hrefLang={other}
@@ -108,7 +112,7 @@ export function HeaderClient({
           <Link href={accountHref} className={`btn hidden md:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"} ${authReady ? "" : "invisible"}`}>
             {accountLabel}
           </Link>
-          <Link href={L("/marketplace")} className={`btn hidden md:inline-flex ${dark ? "btn-teal" : "btn-ochre"}`}>
+          <Link href={L("/marketplace")} className="btn btn-teal hidden md:inline-flex">
             {t("Shop parts")}
           </Link>
           <button
@@ -130,7 +134,7 @@ export function HeaderClient({
         aria-label={t("Menu")}
       >
         <div className="flex h-16 items-center justify-between border-b border-line px-5">
-          <span className="text-base font-semibold tracking-[0.12em]">ANARGYA</span>
+          <span className="flex items-center gap-2 text-base font-semibold tracking-[0.12em]"><BrandMark />ANARGYA</span>
           <button type="button" className="btn btn-outline px-2" aria-label={t("Close menu")} onClick={() => setOpen(false)}>
             <X size={16} aria-hidden />
           </button>
@@ -153,8 +157,12 @@ export function HeaderClient({
             </Link>
           </li>
         </ul>
-        <div className="px-5">
-          <Link href={L("/marketplace")} onClick={() => setOpen(false)} className="btn btn-ochre btn-lg w-full">
+        <div className="flex flex-col gap-3 px-5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm text-muted">{t("Currency")}</span>
+            <CurrencySwitch className="btn btn-outline p-0" />
+          </div>
+          <Link href={L("/marketplace")} onClick={() => setOpen(false)} className="btn btn-teal btn-lg w-full">
             {t("Shop parts")}
           </Link>
         </div>

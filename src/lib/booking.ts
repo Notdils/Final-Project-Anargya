@@ -41,3 +41,18 @@ export const isBookableDate = (iso: string, now = new Date()) => bookableDates(n
 
 export const dateLabel = (iso: string, locale = "en-GB") =>
   new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
+
+export const JST_TZ = "Asia/Tokyo";
+
+/** A JST slot shown in another time zone: "07:00", plus the local date when it falls on a different day. */
+export function slotInZone(dateIso: string, slot: string, tz: string, locale = "en-GB") {
+  const at = new Date(`${dateIso}T${slot}:00+09:00`);
+  const time = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(at);
+  const localDay = new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(at);
+  const day = localDay === dateIso ? null : new Intl.DateTimeFormat(locale, { timeZone: tz, weekday: "short", day: "numeric", month: "short" }).format(at);
+  const shift = Math.round((Date.parse(localDay) - Date.parse(dateIso)) / 864e5); // -1: the evening before in that zone
+  return { time, day, shift };
+}
+
+/** Short city name for a zone id: "Asia/Jakarta" -> "Jakarta". */
+export const zoneCity = (tz: string) => tz.split("/").pop()!.replace(/_/g, " ");

@@ -17,6 +17,7 @@ export const ProductPatch = z
     featured: z.boolean(),
     leadTime: text(80), material: text(120), weight: text(60), dimensions: text(120), fits: text(160), finish: text(120),
     description: text(1000),
+    overview: text(2000),
   })
   .partial()
   .strict();

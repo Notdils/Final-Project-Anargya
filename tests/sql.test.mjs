@@ -157,3 +157,23 @@ try { await run(`update shipping_zones set rate_usd=-1 where code='SG'`); consol
 await run(`update orders set ship_country='JP', ship_region='JP-EAST', shipping_zone='JP-EAST', address_note='Blue gate https://maps.app.goo.gl/x' where id=$1`, [fo]);
 try { await run(`update orders set ship_region='JP-13' where id=$1`, [fo]); console.log("FAIL: bad region accepted"); } catch { console.log("bad region blocked"); }
 console.log("order destination:", Object.values((await run(`select ship_country, ship_region, shipping_zone from orders where id=$1`, [fo])).rows[0]).join(" "));
+
+// 0014-0016: models fix, overview text, vouchers
+for (const f of ["0014_part_models_fix", "0015_product_overview", "0016_vouchers", "0016_vouchers"]) await db.exec(readFileSync(new URL(`../supabase/migrations/${f}.sql`, import.meta.url), "utf8"));
+console.log("overview set:", (await run(`select count(*) n from products where overview is not null`)).rows[0].n);
+await db.exec(`select set_config('test.jwt','',false)`);
+await run(`update products set stock = 50 where id = 'p-vcu-bms'`);
+await run(`insert into vouchers(code, kind, value, max_discount_usd, min_subtotal_usd, max_uses, per_user_limit) values ('XMAS10','percent',10,500,500,2,1), ('FLAT50','fixed',50,null,0,null,1) on conflict do nothing`);
+const cart = JSON.stringify([{ id: "p-vcu-bms", qty: 1 }]);
+console.log("preview XMAS10:", (await run(`select * from voucher_discount($1,'xmas10',$2)`, [U1, cart])).rows[0]);
+const ov = (await run(`select * from create_order_usd_srv($1,$2,$3,25,16300,'XMAS10')`, [U1, cart, JSON.stringify(c9)])).rows[0];
+console.log("order with voucher total:", ov.total_usd, (await run(`select subtotal_usd, discount_usd, shipping_usd, voucher_code from orders where id=$1`, [ov.order_id])).rows[0]);
+try { await run(`select * from create_order_usd_srv($1,$2,$3,0,16300,'XMAS10')`, [U1, cart, JSON.stringify(c9)]); console.log("FAIL: per-user limit"); } catch (e) { console.log("per-user limit:", e.message); }
+await run(`update orders set status='expired' where id=$1`, [ov.order_id]);
+console.log("expired frees use:", (await run(`select * from voucher_discount($1,'XMAS10',$2)`, [U1, cart])).rows[0].discount_usd);
+try { await run(`select * from voucher_discount($1,'XMAS10',$2)`, [U1, JSON.stringify([{ id: "p-pedal-box", qty: 0 }])]); console.log("FAIL: min subtotal"); } catch (e) { console.log("min subtotal:", e.message); }
+try { await run(`select * from voucher_discount($1,'NOPE',$2)`, [U1, cart]); } catch (e) { console.log("unknown:", e.message); }
+await run(`update vouchers set ends_at = now() - interval '1 second', starts_at = now() - interval '1 day' where code='FLAT50'`);
+try { await run(`select * from voucher_discount($1,'FLAT50',$2)`, [U1, cart]); } catch (e) { console.log("expired code:", e.message); }
+try { await run(`insert into vouchers(code,kind,value) values ('BAD','percent',150)`); console.log("FAIL: 150%"); } catch { console.log("150% blocked"); }
+console.log("authenticated can run voucher_discount:", await canAuth("public.voucher_discount(uuid,text,jsonb,boolean)"));

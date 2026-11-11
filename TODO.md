@@ -1,6 +1,11 @@
 # TODO: Anargya Corp (11 Nov 2026)
 
 ## Butuh user (sebelum demo)
+- [ ] Jalankan SQL `0015_product_overview.sql` lalu `0016_vouchers.sql`. **0016 wajib sebelum deploy versi ini**: checkout memanggil `create_order_usd_srv` versi baru (dengan voucher).
+- [ ] (Ditahan, menunggu divisi) Pajak: JP consumption tax 10% untuk tujuan Jepang, ekspor 0%; siapa bayar bea masuk negara lain (DAP/DDP).
+- [ ] (Ditahan, menunggu divisi) Kebijakan retur dan garansi.
+- [ ] (Ditahan sampai akhir) RBAC: uji semua role.
+- [ ] Isi kontak asli di `src/lib/contact.ts` dan logo di `src/components/brand-mark.tsx`.
 - [ ] Jalankan SQL `0014_part_models_fix.sql` (model 3D aero = sayap depan + belakang + diffuser; upright tanpa model).
 - [ ] Kirim file GLB wheel hub / upright.
 - [ ] Jalankan SQL `0013_shipping.sql` (ongkir per tujuan). Wajib sebelum deploy versi ini supaya kolom `ship_country/ship_prefecture/shipping_zone` ada.

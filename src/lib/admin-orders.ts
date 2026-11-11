@@ -25,7 +25,9 @@ function tabFilter(q: Q, tab: OrderTab): Q {
 }
 
 /** Orders for the admin board (RLS: orders.read), with per-tab counts for the same period. */
-export async function adminOrders(opts: { tab: OrderTab; q: string; days: number }) {
+export const ORDERS_PAGE = 20;
+
+export async function adminOrders(opts: { tab: OrderTab; q: string; days: number; page: number }) {
   const sb = await supabaseServer();
   if (!sb) return { rows: [] as Order[], counts: {} as Record<OrderTab, number> };
   const from = new Date(Date.now() - opts.days * 864e5).toISOString();
@@ -36,7 +38,7 @@ export async function adminOrders(opts: { tab: OrderTab; q: string; days: number
     return q;
   };
   const [list, ...counts] = await Promise.all([
-    tabFilter(base("*, order_items(product_id, code, name, qty, unit_price_jpy, unit_price_usd)"), opts.tab).order("created_at", { ascending: false }).limit(100),
+    tabFilter(base("*, order_items(product_id, code, name, qty, unit_price_jpy, unit_price_usd)"), opts.tab).order("created_at", { ascending: false }).range((opts.page - 1) * ORDERS_PAGE, opts.page * ORDERS_PAGE - 1),
     ...ORDER_TABS.map((t) => tabFilter(base("id", true), t.id)),
   ]);
   return {

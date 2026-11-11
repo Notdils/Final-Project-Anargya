@@ -10,6 +10,7 @@ export type Order = {
   address: string; city: string; postal_code: string; country: string;
   subtotal_jpy: number | null; shipping_jpy: number | null; total_jpy: number | null; fx_rate: number | null; charged_idr: number;
   subtotal_usd: number | string | null; shipping_usd: number | string | null; total_usd: number | string | null; fx_usd_idr: number | string | null;
+  discount_usd?: number | string | null; voucher_code?: string | null;
   status: OrderStatus; oversold?: boolean; needs_review?: boolean; review_note?: string | null; snap_redirect_url?: string | null; pay_expires_at?: string | null; method: string | null; midtrans_txn_id: string | null; created_at: string; paid_at: string | null;
   ship_country?: string | null; ship_region?: string | null; shipping_zone?: string | null; address_note?: string | null;
   fulfilment_status?: Fulfilment; carrier?: string | null; tracking_no?: string | null; shipped_at?: string | null; delivered_at?: string | null;

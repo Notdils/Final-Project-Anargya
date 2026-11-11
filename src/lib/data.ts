@@ -22,6 +22,7 @@ export type Product = {
   fits: string;
   finish: string;
   description: string;
+  overview: string; // long text for the Overview tab
   featured: boolean;
   modelUrl: string | null; // 3D render per part, filled when the part renders are ready
 };
@@ -45,6 +46,7 @@ const base = {
   fits: PH,
   finish: PH,
   description: `${PH} Two sentences: what the part does, material, and which vehicles it fits.`,
+  overview: PH,
   modelUrl: null,
   image: null,
 };
@@ -67,8 +69,15 @@ const SPECS: Record<string, Pick<Product, "material" | "weight" | "fits" | "lead
   "p-vcu-bms": { material: "Aluminium", weight: "1.2–1.8 kg total", fits: "EV powertrains, configured to your team's communication protocol", leadTime: "3–4 weeks" },
   "p-pedal-box": { material: "Aluminium", weight: "2.8–3.4 kg", fits: "Hydraulic braking systems", leadTime: "2–3 weeks" },
 };
+// Overview text from the team (11 Nov). Same as supabase/migrations/0015_product_overview.sql.
+const OVERVIEW: Record<string, string> = {
+  "p-upright-kit": "The Uprights & Wheel Hub Assembly Kit serves as the critical structural interface between the vehicle’s suspension geometry, braking system, and wheels. Engineered to withstand high cornering loads, braking torque, and dynamic road inputs, this assembly delivers exceptional structural rigidity while minimizing unsprung mass to optimize suspension response and tire contact patch consistency.",
+  "p-aero-package": "The Custom Aerodynamics Package, comprising a multi-element front wing, high-downforce rear wing, and targeted underbody diffuser, is designed using Computational Fluid Dynamics (CFD) to maximize downforce and cornering speeds without introducing excessive aerodynamic drag. It enhances overall vehicle stability during high-speed maneuvering and heavy braking transitions.",
+  "p-vcu-bms": "Integrates the central Vehicle Control Unit (VCU) and Master Battery Management System (BMS) into a single, highly reliable electronic module. Acting as the electronic brain of the EV powertrain, it manages throttle mapping, regenerative braking strategies, real-time telemetry output, and high-voltage safety monitoring (cell voltage, temperature balancing, and fault protection) compliant with strict EV safety regulations.",
+  "p-pedal-box": "The Custom Brake Pedal Box is an ergonomically optimized driver-interface assembly engineered for crisp pedal feel and precise brake bias tuning. Designed specifically for tight cockpit packaging in Formula-style race cars, it features high leverage ratios and dual master cylinders with a balance bar mechanism to allow on-the-fly front-to-rear braking force adjustments.",
+};
 const part = (p: Pick<Product, "id" | "slug" | "code" | "name" | "category" | "priceUsd" | "unit" | "stock" | "description">): Product => ({
-  ...base, ...p, ...SPECS[p.id], featured: true, image: `/parts/${p.slug}.webp`, modelUrl: MODELS[p.slug] ?? null,
+  ...base, ...p, ...SPECS[p.id], overview: OVERVIEW[p.id] ?? p.description, featured: true, image: `/parts/${p.slug}.webp`, modelUrl: MODELS[p.slug] ?? null,
 });
 export const PLACEHOLDER_PRODUCTS: Product[] = [
   part({ id: "p-upright-kit", slug: "uprights-wheel-hub-kit", code: "AN-SUSP-01", name: "Uprights & Wheel Hub Assembly Kit", category: "suspension", priceUsd: 2880, unit: "set", stock: 8,

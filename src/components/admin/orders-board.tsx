@@ -99,7 +99,6 @@ export function OrdersBoard({ rows, counts, tabs, tab, q, days, canFulfil }: { r
           </ul>
         </>
       )}
-      <p className="text-sm text-muted">{rows.length} orders{rows.length === 100 ? " (latest 100)" : ""}</p>
       {open && <OrderSheet o={open} canFulfil={canFulfil} onClose={() => setOpen(null)} />}
     </div>
   );
@@ -176,7 +175,7 @@ function OrderSheet({ o, canFulfil, onClose }: { o: Order; canFulfil: boolean; o
                 </div>
                 {canFulfil && (
                   <div className="flex flex-wrap gap-2">
-                    {nextStep && <button type="button" className="btn btn-ochre" disabled={busy || !carrier.trim() || !tracking.trim()} onClick={() => save(nextStep)}>{busy ? "Saving…" : nextStep === "shipped" ? "Mark as shipped" : "Mark as delivered"}</button>}
+                    {nextStep && <button type="button" className="btn btn-teal" disabled={busy || !carrier.trim() || !tracking.trim()} onClick={() => save(nextStep)}>{busy ? "Saving…" : nextStep === "shipped" ? "Mark as shipped" : "Mark as delivered"}</button>}
                     {status !== "to_pack" && <button type="button" className="btn btn-outline" disabled={busy} onClick={() => save(status)}>Save tracking</button>}
                     {status !== "to_pack" && <button type="button" className="btn btn-outline" disabled={busy} onClick={() => save("to_pack")}>Back to To pack</button>}
                   </div>

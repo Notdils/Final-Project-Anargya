@@ -35,7 +35,7 @@ const Thumb = ({ src }: { src: string | null }) => (
 
 type Draft = Omit<AdminProduct, "price_usd" | "stock"> & { price_usd: string; stock: number };
 const toDraft = (p: AdminProduct): Draft => ({ ...p, price_usd: String(p.price_usd) });
-const blank = (): Draft => ({ id: "", slug: "", code: "", name: "", category: "aero", price_usd: "", unit: "unit", stock: 0, active: false, featured: false, image_url: null, model_url: null, lead_time: null, material: null, weight: null, dimensions: null, fits: null, finish: null, description: null });
+const blank = (): Draft => ({ id: "", slug: "", code: "", name: "", category: "aero", price_usd: "", unit: "unit", stock: 0, active: false, featured: false, image_url: null, model_url: null, lead_time: null, material: null, weight: null, dimensions: null, fits: null, finish: null, description: null, overview: null });
 
 export function ProductsManager({ products, canWrite }: { products: AdminProduct[]; canWrite: boolean }) {
   const router = useRouter();
@@ -178,7 +178,7 @@ function EditSheet({ draft, isNew, canWrite, onClose, onSaved }: { draft: Draft;
     const body = isNew
       ? { name: d.name, code: d.code, category: d.category, priceUsd: price, unit: d.unit, stock: d.stock }
       : { name: d.name, category: d.category, priceUsd: price, unit: d.unit, stock: d.stock, active: d.active, featured: d.featured,
-          leadTime: d.lead_time ?? "", material: d.material ?? "", weight: d.weight ?? "", dimensions: d.dimensions ?? "", fits: d.fits ?? "", finish: d.finish ?? "", description: d.description ?? "" };
+          leadTime: d.lead_time ?? "", material: d.material ?? "", weight: d.weight ?? "", dimensions: d.dimensions ?? "", fits: d.fits ?? "", finish: d.finish ?? "", description: d.description ?? "", overview: d.overview ?? d.description ?? "" };
     const res = await fetch(isNew ? "/api/admin/products" : `/api/admin/products/${d.id}`, { method: isNew ? "POST" : "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
     setBusy(false);
     const data = await res?.json().catch(() => ({}));
@@ -296,6 +296,9 @@ function EditSheet({ draft, isNew, canWrite, onClose, onSaved }: { draft: Draft;
               <Field label="Description" hint="English. The Japanese version is added in src/i18n/ja.ts." error={fields.description}>
                 <textarea className="input min-h-24 resize-y" rows={4} value={d.description ?? ""} maxLength={1000} onChange={(e) => set("description", e.target.value)} />
               </Field>
+              <Field label="Overview" hint="Long text for the Overview tab. Empty uses the description." error={fields.overview}>
+                <textarea className="input min-h-32 resize-y" rows={6} value={d.overview ?? ""} maxLength={2000} onChange={(e) => set("overview", e.target.value)} />
+              </Field>
             </div>
           )}
           {err && <p role="alert" className="flex items-start gap-2 rounded-lg bg-oxide-tint p-3 text-sm text-oxide"><AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden />{err}</p>}
@@ -305,7 +308,7 @@ function EditSheet({ draft, isNew, canWrite, onClose, onSaved }: { draft: Draft;
             {!isNew && <p className="flex items-start gap-2 text-xs text-muted"><Info size={14} className="mt-0.5 shrink-0" aria-hidden />New prices apply to new orders only. Paid and pending orders keep the price they were created with.</p>}
             <div className="flex justify-end gap-2">
               <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
-              <button type="button" className="btn btn-ochre" disabled={busy || !d.name || !(price > 0) || (isNew && !d.code)} onClick={save}>{busy ? "Saving…" : isNew ? "Create product" : "Save changes"}</button>
+              <button type="button" className="btn btn-teal" disabled={busy || !d.name || !(price > 0) || (isNew && !d.code)} onClick={save}>{busy ? "Saving…" : isNew ? "Create product" : "Save changes"}</button>
             </div>
           </div>
         )}

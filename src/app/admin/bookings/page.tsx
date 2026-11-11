@@ -3,6 +3,7 @@ import { CalendarClock } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase/server";
 import { TOPICS, dateLabel, todayJst } from "@/lib/booking";
 import { jst } from "@/lib/format";
+import { Pagination } from "@/components/admin/pagination";
 
 export const metadata = { title: "Bookings" };
 
@@ -13,20 +14,26 @@ const PAY_STYLE: Record<string, string> = { paid: "bg-teal-tint text-teal", pend
 const STATUS_STYLE = { requested: "bg-ochre-tint text-ink", confirmed: "bg-teal-tint text-teal", cancelled: "bg-surface-2 text-muted" } as const;
 const topicLabel = (id: string) => TOPICS.find((t) => t.id === id)?.label ?? id;
 
-export default async function AdminBookings({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
+export default async function AdminBookings({ searchParams }: { searchParams: Promise<{ show?: string; page?: string }> }) {
   await guardPage("bookings.read");
-  const show = (await searchParams).show === "past" ? "past" : "upcoming";
+  const sp = await searchParams;
+  const show = sp.show === "past" ? "past" : "upcoming";
+  const page = Math.max(1, Number(sp.page) || 1);
+  const SIZE = 20;
+  let total = 0;
+  let waiting = 0; // across all pages
   const sb = await supabaseServer();
   const today = todayJst();
   let rows: Booking[] = [];
   if (sb) {
-    const q = sb.from("bookings").select("*");
-    const { data } = show === "upcoming"
-      ? await q.gte("slot_date", today).order("slot_date").order("slot_time").limit(200)
-      : await q.lt("slot_date", today).order("slot_date", { ascending: false }).limit(200);
+    const q = sb.from("bookings").select("*", { count: "exact" });
+    const { data, count } = show === "upcoming"
+      ? await q.gte("slot_date", today).order("slot_date").order("slot_time").range((page - 1) * SIZE, page * SIZE - 1)
+      : await q.lt("slot_date", today).order("slot_date", { ascending: false }).order("slot_time", { ascending: false }).range((page - 1) * SIZE, page * SIZE - 1);
     rows = (data ?? []) as Booking[];
+    total = count ?? rows.length;
+    if (show === "upcoming") waiting = (await sb.from("bookings").select("id", { count: "exact", head: true }).gte("slot_date", today).eq("status", "requested")).count ?? 0;
   }
-  const waiting = rows.filter((r) => r.status === "requested").length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -72,13 +79,14 @@ export default async function AdminBookings({ searchParams }: { searchParams: Pr
                   <form action={`/api/admin/bookings/${b.id}`} method="post"><input type="hidden" name="status" value="confirmed" /><button className="btn btn-outline px-3">Confirm</button></form>
                 )}
                 {b.status !== "cancelled" && b.pay_status !== "pending" && (
-                  <form action={`/api/admin/bookings/${b.id}`} method="post"><input type="hidden" name="status" value="cancelled" /><button className="btn btn-outline px-3 text-oxide">Cancel</button></form>
+                  <form action={`/api/admin/bookings/${b.id}`} method="post"><input type="hidden" name="status" value="cancelled" /><button className="btn btn-danger px-3">Cancel</button></form>
                 )}
               </div>
             </li>
           ))}
         </ul>
       )}
+      <Pagination page={page} pageSize={SIZE} total={total} href={(p) => `/admin/bookings?${new URLSearchParams({ ...(show === "past" && { show }), page: String(p) })}`} noun="bookings" />
     </div>
   );
 }
