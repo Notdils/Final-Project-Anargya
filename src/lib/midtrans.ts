@@ -76,3 +76,14 @@ export async function expireTransaction(orderId: string) {
   const ok = body?.transaction_status === "expire" || body?.status_code === "407" || body?.status_code === "200";
   return { ok, code: body?.status_code ?? String(res.status) };
 }
+
+/** Raw status answer for the admin "Check with Midtrans" button (no secrets: HTTP code and Midtrans fields only). */
+export async function rawStatus(orderId: string) {
+  const res = await fetch(`${CORE}/${encodeURIComponent(orderId)}/status`, { headers: { Authorization: auth(), Accept: "application/json" }, cache: "no-store" }).catch(() => null);
+  if (!res) return { http: 0, error: "network error" };
+  const b = (await res.json().catch(() => ({}))) as Record<string, string | undefined>;
+  return {
+    http: res.status, statusCode: b.status_code, statusMessage: b.status_message, transactionStatus: b.transaction_status,
+    fraudStatus: b.fraud_status, paymentType: b.payment_type, grossAmount: b.gross_amount, transactionTime: b.transaction_time,
+  };
+}

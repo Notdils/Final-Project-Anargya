@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { MidtransCheck } from "@/components/admin/midtrans-check";
 import { destinationLabel } from "@/lib/shipping";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -155,7 +156,10 @@ function OrderSheet({ o, canFulfil, onClose }: { o: Order; canFulfil: boolean; o
           <section className="flex flex-col gap-3">
             <h3 className={h}>Fulfilment</h3>
             {!paid ? (
-              <p className="flex items-center gap-2 rounded-lg bg-surface p-4 text-sm text-muted"><Clock size={16} aria-hidden />Packing starts once the order is paid.</p>
+              <>
+                <p className="flex items-center gap-2 rounded-lg bg-surface p-4 text-sm text-muted"><Clock size={16} aria-hidden />Packing starts once the order is paid.</p>
+                {o.status === "pending" && <MidtransCheck orderId={o.id} />}
+              </>
             ) : (
               <div className="flex flex-col gap-3 rounded-lg bg-surface p-4">
                 <ol className="flex items-center gap-1.5" aria-label="Fulfilment progress">

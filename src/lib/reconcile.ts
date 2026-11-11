@@ -50,12 +50,13 @@ async function sync(o: { id: string; charged_idr: number; pay_expires_at: string
   {
     const st = await lookupStatus(o.id);
     if (!st) return; // could not reach Midtrans: try again next time
-    if (st.missing && !pastDeadline) return; // buyer has not picked a method yet, window still open
+    if (st.missing && !pastDeadline) { console.info(`midtrans: no transaction yet for ${o.id}`); return; } // buyer has not picked a method yet, window still open
     if (st.missing || st.transaction_status === "expire") {
       await sb.rpc("mark_order_status", { p_order: o.id, p_status: "expired", p_txn: st.missing ? null : st.transaction_id });
       return;
     }
     const s = st.transaction_status;
+    console.info(`midtrans status for ${o.id}: ${s}${st.fraud_status ? `/${st.fraud_status}` : ""}`);
     if (Number(st.gross_amount) !== Number(o.charged_idr)) console.error(`amount mismatch for ${o.id}: Midtrans ${st.gross_amount}, ours ${o.charged_idr}`);
     if (Number(st.gross_amount) !== Number(o.charged_idr)) return flagAmountMismatch(o.id, st.gross_amount, Number(o.charged_idr));
     if (s === "settlement" || (s === "capture" && (st.fraud_status ?? "accept") === "accept")) {
