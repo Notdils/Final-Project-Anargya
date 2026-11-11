@@ -10,12 +10,13 @@ import { GuestOnly } from "@/components/auth-state";
 import { lp, translator, type Locale } from "@/i18n";
 
 
+// Five-year roadmap from the SPD (business plan), paraphrased.
 const STEPS = [
-  ["Design", "[PLACEHOLDER] Engineering scope from the business plan"],
-  ["Validate", "[PLACEHOLDER] Simulation and track testing"],
-  ["Partner production", "[PLACEHOLDER] Manufacturing partner model"],
-  ["Supply", "[PLACEHOLDER] Parts sold through the marketplace"],
-  ["Consult", "[PLACEHOLDER] Engineering consulting for teams and manufacturers"],
+  ["Year 1 · Establishment", "Research and development of four EV modules (VCU/BMS, aero, uprights, pedal box), validated through field testing."],
+  ["Year 2 · Market entry", "Component packages launch in Japan, with demos for Formula Student teams and our consulting service."],
+  ["Year 3 · Expansion", "More teams as customers, full engineering consulting, and preparation for a complete car."],
+  ["Year 4 · Diversification", "A complete formula car prototype, built with a manufacturing partner."],
+  ["Year 5 · Consolidation", "Small-series formula car production and a base of returning customers."],
 ];
 
 const VALUES = [
@@ -39,7 +40,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
 
         <section aria-labelledby="how-title" className="container-x py-12 md:py-24">
           <h2 id="how-title" className="mx-auto mb-8 max-w-[640px] text-center text-[28px] font-semibold leading-9 tracking-[-0.02em] md:mb-12 md:text-4xl md:leading-[44px]">
-            {t("How we work")}
+            {t("Our five-year plan")}
           </h2>
           <div className="grid gap-6 md:gap-10 xl:grid-cols-[1.2fr_1fr]">
             {/* Slot for the launch poster from Graphic Design: the corporation, parts distribution, consulting, expansion. Portrait 4:5. */}

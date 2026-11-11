@@ -1,5 +1,5 @@
 import "server-only";
-import { supabaseServer } from "@/lib/supabase/server";
+import { currentUser, supabaseServer } from "@/lib/supabase/server";
 
 export type OrderStatus = "pending" | "paid" | "failed" | "expired";
 export type OrderItem = { product_id: string; code: string; name: string; qty: number; unit_price_jpy: number | null; unit_price_usd: number | string | null };
@@ -28,18 +28,16 @@ export async function getOrder(id: string): Promise<Order | null> {
 
 export type SavedAddress = { buyer_name: string; phone: string; address: string; city: string; postal_code: string; country: string; ship_country?: string | null; ship_region?: string | null; address_note?: string | null };
 
-/** The buyer's most recent shipping details (RLS: own orders only). Used to prefill checkout. */
-export async function lastAddress(): Promise<SavedAddress | null> {
-  const sb = await supabaseServer();
-  if (!sb) return null;
-  const { data: auth } = await sb.auth.getUser();
-  if (!auth.user) return null;
-  const { data } = await sb
-    .from("orders")
-    .select("*") // includes ship_country / ship_region once SQL 0013 has run
-    .eq("user_id", auth.user.id) // admins can read every order: only prefill with your own
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return (data as SavedAddress) ?? null;
+/**
+ * The shipping address the buyer chose to save ("Save this as your shipping address" at checkout).
+ * Stored in their own auth profile (user_metadata.shipping_address); nothing is taken from past orders.
+ */
+export async function savedAddress(): Promise<SavedAddress | null> {
+  const { user } = await currentUser();
+  const a = (user?.user_metadata as { shipping_address?: Partial<SavedAddress> } | undefined)?.shipping_address;
+  if (!a || typeof a.address !== "string" || typeof a.buyer_name !== "string") return null;
+  return {
+    buyer_name: a.buyer_name, phone: String(a.phone ?? ""), address: a.address, city: String(a.city ?? ""), postal_code: String(a.postal_code ?? ""),
+    country: String(a.country ?? ""), ship_country: a.ship_country ?? null, ship_region: a.ship_region ?? null, address_note: a.address_note ?? null,
+  };
 }

@@ -20,7 +20,7 @@ export const JA: Record<string, string> = {
   Offline: "オフライン",
 
   // Hero
-  "[CITY], Japan · Formula EV design": "[CITY]・日本｜フォーミュラEV設計",
+  "Nagoya, Japan · Formula EV design": "日本・名古屋｜フォーミュラEV設計",
   "Formula EV parts": "フォーミュラEVのパーツと",
   "and engineering support.": "エンジニアリング支援。",
   "Explore marketplace": "マーケットプレイスを見る",
@@ -45,7 +45,6 @@ export const JA: Record<string, string> = {
   "We got you covered.": "私たちにお任せください。",
 
   // Home
-  "How we work": "私たちの進め方",
   "Launch poster [from Graphic Design]": "ローンチポスター [グラフィックデザインより]",
   Design: "設計",
   Validate: "検証",
@@ -245,7 +244,7 @@ export const JA: Record<string, string> = {
   set: "セット",
   kit: "キット",
   unit: "台",
-  "Made to order and shipped from [CITY], Japan. Priced in USD, paid in IDR via Midtrans.": "受注生産、日本・[CITY]から発送。価格はUSD建て、お支払いはMidtrans経由でIDRです。",
+  "Made to order and shipped from Nagoya, Japan. Priced in USD, paid in IDR via Midtrans.": "受注生産、名古屋から発送。価格はUSD建て、お支払いはMidtrans経由でIDRです。",
   "Built by a certified manufacturing partner.": "認定製造パートナーが製造します。",
   "Part details": "パーツ詳細",
   Overview: "概要",
@@ -347,7 +346,6 @@ export const JA: Record<string, string> = {
   "Payment expired": "お支払い期限切れ",
   "A copy of this receipt is available in your account ({email}).": "この領収書はアカウント（{email}）からいつでも確認できます。",
   "Your order is held until {time}. If you already paid, refresh in a moment.": "ご注文は{time}まで確保されています。お支払い済みの場合は、少し待ってからページを更新してください。",
-  "We are confirming the payment with Midtrans. Refresh in a moment.": "Midtransでお支払いを確認中です。少し待ってからページを更新してください。",
   "No money was taken. Your parts are still available in the marketplace.": "料金は請求されていません。パーツは引き続きマーケットプレイスで購入できます。",
   "Continue payment": "支払いを続ける",
   "Use another method": "別の方法で支払う",
@@ -388,8 +386,6 @@ export const JA: Record<string, string> = {
   " + {n} more": " ほか{n}点",
   Profile: "プロフィール",
   "Member since": "登録日",
-  "Taken from your latest order and filled in at checkout. Change it there for your next order.": "最新のご注文から取得し、チェックアウト時に自動入力されます。次回のご注文時にそこで変更できます。",
-  "Your address is saved after your first order, so you do not have to type it again.": "初回のご注文後に住所が保存されるため、次回から入力の手間が省けます。",
 
   // Auth
   "(required)": "（必須）",
@@ -451,7 +447,6 @@ export const JA: Record<string, string> = {
   "Try again": "再試行",
 
   // Paid consultation booking
-  "30-minute video call with our engineers on concept, aero, EV powertrain or chassis. Times are in Japan time (JST).": "コンセプト、空力、EVパワートレイン、シャシーについて当社エンジニアと30分のビデオ通話。時間は日本時間（JST）です。",
   "Choose a date": "日付を選択",
   "Taken times are crossed out.": "取り消し線の時間は予約済みです。",
   "Your details": "お客様情報",
@@ -558,7 +553,6 @@ export const JA: Record<string, string> = {
   "Prices are set in USD. Midtrans charges in rupiah (IDR) only.": "価格は米ドル建てです。Midtransのお支払いはインドネシアルピア（IDR）のみです。",
   // booking time zone
   "Your time zone": "タイムゾーン",
-  "Big numbers are {city} time. (−1d) means the day before in your time zone.": "大きい数字は{city}の時刻です。（−1d）はお住まいのタイムゾーンで前日を意味します。",
   // vouchers
   "Voucher": "クーポン",
   "Voucher code": "クーポンコード",
@@ -573,4 +567,48 @@ export const JA: Record<string, string> = {
   "Log in to use a voucher.": "クーポンを使うにはログインしてください。",
   "Too many tries. Wait a few minutes.": "試行回数が多すぎます。数分お待ちください。",
   "Vouchers are not available yet.": "クーポンはまだ利用できません。",
+  "Your time: {off}. JST: UTC+9.": "あなたの時間：{off}。JST：UTC+9。",
+  "−1d = the day before.": "−1d＝前日。",
+  "Language": "言語",
+  "You need an account to book. What you typed is kept. Nothing is booked or charged until you pay.": "予約にはアカウントが必要です。入力内容は保持されます。お支払いが完了するまで予約・請求は行われません。",
+  "You are logged in. Your booking is not made yet: check the details and press Pay and book. Nothing has been charged.": "ログインしました。まだ予約は完了していません。内容を確認して「支払って予約」を押してください。料金は発生していません。",
+  // SPD content (12 Nov)
+  "30-minute video call with our engineers: inspection readiness, electrical and PCB, EV powertrain, documentation or design review. Times are in Japan time (JST, UTC+9).": "当社エンジニアとの30分のビデオ通話：車検準備、電装・PCB、EVパワートレイン、書類作成、設計レビュー。時間は日本時間（JST、UTC+9）です。",
+  "Technical inspection readiness": "車検（テクニカルインスペクション）準備",
+  "Electrical systems & PCB design": "電装システム＆PCB設計",
+  "EV powertrain, VCU & BMS": "EVパワートレイン、VCU＆BMS",
+  "Documentation & rules compliance": "書類作成＆レギュレーション対応",
+  "Design review & part modifications": "設計レビュー＆部品改良",
+  "Our five-year plan": "5か年計画",
+  "Year 1 · Establishment": "1年目・設立",
+  "Research and development of four EV modules (VCU/BMS, aero, uprights, pedal box), validated through field testing.": "4つのEVモジュール（VCU/BMS、エアロ、アップライト、ペダルボックス）の研究開発と実地試験による検証。",
+  "Year 2 · Market entry": "2年目・市場参入",
+  "Component packages launch in Japan, with demos for Formula Student teams and our consulting service.": "日本でコンポーネントパッケージを発売。学生フォーミュラチーム向けのデモとコンサルティングサービスを開始。",
+  "Year 3 · Expansion": "3年目・拡大",
+  "More teams as customers, full engineering consulting, and preparation for a complete car.": "顧客チームの拡大、本格的なエンジニアリングコンサルティング、完成車開発の準備。",
+  "Year 4 · Diversification": "4年目・多角化",
+  "A complete formula car prototype, built with a manufacturing partner.": "製造パートナーと共にフォーミュラカーのプロトタイプを完成。",
+  "Year 5 · Consolidation": "5年目・定着",
+  "Small-series formula car production and a base of returning customers.": "フォーミュラカーの少量生産とリピート顧客基盤の構築。",
+  "A Nagoya-based EV engineering company. We design Formula Student components in-house and help teams get their cars built, inspected and racing.": "名古屋を拠点とするEVエンジニアリング企業。学生フォーミュラ向けコンポーネントを自社設計し、チームの車両製作・車検・レース出場を支援します。",
+  "Electric teams in Formula Student Japan almost doubled in four years, from 12 in 2022 to 23 in 2026. The cars keep getting harder to build: battery management, vehicle control, drivetrain and safety systems all have to work together, and many teams struggle with technical inspection, PCB design and documentation.": "学生フォーミュラ日本大会のEVチームは4年でほぼ倍増し、2022年の12チームから2026年には23チームになりました。バッテリー管理、車両制御、駆動系、安全システムを連携させる必要があり、車両づくりは年々難しくなっています。多くのチームが車検、PCB設計、書類作成に苦労しています。",
+  "We design our components in-house and produce them with manufacturing partners. That lets us focus on engineering and quality, and sell four proven packages: uprights and wheel hubs, an aero package, a VCU and BMS unit, and a brake pedal box. Each comes with engineering consultation when a team needs it.": "コンポーネントは自社で設計し、製造パートナーと生産しています。エンジニアリングと品質に集中し、アップライト＆ホイールハブ、エアロパッケージ、VCU＆BMSユニット、ブレーキペダルボックスの4つの実績あるパッケージを提供します。必要に応じてエンジニアリングコンサルティングも付きます。",
+  "We start with Formula Student teams, then work with entry-level single-seater racing such as Japanese F4 and Formula Regional. In our fourth year we build a complete formula car prototype to show what we can do.": "まず学生フォーミュラチームから始め、FIA-F4やフォーミュラ・リージョナルなどのエントリークラスのシングルシーターへ広げます。4年目には技術力を示すため、フォーミュラカーのプロトタイプを完成させます。",
+  "Help Formula Student EV teams in Japan build reliable, inspection-ready cars with proven components and practical engineering support.": "実績あるコンポーネントと実践的なエンジニアリング支援で、日本の学生フォーミュラEVチームが信頼性が高く車検に通る車両をつくれるようにすること。",
+  "Become a formula car developer for the Japanese market, from student competition to professional single-seaters.": "学生大会からプロのシングルシーターまで、日本市場のフォーミュラカー開発企業になること。",
+  "We sell components and engineering consultation. Parts are designed by us and made by manufacturing partners.": "コンポーネントとエンジニアリングコンサルティングを提供しています。部品は当社が設計し、製造パートナーが製作します。",
+  "Formula Student EV teams in Japan, mainly new and mid-field teams. Faculty advisors and university procurement make the purchase.": "日本の学生フォーミュラEVチーム、主に新規・中堅チーム。購入の決定は指導教員と大学の調達部門が行います。",
+  "Component sales through this marketplace and paid engineering consultation. A complete formula car follows later.": "本マーケットプレイスでのコンポーネント販売と有料のエンジニアリングコンサルティング。完成車は後の段階で提供します。",
+  "A clear project scope, measurable technical goals, safety and quality procedures, transparent documentation and protection of intellectual property.": "明確なプロジェクト範囲、測定可能な技術目標、安全・品質手順、透明性のある書類、知的財産の保護。",
+  // saved address, dimensions (12 Nov)
+  "We are confirming your payment, please wait a moment.": "お支払いを確認しています。少々お待ちください。",
+  "Saved by you at checkout and used to fill in your next order.": "購入手続きで保存した住所です。次回のご注文で自動入力されます。",
+  "No saved address. At checkout, tick “Save this as your shipping address” to skip typing it next time.": "保存された住所はありません。購入手続きで「この住所を配送先として保存」にチェックすると、次回から入力を省略できます。",
+  "Remove saved address": "保存した住所を削除",
+  "Save this as your shipping address?": "この住所を配送先として保存しますか？",
+  "This will be used for future orders.": "今後のご注文で使用されます。",
+  "Update my saved shipping address": "保存した配送先を更新",
+  "Replace the saved one with these details for future orders.": "今後のご注文用に、保存済みの住所をこの内容に置き換えます。",
+  "300 × 260 × 300 mm per wheel assembly": "300 × 260 × 300 mm（ホイールアセンブリ1基あたり）",
+  "Front wing 1,380 × 480 × 320 mm\nRear wing 1,150 × 420 × 450 mm\nDiffuser 1,200 × 650 × 180 mm": "フロントウイング 1,380 × 480 × 320 mm\nリアウイング 1,150 × 420 × 450 mm\nディフューザー 1,200 × 650 × 180 mm",
 };

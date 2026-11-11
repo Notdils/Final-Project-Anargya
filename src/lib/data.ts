@@ -52,7 +52,7 @@ const base = {
 };
 
 // Fallback catalog (same as supabase/migrations/0005_usd_catalog.sql), used when Supabase is not configured.
-// Selling prices in USD from Finance's preliminary sheet.
+// Selling prices in USD from the SPD (Year 1 target revenue / 10 units), same as 0017_spd_prices_topics.sql.
 // PREVIEW mapping of the 4 delivered models (public/models/parts) to the 4 cards. The files contain a
 // diffuser, front wing + nose, VCU/BMS and rear wing, so the uprights and pedal box cards show aero parts
 // for now. Change it here and in supabase/migrations/0007_part_models.sql.
@@ -62,12 +62,12 @@ const MODELS: Record<string, string> = {
   "custom-vcu-bms-unit": "/models/parts/vcu-bms.glb",
   "brake-pedal-box": "/models/parts/pedal-box.glb",
 };
-// Specs from the team (11 Nov). Same values as supabase/migrations/0012_product_specs.sql.
-const SPECS: Record<string, Pick<Product, "material" | "weight" | "fits" | "leadTime">> = {
-  "p-upright-kit": { material: "Aluminium, high-tensile alloy steel", weight: "4–4.5 kg per set", fits: 'Formula Student 10" or 13" wheels (PCD 4×98 / 4×100)', leadTime: "3–4 weeks" },
-  "p-aero-package": { material: "Carbon fiber, aluminium", weight: "9–11 kg total", fits: "FSAE-standard tubular spaceframe or monocoque chassis", leadTime: "4–5 weeks" },
-  "p-vcu-bms": { material: "Aluminium", weight: "1.2–1.8 kg total", fits: "EV powertrains, configured to your team's communication protocol", leadTime: "3–4 weeks" },
-  "p-pedal-box": { material: "Aluminium", weight: "2.8–3.4 kg", fits: "Hydraulic braking systems", leadTime: "2–3 weeks" },
+// Specs from the team (11 Nov; dimensions 12 Nov). Same values as 0012_product_specs.sql and 0018_product_dimensions.sql.
+const SPECS: Record<string, Pick<Product, "material" | "weight" | "fits" | "leadTime" | "dimensions">> = {
+  "p-upright-kit": { dimensions: "300 × 260 × 300 mm per wheel assembly", material: "Aluminium, high-tensile alloy steel", weight: "4–4.5 kg per set", fits: 'Formula Student 10" or 13" wheels (PCD 4×98 / 4×100)', leadTime: "3–4 weeks" },
+  "p-aero-package": { dimensions: "Front wing 1,380 × 480 × 320 mm\nRear wing 1,150 × 420 × 450 mm\nDiffuser 1,200 × 650 × 180 mm", material: "Carbon fiber, aluminium", weight: "9–11 kg total", fits: "FSAE-standard tubular spaceframe or monocoque chassis", leadTime: "4–5 weeks" },
+  "p-vcu-bms": { dimensions: "240 × 180 × 65 mm", material: "Aluminium", weight: "1.2–1.8 kg total", fits: "EV powertrains, configured to your team's communication protocol", leadTime: "3–4 weeks" },
+  "p-pedal-box": { dimensions: "340 × 260 × 280 mm", material: "Aluminium", weight: "2.8–3.4 kg", fits: "Hydraulic braking systems", leadTime: "2–3 weeks" },
 };
 // Overview text from the team (11 Nov). Same as supabase/migrations/0015_product_overview.sql.
 const OVERVIEW: Record<string, string> = {
@@ -80,13 +80,13 @@ const part = (p: Pick<Product, "id" | "slug" | "code" | "name" | "category" | "p
   ...base, ...p, ...SPECS[p.id], overview: OVERVIEW[p.id] ?? p.description, featured: true, image: `/parts/${p.slug}.webp`, modelUrl: MODELS[p.slug] ?? null,
 });
 export const PLACEHOLDER_PRODUCTS: Product[] = [
-  part({ id: "p-upright-kit", slug: "uprights-wheel-hub-kit", code: "AN-SUSP-01", name: "Uprights & Wheel Hub Assembly Kit", category: "suspension", priceUsd: 2880, unit: "set", stock: 8,
+  part({ id: "p-upright-kit", slug: "uprights-wheel-hub-kit", code: "AN-SUSP-01", name: "Uprights & Wheel Hub Assembly Kit", category: "suspension", priceUsd: 3300, unit: "set", stock: 8,
     description: "Upright, wheel hub, bearing and brake caliper mounts as one matched corner assembly for a formula EV." }),
-  part({ id: "p-aero-package", slug: "custom-aero-package", code: "AN-AERO-01", name: "Custom Aero Package (Wings & Diffuser)", category: "aero", priceUsd: 3600, unit: "kit", stock: 5,
+  part({ id: "p-aero-package", slug: "custom-aero-package", code: "AN-AERO-01", name: "Custom Aero Package (Wings & Diffuser)", category: "aero", priceUsd: 4620, unit: "kit", stock: 5,
     description: "Front wing, rear wing and diffuser designed together and tuned to the car's downforce and balance targets." }),
-  part({ id: "p-vcu-bms", slug: "custom-vcu-bms-unit", code: "AN-ELEC-01", name: "Custom VCU & BMS Unit (EV)", category: "electrical", priceUsd: 960, unit: "unit", stock: 12,
+  part({ id: "p-vcu-bms", slug: "custom-vcu-bms-unit", code: "AN-ELEC-01", name: "Custom VCU & BMS Unit (EV)", category: "electrical", priceUsd: 1210, unit: "unit", stock: 12,
     description: "Vehicle control unit and battery management system in one enclosure, configured for your pack and motor controller." }),
-  part({ id: "p-pedal-box", slug: "brake-pedal-box", code: "AN-CHAS-01", name: "Custom Brake Pedal Box & Master Cylinder", category: "chassis", priceUsd: 1440, unit: "set", stock: 6,
+  part({ id: "p-pedal-box", slug: "brake-pedal-box", code: "AN-CHAS-01", name: "Custom Brake Pedal Box & Master Cylinder", category: "chassis", priceUsd: 1650, unit: "set", stock: 6,
     description: "Adjustable pedal box with throttle and brake pedals and dual master cylinders, sized to your driver and chassis." }),
 ];
 

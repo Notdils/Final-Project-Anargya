@@ -41,9 +41,9 @@ export function CurrencySwitch({ className = "" }: { className?: string }) {
   const options = CURRENCIES.filter((c) => c === "USD" || rates[c]);
   if (options.length < 2) return null;
   return (
-    <label className={`relative ${className}`}>
+    <label className={`relative has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-0 has-[:focus-visible]:outline-teal ${className}`}>
       <span className="sr-only">{t("Currency")}</span>
-      <select value={ccy} onChange={(e) => setCcy(e.target.value as Currency)} className="h-full cursor-pointer appearance-none bg-transparent pl-3 pr-7 font-mono text-xs outline-none">
+      <select value={ccy} onChange={(e) => { setCcy(e.target.value as Currency); e.currentTarget.blur(); }} className="h-full cursor-pointer appearance-none bg-transparent pl-3 pr-7 font-mono text-xs focus-visible:outline-none">
         {options.map((c) => <option key={c} value={c} className="text-ink">{c}</option>)}
       </select>
       <svg aria-hidden viewBox="0 0 16 16" width={12} height={12} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>

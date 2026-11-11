@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { currentUser, supabaseService } from "@/lib/supabase/server";
+import { currentUser, supabaseServer, supabaseService } from "@/lib/supabase/server";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { fxUsdIdr } from "@/lib/env";
 import { countryName, quote } from "@/lib/shipping";
@@ -24,6 +24,7 @@ const Body = z.object({
   }),
   locale: z.enum(["en", "ja"]).optional(),
   voucher: z.string().trim().max(24).regex(/^[A-Za-z0-9-]*$/).optional().nullable(),
+  saveAddress: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {
@@ -66,6 +67,13 @@ export async function POST(req: Request) {
   }
   const order = data[0] as { order_id: string; receipt_no: string; total_usd: number; charged_idr: number };
   await sb.from("orders").update({ ship_country: q.country, ship_region: q.region, shipping_zone: q.zone.code, address_note: c.note || null }).eq("id", order.order_id);
+  // Only when the buyer ticked "Save this as your shipping address" (stored in their own profile).
+  if (parsed.data.saveAddress) {
+    await (await supabaseServer())?.auth.updateUser({ data: { shipping_address: {
+      buyer_name: c.name, phone: c.phone, address: c.address, city: c.city, postal_code: c.postal, country: countryName(q.country, "en"),
+      ship_country: q.country, ship_region: q.region, address_note: c.note || null,
+    } } }).catch(() => null);
+  }
 
   try {
     const origin = new URL(req.url).origin;

@@ -2,10 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertCircle, CalendarCheck, Clock } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { SlimFooter } from "@/components/site-footer";
+import { SiteFooter } from "@/components/site-footer";
 import { supabaseServer } from "@/lib/supabase/server";
 import { reconcileBooking } from "@/lib/booking-pay";
-import { TOPICS, dateLabel } from "@/lib/booking";
+import { topicLabel, dateLabel } from "@/lib/booking";
 import { jst, rupiah } from "@/lib/format";
 import { usd } from "@/lib/money";
 import { lp, translator, type Locale } from "@/i18n";
@@ -58,7 +58,7 @@ export default async function BookingStatusView({ id, locale }: { id: string; lo
               <p className="eyebrow text-teal">{t("Consultation")}</p>
               <p className="text-xl font-semibold">{when}</p>
               <dl className="grid gap-3 text-sm md:grid-cols-2">
-                <div><dt className="text-muted">{t("Topic")}</dt><dd>{t(TOPICS.find((x) => x.id === b!.topic)?.label ?? b.topic)}</dd></div>
+                <div><dt className="text-muted">{t("Topic")}</dt><dd>{t(topicLabel(b!.topic))}</dd></div>
                 <div><dt className="text-muted">{t("Booked by")}</dt><dd className="[overflow-wrap:anywhere]">{b.name} · {b.organisation}</dd></div>
                 <div><dt className="text-muted">{t("Fee")}</dt><dd className="font-mono">{b.fee_usd != null ? usd(Number(b.fee_usd)) : "-"}{b.charged_idr ? ` · ${rupiah(b.charged_idr)}` : ""}</dd></div>
                 <div><dt className="text-muted">{t("Payment")}</dt><dd>Midtrans{b.pay_method ? ` · ${b.pay_method}` : ""}{b.paid_at ? ` · ${jst(b.paid_at)}` : ""}</dd></div>
@@ -71,7 +71,7 @@ export default async function BookingStatusView({ id, locale }: { id: string; lo
           </div>
         </div>
       </main>
-      <SlimFooter />
+      <SiteFooter />
     </>
   );
 }

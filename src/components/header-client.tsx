@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { CurrencySwitch } from "@/components/currency";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Languages, Menu, ShoppingCart, X } from "lucide-react";
+import { Menu, ShoppingCart, X } from "lucide-react";
 import { useLocale, useLp, useT } from "@/i18n/client";
 import { lp, splitLocale } from "@/i18n";
 import { useCart } from "./cart";
@@ -89,16 +89,18 @@ export function HeaderClient({
 
         <div className="flex items-center gap-2">
           <CurrencySwitch className={`btn hidden p-0 md:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"}`} />
-          <a
-            href={switchHref}
-            hrefLang={other}
-            lang={other}
-            aria-label={other === "ja" ? "日本語に切り替え" : "Switch to English"}
-            className={`btn px-2 font-mono text-xs ${dark ? "btn-outline-dark" : "btn-outline"}`}
-          >
-            <Languages size={16} aria-hidden />
-            <span>{other === "ja" ? "日本語" : "EN"}</span>
-          </a>
+          {/* language: segmented EN | JP, current one highlighted */}
+          <nav aria-label={t("Language")} className={`inline-flex h-10 items-center gap-0.5 rounded-lg border p-1 font-mono text-xs ${dark ? "border-white/30 bg-white/5" : "border-line bg-surface"}`}>
+            {(["en", "ja"] as const).map((l) => {
+              const on = locale === l;
+              return on ? (
+                <span key={l} aria-current="true" lang={l} className={`grid h-full place-items-center rounded-md px-2.5 font-medium ${dark ? "bg-white text-ink" : "bg-white text-ink shadow-sm"}`}>{l === "en" ? "EN" : "JP"}</span>
+              ) : (
+                <a key={l} href={switchHref} hrefLang={l} lang={l} aria-label={l === "ja" ? "日本語に切り替え" : "Switch to English"}
+                  className={`grid h-full place-items-center rounded-md px-2.5 ${dark ? "text-white/70 hover:text-white" : "text-muted hover:text-ink"}`}>{l === "en" ? "EN" : "JP"}</a>
+              );
+            })}
+          </nav>
           <Link
             href={L("/cart")}
             aria-label={t("Cart, {n} items", { n: ready ? count : 0 })}

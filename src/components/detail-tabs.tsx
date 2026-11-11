@@ -35,8 +35,8 @@ export function DetailTabs({ specs, overview }: { specs: [string, string][]; ove
           <dl>
             {specs.map(([k, v]) => (
               <div key={k} className="flex justify-between gap-4 border-b border-line py-3 text-sm">
-                <dt className="text-muted">{tr(k)}</dt>
-                <dd className="font-mono">{tr(v)}</dd>
+                <dt className="shrink-0 text-muted">{tr(k)}</dt>
+                <dd className="whitespace-pre-line text-right font-mono">{tr(v)}</dd>
               </div>
             ))}
           </dl>

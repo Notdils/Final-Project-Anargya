@@ -48,7 +48,7 @@ export default async function PartView({ slug, locale }: { slug: string; locale:
             <PurchasePanel id={p.id} price={p.priceUsd} stock={p.stock} />
             <ul className="flex flex-col gap-3 border-t border-line pt-6 text-sm text-[#404040]">
               <li className="flex items-center gap-3"><Clock size={16} className="shrink-0 text-teal" aria-hidden />{t("Lead time: {v}", { v: t(p.leadTime) })}</li>
-              <li className="flex items-center gap-3"><Truck size={16} className="shrink-0 text-teal" aria-hidden />{t("Made to order and shipped from [CITY], Japan. Priced in USD, paid in IDR via Midtrans.")}</li>
+              <li className="flex items-center gap-3"><Truck size={16} className="shrink-0 text-teal" aria-hidden />{t("Made to order and shipped from Nagoya, Japan. Priced in USD, paid in IDR via Midtrans.")}</li>
               <li className="flex items-center gap-3"><ShieldCheck size={16} className="shrink-0 text-teal" aria-hidden />{t("Built by a certified manufacturing partner.")}</li>
             </ul>
           </section>

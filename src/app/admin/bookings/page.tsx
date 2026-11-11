@@ -1,7 +1,7 @@
 import { guardPage } from "@/lib/admin-guard";
 import { CalendarClock } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase/server";
-import { TOPICS, dateLabel, todayJst } from "@/lib/booking";
+import { topicLabel, dateLabel, todayJst } from "@/lib/booking";
 import { jst } from "@/lib/format";
 import { Pagination } from "@/components/admin/pagination";
 
@@ -12,7 +12,6 @@ type Booking = { id: string; name: string; email: string; organisation: string; 
 const PAY_STYLE: Record<string, string> = { paid: "bg-teal-tint text-teal", pending: "bg-ochre-tint text-ink", failed: "bg-oxide-tint text-oxide", expired: "bg-surface-2 text-muted", unpaid: "bg-surface-2 text-muted" };
 
 const STATUS_STYLE = { requested: "bg-ochre-tint text-ink", confirmed: "bg-teal-tint text-teal", cancelled: "bg-surface-2 text-muted" } as const;
-const topicLabel = (id: string) => TOPICS.find((t) => t.id === id)?.label ?? id;
 
 export default async function AdminBookings({ searchParams }: { searchParams: Promise<{ show?: string; page?: string }> }) {
   await guardPage("bookings.read");

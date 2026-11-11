@@ -57,6 +57,7 @@ export function CheckoutForm({
   const [errors, setErrors] = useState<Partial<Record<Fields, string>>>({});
   const [formError, setFormError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [saveAddress, setSaveAddress] = useState(false); // opt-in, never saved silently
   // voucher: previewed by the server, re-checked when the order is created
   const [vInput, setVInput] = useState("");
   const [voucher, setVoucher] = useState<{ code: string; discountUsd: number } | null>(null);
@@ -114,7 +115,7 @@ export function CheckoutForm({
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ items: lines.map((l) => ({ id: l.id, qty: l.qty })), contact, locale, voucher: voucher?.code ?? null }),
+        body: JSON.stringify({ items: lines.map((l) => ({ id: l.id, qty: l.qty })), contact, locale, voucher: voucher?.code ?? null, saveAddress }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -204,6 +205,13 @@ export function CheckoutForm({
               {errors.note ? <p id="note-hint" className="flex items-center gap-1.5 text-[13px] text-oxide"><AlertCircle size={14} aria-hidden /> {t(errors.note)}</p>
                 : <p id="note-hint" className="text-[13px] text-muted">{t("Landmarks, gate or floor, delivery notes. You can paste a Google Maps link.")}</p>}
             </div>
+            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-line p-4">
+              <input type="checkbox" className="mt-0.5 size-4 shrink-0 accent-[#006F66]" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} />
+              <span className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">{t(saved ? "Update my saved shipping address" : "Save this as your shipping address?")}</span>
+                <span className="text-[13px] text-muted">{t(saved ? "Replace the saved one with these details for future orders." : "This will be used for future orders.")}</span>
+              </span>
+            </label>
           </fieldset>
           <fieldset className="flex flex-col gap-3">
             <legend className="mb-3 text-lg font-semibold">{t("Payment")}</legend>

@@ -7,10 +7,10 @@ import { CONTACT } from "@/lib/contact";
 
 // simple glyphs (lucide has no brand icons)
 const Linkedin = () => (
-  <svg viewBox="0 0 24 24" width={16} height={16} aria-hidden fill="currentColor"><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="currentColor" strokeWidth="2" /><rect x="6.5" y="10" width="2.5" height="7.5" /><circle cx="7.75" cy="7" r="1.5" /><path d="M11 10h2.4v1.1c.5-.8 1.4-1.3 2.6-1.3 2 0 3 1.2 3 3.6v4.1h-2.5v-3.8c0-1.1-.4-1.7-1.3-1.7-1 0-1.7.7-1.7 1.9v3.6H11z" /></svg>
+  <svg viewBox="0 0 24 24" width={22} height={22} aria-hidden fill="currentColor"><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="currentColor" strokeWidth="2" /><rect x="6.5" y="10" width="2.5" height="7.5" /><circle cx="7.75" cy="7" r="1.5" /><path d="M11 10h2.4v1.1c.5-.8 1.4-1.3 2.6-1.3 2 0 3 1.2 3 3.6v4.1h-2.5v-3.8c0-1.1-.4-1.7-1.3-1.7-1 0-1.7.7-1.7 1.9v3.6H11z" /></svg>
 );
 const Instagram = () => (
-  <svg viewBox="0 0 24 24" width={16} height={16} aria-hidden fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.75" fill="currentColor" /></svg>
+  <svg viewBox="0 0 24 24" width={22} height={22} aria-hidden fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.75" fill="currentColor" /></svg>
 );
 
 export function SiteFooter() {
@@ -52,15 +52,14 @@ export function SiteFooter() {
               <li><a href={`tel:${CONTACT.person.phone.replace(/[^+\d]/g, "")}`} className={`flex items-center gap-2 ${link}`}><Phone size={16} className="shrink-0" aria-hidden />{CONTACT.person.phone}</a></li>
               <li className="flex items-center gap-2 text-white/90"><Clock size={16} className="shrink-0" aria-hidden />{t(CONTACT.hours)}</li>
             </ul>
-            <div className="mt-4 flex gap-2">
-              <a href={CONTACT.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="grid size-10 place-items-center rounded-lg border border-white/30 hover:bg-white/10"><Linkedin /></a>
-              <a href={CONTACT.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="grid size-10 place-items-center rounded-lg border border-white/30 hover:bg-white/10"><Instagram /></a>
+            <div className="mt-3 flex gap-1">
+              <a href={CONTACT.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="-ml-2 grid size-10 place-items-center rounded-lg hover:bg-white/10"><Linkedin /></a>
+              <a href={CONTACT.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="grid size-10 place-items-center rounded-lg hover:bg-white/10"><Instagram /></a>
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-2 border-t border-white/20 pt-6 text-sm text-white/80 md:flex-row md:justify-between">
+        <div className="border-t border-white/20 pt-6 text-sm text-white/80">
           <p>© 2026 Anargya Corp.</p>
-          <p>{t("Prices in USD. Payments processed by Midtrans.")}</p>
         </div>
         <p
           aria-hidden

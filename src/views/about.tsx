@@ -32,7 +32,7 @@ export default function AboutView({ locale }: { locale: Locale }) {
                 </h1>
               </div>
               <p className="max-w-[360px] text-neutral-400 md:text-lg">
-                {t("[PLACEHOLDER] One sentence positioning: a Japan-based design house for electric formula vehicles and their systems.")}
+                {t("A Nagoya-based EV engineering company. We design Formula Student components in-house and help teams get their cars built, inspected and racing.")}
               </p>
             </div>
             <figure className="grid h-[280px] place-items-center rounded-xl bg-[#171717] font-mono text-xs uppercase tracking-wider text-neutral-400 md:h-[440px] xl:h-[560px]">
@@ -47,15 +47,15 @@ export default function AboutView({ locale }: { locale: Locale }) {
             <h2 id="story-title" className="text-[28px] font-semibold leading-9 tracking-[-0.02em] md:text-4xl md:leading-[44px]">{t("Why we exist")}</h2>
           </div>
           <div className="flex flex-col gap-6 text-[#404040] md:text-lg">
-            <p>{t("[PLACEHOLDER] Paragraph 1: the problem we saw in electric performance vehicles and why design and production should be separated.")}</p>
-            <p>{t("[PLACEHOLDER] Paragraph 2: why Japan, and how working with certified vehicle manufacturers lets us focus on engineering.")}</p>
-            <p>{t("[PLACEHOLDER] Paragraph 3: where we are heading. Final copy from Creative Branding.")}</p>
+            <p>{t("Electric teams in Formula Student Japan almost doubled in four years, from 12 in 2022 to 23 in 2026. The cars keep getting harder to build: battery management, vehicle control, drivetrain and safety systems all have to work together, and many teams struggle with technical inspection, PCB design and documentation.")}</p>
+            <p>{t("We design our components in-house and produce them with manufacturing partners. That lets us focus on engineering and quality, and sell four proven packages: uprights and wheel hubs, an aero package, a VCU and BMS unit, and a brake pedal box. Each comes with engineering consultation when a team needs it.")}</p>
+            <p>{t("We start with Formula Student teams, then work with entry-level single-seater racing such as Japanese F4 and Formula Regional. In our fourth year we build a complete formula car prototype to show what we can do.")}</p>
           </div>
         </section>
 
         <section aria-label={t("Mission and vision")} className="bg-surface py-12 md:py-20">
           <div className="container-x grid gap-4 md:grid-cols-2 md:gap-6">
-            {[["Mission", "[PLACEHOLDER] Mission statement, one or two sentences."], ["Vision", "[PLACEHOLDER] Vision statement, one or two sentences."]].map(([k, v]) => (
+            {[["Mission", "Help Formula Student EV teams in Japan build reliable, inspection-ready cars with proven components and practical engineering support."], ["Vision", "Become a formula car developer for the Japanese market, from student competition to professional single-seaters."]].map(([k, v]) => (
               <article key={k} className="flex flex-col gap-4 rounded-xl border border-line bg-white p-6 md:p-8">
                 <h2 className="eyebrow text-teal">{t(k)}</h2>
                 <p className="text-xl font-medium leading-7 md:text-2xl md:leading-8">{t(v)}</p>
@@ -68,7 +68,7 @@ export default function AboutView({ locale }: { locale: Locale }) {
           <div className="flex flex-col gap-3">
             <p className="eyebrow text-teal">{t("Business model")}</p>
             <h2 id="model-title" className="text-[28px] font-semibold leading-9 tracking-[-0.02em] md:text-4xl md:leading-[44px]">{t("How a part reaches you")}</h2>
-            <p className="text-muted">{t("[PLACEHOLDER] Summary from the business plan.")}</p>
+            <p className="text-muted">{t("We sell components and engineering consultation. Parts are designed by us and made by manufacturing partners.")}</p>
           </div>
           <ol className="flex flex-col items-stretch gap-2 md:flex-row md:items-center">
             {FLOW.map(([h, s], k) => (
@@ -82,10 +82,14 @@ export default function AboutView({ locale }: { locale: Locale }) {
             ))}
           </ol>
           <ul className="grid gap-4 md:grid-cols-3 md:gap-6">
-            {["Target market", "Revenue streams", "Partner requirements"].map((k) => (
-              <li key={k} className="flex flex-col gap-2 rounded-xl border border-dashed border-line bg-surface p-5">
+            {[
+              ["Target market", "Formula Student EV teams in Japan, mainly new and mid-field teams. Faculty advisors and university procurement make the purchase."],
+              ["Revenue streams", "Component sales through this marketplace and paid engineering consultation. A complete formula car follows later."],
+              ["Partner requirements", "A clear project scope, measurable technical goals, safety and quality procedures, transparent documentation and protection of intellectual property."],
+            ].map(([k, v]) => (
+              <li key={k} className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-5">
                 <h3 className="eyebrow">{t(k)}</h3>
-                <p className="text-sm text-muted">{t("[PLACEHOLDER] From the business plan.")}</p>
+                <p className="text-sm text-muted">{t(v)}</p>
               </li>
             ))}
           </ul>

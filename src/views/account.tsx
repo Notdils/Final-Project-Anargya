@@ -7,9 +7,10 @@ import { OrderStatusBadge } from "@/components/status-badge";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { jst } from "@/lib/format";
 import { orderAmount } from "@/lib/money";
-import { lastAddress, type Order } from "@/lib/orders";
+import { savedAddress, type Order } from "@/lib/orders";
+import { RemoveAddress } from "@/components/remove-address";
 import { reconcileOrder } from "@/lib/reconcile";
-import { TOPICS, dateLabel } from "@/lib/booking";
+import { topicLabel, dateLabel } from "@/lib/booking";
 import { lp, translator, type Locale } from "@/i18n";
 import { destinationLabel } from "@/lib/shipping";
 
@@ -31,7 +32,7 @@ export default async function AccountView({ locale }: { locale: Locale }) {
     await Promise.all(pending.map((o) => reconcileOrder(o.id).catch(() => {})));
     orders = await load();
   }
-  const saved = await lastAddress();
+  const saved = await savedAddress();
   type BookingRow = { id: string; slot_date: string; slot_time: string; topic: string; pay_status: string; status: string };
   const bookings: BookingRow[] = sb && user
     ? (((await sb.from("bookings").select("id, slot_date, slot_time, topic, pay_status, status").eq("user_id", user.id).order("slot_date", { ascending: false }).limit(20)).data as BookingRow[] | null) ?? [])
@@ -96,7 +97,7 @@ export default async function AccountView({ locale }: { locale: Locale }) {
                           <Link href={L(`/consulting/booking/${b.id}`)} className="flex items-center justify-between gap-3 rounded-lg border border-line p-4 hover:bg-surface">
                             <span className="flex min-w-0 flex-col gap-0.5">
                               <span className="font-mono text-sm">{dateLabel(b.slot_date, locale === "ja" ? "ja-JP" : "en-GB")} · {b.slot_time} JST</span>
-                              <span className="truncate text-sm text-muted">{t(TOPICS.find((x) => x.id === b.topic)?.label ?? b.topic)}</span>
+                              <span className="truncate text-sm text-muted">{t(topicLabel(b.topic))}</span>
                             </span>
                             <span className="flex shrink-0 items-center gap-2"><span className={`rounded px-1.5 py-0.5 text-xs font-medium ${cls}`}>{t(label)}</span><ChevronRight size={16} className="text-muted" aria-hidden /></span>
                           </Link>
@@ -119,10 +120,11 @@ export default async function AccountView({ locale }: { locale: Locale }) {
                       {saved.buyer_name}<br />{saved.address}<br />{saved.city} {saved.postal_code}<br />{destinationLabel(saved.country, saved.ship_region, locale, saved.ship_country)}<br />
                       <span className="text-muted">{saved.phone}</span>
                     </address>
-                    <p className="text-xs text-muted">{t("Taken from your latest order and filled in at checkout. Change it there for your next order.")}</p>
+                    <p className="text-xs text-muted">{t("Saved by you at checkout and used to fill in your next order.")}</p>
+                    <RemoveAddress />
                   </>
                 ) : (
-                  <p className="text-sm text-muted">{t("Your address is saved after your first order, so you do not have to type it again.")}</p>
+                  <p className="text-sm text-muted">{t("No saved address. At checkout, tick “Save this as your shipping address” to skip typing it next time.")}</p>
                 )}
               </section>
             </aside>

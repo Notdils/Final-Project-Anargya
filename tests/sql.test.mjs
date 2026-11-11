@@ -177,3 +177,13 @@ await run(`update vouchers set ends_at = now() - interval '1 second', starts_at 
 try { await run(`select * from voucher_discount($1,'FLAT50',$2)`, [U1, cart]); } catch (e) { console.log("expired code:", e.message); }
 try { await run(`insert into vouchers(code,kind,value) values ('BAD','percent',150)`); console.log("FAIL: 150%"); } catch { console.log("150% blocked"); }
 console.log("authenticated can run voucher_discount:", await canAuth("public.voucher_discount(uuid,text,jsonb,boolean)"));
+
+// 0017: SPD prices and topics
+for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migrations/0017_spd_prices_topics.sql", import.meta.url), "utf8"));
+console.log("prices:", (await run(`select id, price_usd from products where id in ('p-upright-kit','p-aero-package','p-vcu-bms','p-pedal-box') order by id`)).rows.map((r) => `${r.id}=${r.price_usd}`).join(" "));
+await run(`insert into bookings(name,email,organisation,topic,slot_date,slot_time) values ('Ren','r@x.co','Team','inspection','2026-12-18','14:00')`); console.log("new topic ok");
+try { await run(`insert into bookings(name,email,organisation,topic,slot_date,slot_time) values ('Ren','r@x.co','Team','bogus','2026-12-18','16:00')`); console.log("FAIL bogus topic"); } catch { console.log("bogus topic blocked"); }
+
+// 0018: dimensions
+for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migrations/0018_product_dimensions.sql", import.meta.url), "utf8"));
+console.log("dimensions set:", (await run(`select count(*) n from products where dimensions like '%mm%'`)).rows[0].n);

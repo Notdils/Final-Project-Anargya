@@ -49,7 +49,7 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
                       : o.status === "pending"
                         ? open
                           ? t("Your order is held until {time}. If you already paid, refresh in a moment.", { time: jst(o.pay_expires_at!) })
-                          : t("We are confirming the payment with Midtrans. Refresh in a moment.")
+                          : t("We are confirming your payment, please wait a moment.")
                         : t("No money was taken. Your parts are still available in the marketplace.")}
                   </p>
                 </div>

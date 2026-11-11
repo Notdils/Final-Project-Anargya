@@ -118,7 +118,7 @@ export function Hero() {
       <div className="container-x pointer-events-none absolute inset-x-0 bottom-0 pb-14 md:pb-16">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div className="pointer-events-auto flex flex-col gap-4 md:gap-6">
-            <p className="eyebrow text-neutral-400">{t("[CITY], Japan · Formula EV design")}</p>
+            <p className="eyebrow text-neutral-400">{t("Nagoya, Japan · Formula EV design")}</p>
             <h1 id="hero-title" className="text-[40px] font-semibold leading-[44px] tracking-[-0.03em] md:text-[56px] md:leading-[56px] xl:text-[72px] xl:leading-[72px]">
               {t("Formula EV parts")}
               <br />
