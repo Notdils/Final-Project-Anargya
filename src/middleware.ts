@@ -5,10 +5,14 @@ const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
 const NEEDS_LOGIN = [/^\/checkout/, /^\/account/, /^\/receipt\//, /^\/app$/, /^\/reset-password$/];
+// Japanese pages live under /ja; rules are written for the unprefixed path.
+const strip = (p: string) => (p === "/ja" ? "/" : p.startsWith("/ja/") ? p.slice(3) : p);
 const NEEDS_ADMIN = [/^\/admin/, /^\/api\/admin\//];
 
 export async function middleware(req: NextRequest) {
-  const path = req.nextUrl.pathname;
+  const full = req.nextUrl.pathname;
+  const ja = full === "/ja" || full.startsWith("/ja/");
+  const path = strip(full);
   // Without Supabase (local UI review) every page renders with placeholder data.
   if (!URL_ || !KEY) return NextResponse.next();
 
@@ -29,8 +33,8 @@ export async function middleware(req: NextRequest) {
 
   const redirect = (to: string) => {
     const u = req.nextUrl.clone();
-    u.pathname = to;
-    u.search = to === "/login" ? `?next=${encodeURIComponent(path + req.nextUrl.search)}` : "";
+    u.pathname = ja && !to.startsWith("/admin") ? (to === "/" ? "/ja" : `/ja${to}`) : to;
+    u.search = to === "/login" ? `?next=${encodeURIComponent(full + req.nextUrl.search)}` : "";
     return NextResponse.redirect(u);
   };
 
@@ -58,5 +62,11 @@ export const config = {
     "/api/admin/:path*",
     "/login",
     "/register",
+    "/ja/checkout/:path*",
+    "/ja/account/:path*",
+    "/ja/receipt/:path*",
+    "/ja/reset-password",
+    "/ja/login",
+    "/ja/register",
   ],
 };

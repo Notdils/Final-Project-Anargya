@@ -1,16 +1,21 @@
+"use client";
 import Link from "next/link";
+import { useLp, useT } from "@/i18n/client";
 
 export function SiteFooter() {
+  const t = useT();
+  const L = useLp();
   return (
     <footer className="overflow-hidden bg-teal text-white">
       <div className="container-x flex flex-col gap-8 pt-12 md:gap-10">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <nav aria-label="Footer">
+          <nav aria-label={t("Footer")}>
             <ul className="flex flex-col gap-4 text-sm md:flex-row md:gap-6">
-              <li><Link href="/" className="hover:underline">Home</Link></li>
-              <li><Link href="/about" className="hover:underline">About</Link></li>
-              <li><Link href="/marketplace" className="hover:underline">Marketplace</Link></li>
-              <li><Link href="/login" className="hover:underline">Log in</Link></li>
+              <li><Link href={L("/")} className="hover:underline">{t("Home")}</Link></li>
+              <li><Link href={L("/about")} className="hover:underline">{t("About")}</Link></li>
+              <li><Link href={L("/marketplace")} className="hover:underline">{t("Marketplace")}</Link></li>
+              <li><Link href={L("/consulting")} className="hover:underline">{t("Consulting")}</Link></li>
+              <li><Link href={L("/login")} className="hover:underline">{t("Log in")}</Link></li>
             </ul>
           </nav>
           <p className="text-sm text-white/90">© 2026 Anargya Corp.</p>

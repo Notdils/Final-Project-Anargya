@@ -11,7 +11,9 @@ export type Product = {
   code: string;
   name: string;
   category: Category;
-  priceJpy: number;
+  priceUsd: number;
+  unit: string;
+  image: string | null;
   stock: number;
   leadTime: string;
   material: string;
@@ -44,20 +46,23 @@ const base = {
   finish: PH,
   description: `${PH} Two sentences: what the part does, material, and which vehicles it fits.`,
   modelUrl: null,
+  image: null,
 };
 
-// Placeholder prices (JPY) only exist so cart and checkout can be demonstrated end to end.
+// Fallback catalog (same as supabase/migrations/0005_usd_catalog.sql), used when Supabase is not configured.
+// Selling prices in USD from Finance's preliminary sheet.
+const part = (p: Pick<Product, "id" | "slug" | "code" | "name" | "category" | "priceUsd" | "unit" | "stock" | "description">): Product => ({
+  ...base, ...p, featured: true, image: `/parts/${p.slug}.webp`,
+});
 export const PLACEHOLDER_PRODUCTS: Product[] = [
-  { id: "p-aero-01", slug: "front-wing", code: "AN-AERO-01", name: `${PH} Front wing`, category: "aero", priceJpy: 10000, stock: 3, featured: true, ...base },
-  { id: "p-aero-02", slug: "rear-wing", code: "AN-AERO-02", name: `${PH} Rear wing`, category: "aero", priceJpy: 10000, stock: 12, featured: true, ...base },
-  { id: "p-susp-01", slug: "damper-set", code: "AN-SUSP-01", name: `${PH} Damper set`, category: "suspension", priceJpy: 10000, stock: 8, featured: true, ...base },
-  { id: "p-susp-02", slug: "brake-rotor", code: "AN-SUSP-02", name: `${PH} Brake rotor`, category: "suspension", priceJpy: 10000, stock: 2, featured: true, ...base },
-  { id: "p-elec-01", slug: "battery-enclosure", code: "AN-ELEC-01", name: `${PH} Battery enclosure`, category: "electrical", priceJpy: 10000, stock: 5, featured: true, ...base },
-  { id: "p-elec-02", slug: "wiring-harness", code: "AN-ELEC-02", name: `${PH} Wiring harness`, category: "electrical", priceJpy: 10000, stock: 10, featured: false, ...base },
-  { id: "p-chas-01", slug: "upright", code: "AN-CHAS-01", name: `${PH} Upright`, category: "chassis", priceJpy: 10000, stock: 6, featured: true, ...base },
-  { id: "p-chas-02", slug: "wishbone-set", code: "AN-CHAS-02", name: `${PH} Wishbone set`, category: "chassis", priceJpy: 10000, stock: 1, featured: false, ...base },
-  { id: "p-driv-01", slug: "motor-housing", code: "AN-DRIV-01", name: `${PH} Motor housing`, category: "drivetrain", priceJpy: 10000, stock: 4, featured: false, ...base },
-  { id: "p-driv-02", slug: "radiator", code: "AN-DRIV-02", name: `${PH} Radiator`, category: "drivetrain", priceJpy: 10000, stock: 9, featured: false, ...base },
+  part({ id: "p-upright-kit", slug: "uprights-wheel-hub-kit", code: "AN-SUSP-01", name: "Uprights & Wheel Hub Assembly Kit", category: "suspension", priceUsd: 2880, unit: "set", stock: 8,
+    description: "Upright, wheel hub, bearing and brake caliper mounts as one matched corner assembly for a formula EV." }),
+  part({ id: "p-aero-package", slug: "custom-aero-package", code: "AN-AERO-01", name: "Custom Aero Package (Wings & Diffuser)", category: "aero", priceUsd: 3600, unit: "kit", stock: 5,
+    description: "Front wing, rear wing and diffuser designed together and tuned to the car's downforce and balance targets." }),
+  part({ id: "p-vcu-bms", slug: "custom-vcu-bms-unit", code: "AN-ELEC-01", name: "Custom VCU & BMS Unit (EV)", category: "electrical", priceUsd: 960, unit: "unit", stock: 12,
+    description: "Vehicle control unit and battery management system in one enclosure, configured for your pack and motor controller." }),
+  part({ id: "p-pedal-box", slug: "brake-pedal-box", code: "AN-CHAS-01", name: "Custom Brake Pedal Box & Master Cylinder", category: "chassis", priceUsd: 1440, unit: "set", stock: 6,
+    description: "Adjustable pedal box with throttle and brake pedals and dual master cylinders, sized to your driver and chassis." }),
 ];
 
 export const LOW_STOCK = 3;

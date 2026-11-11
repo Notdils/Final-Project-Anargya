@@ -3,7 +3,8 @@ import { AlertTriangle, ChevronLeft, ChevronRight, Download, Search } from "luci
 import { PAGE_SIZE, parseDays, parseStatus, receipts } from "@/lib/admin";
 import { RangeSelect } from "@/components/admin/range-select";
 import { OrderStatusBadge } from "@/components/status-badge";
-import { jst, rupiah, yen } from "@/lib/format";
+import { jst, rupiah } from "@/lib/format";
+import { orderAmount } from "@/lib/money";
 
 export const metadata = { title: "Receipts" };
 
@@ -72,7 +73,7 @@ export default async function AdminReceipts({ searchParams }: { searchParams: Pr
                     <td className="px-4 py-3 font-mono"><Link href={`/receipt/${o.id}`} className="text-teal hover:underline">{o.receipt_no}</Link></td>
                     <td className="px-4 py-3">{o.buyer_name}<br /><span className="text-xs text-muted">{o.email}</span></td>
                     <td className="px-4 py-3 font-mono">{jst(o.created_at)}</td>
-                    <td className="px-4 py-3 text-right font-mono">{yen(o.total_jpy)}</td>
+                    <td className="px-4 py-3 text-right font-mono">{orderAmount(o)}</td>
                     <td className="px-4 py-3 text-right font-mono">{rupiah(o.charged_idr)}</td>
                     <td className="px-4 py-3">{o.method ?? "—"}</td>
                     <td className="px-4 py-3"><div className="flex flex-col items-start gap-1"><OrderStatusBadge status={o.status} />{o.oversold && <span className="inline-flex items-center gap-1 rounded bg-oxide px-1.5 py-0.5 text-xs font-medium text-white"><AlertTriangle size={12} aria-hidden />Refund or restock</span>}{o.needs_review && <span title={o.review_note ?? undefined} className="inline-flex items-center gap-1 rounded bg-oxide px-1.5 py-0.5 text-xs font-medium text-white"><AlertTriangle size={12} aria-hidden />Needs review</span>}{o.needs_review && o.review_note && <span className="max-w-[200px] text-xs text-oxide">{o.review_note}</span>}</div></td>

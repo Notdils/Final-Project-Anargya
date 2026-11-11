@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   if (error || !data.user) {
     const left = Math.max(0, MAX - tries);
     return NextResponse.json(
-      { error: left > 0 ? `Email or password is incorrect. ${left} attempt${left === 1 ? "" : "s"} left before a 5-minute lock.` : "Too many attempts. Try again in 5 minutes.", locked: left === 0 },
+      { error: left > 0 ? `Email or password is incorrect. ${left} attempt${left === 1 ? "" : "s"} left before a 5-minute lock.` : "Too many attempts. Try again in 5 minutes.", locked: left === 0, left },
       { status: 401 },
     );
   }

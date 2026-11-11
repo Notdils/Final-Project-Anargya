@@ -1,5 +1,6 @@
 "use client";
 import { useId, useState } from "react";
+import { useT } from "@/i18n/client";
 
 const CAPS = {
   Electrical: [
@@ -24,11 +25,12 @@ type Key = keyof typeof CAPS;
 const KEYS = Object.keys(CAPS) as Key[];
 
 export function CapabilityTabs() {
+  const t = useT();
   const [tab, setTab] = useState<Key>("Electrical");
   const id = useId();
   return (
     <div className="flex flex-col gap-6">
-      <div role="tablist" aria-label="Disciplines" className="inline-flex w-fit gap-1 rounded-lg bg-surface-2 p-1">
+      <div role="tablist" aria-label={t("Disciplines")} className="inline-flex w-fit gap-1 rounded-lg bg-surface-2 p-1">
         {KEYS.map((k, i) => (
           <button
             key={k}
@@ -48,7 +50,7 @@ export function CapabilityTabs() {
             }}
             className={`rounded px-3 py-1.5 text-sm font-medium ${tab === k ? "bg-teal text-white" : "text-muted hover:text-ink"}`}
           >
-            {k}
+            {t(k)}
           </button>
         ))}
       </div>
@@ -56,8 +58,8 @@ export function CapabilityTabs() {
       <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {CAPS[tab].map(([h, s]) => (
           <li key={h} className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-6">
-            <h3 className="font-medium">{h}</h3>
-            <p className="text-sm text-muted">{s}</p>
+            <h3 className="font-medium">{t(h)}</h3>
+            <p className="text-sm text-muted">{t(s)}</p>
           </li>
         ))}
       </ul>

@@ -11,8 +11,9 @@ export const MIDTRANS_SNAP_JS = MIDTRANS_IS_PRODUCTION
   ? "https://app.midtrans.com/snap/snap.js"
   : "https://app.sandbox.midtrans.com/snap/snap.js";
 
-// JPY -> IDR rate used to charge through Midtrans. Must be set explicitly (no invented default).
-export const fxJpyIdr = () => {
-  const v = Number(process.env.FX_JPY_IDR);
+// USD -> IDR rate used to charge through Midtrans. Must be set explicitly (no invented default).
+export const fxUsdIdr = () => {
+  const v = Number(process.env.FX_USD_IDR);
   return Number.isFinite(v) && v > 0 ? v : null;
 };
+export const shippingUsd = () => Math.max(0, Number(process.env.SHIPPING_FLAT_USD) || 0);

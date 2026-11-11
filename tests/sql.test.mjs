@@ -74,3 +74,28 @@ console.log("funnel:", (await run(`select * from funnel_counts(now()-interval '1
     console.log("needs_review flag:", r.needs_review, r.review_note);
   } else console.log("needs_review: columns present:", (await run("select count(*) from information_schema.columns where table_name='orders' and column_name in ('needs_review','review_note','snap_token','pay_expires_at')")).rows[0].count);
 }
+
+// 0005: USD catalog and USD orders (runs after the JPY tests above, like a real upgrade)
+await db.exec(readFileSync(new URL("../supabase/migrations/0005_usd_catalog.sql", import.meta.url), "utf8"));
+await db.exec(readFileSync(new URL("../supabase/migrations/0005_usd_catalog.sql", import.meta.url), "utf8")); // re-run is safe
+console.log("0005 active products:", (await run("select code, price_usd, unit from products where active order by code")).rows.map(r => `${r.code} $${r.price_usd}/${r.unit}`).join(", "));
+console.log("0005 inactive old products:", (await run("select count(*) from products where not active")).rows[0].count);
+const usd = async (items, ship = 0, fx = 16000) => (await run(`select * from create_order_usd($1::jsonb,$2::jsonb,$3,$4)`, [JSON.stringify(items), contact, ship, fx])).rows[0];
+await as(U1);
+const u1 = await usd([{ id: "p-aero-package", qty: 1 }, { id: "p-vcu-bms", qty: 2 }], 0, 16000);
+console.log("usd order:", u1.total_usd, "USD ->", u1.charged_idr, "IDR (expect 5520 -> 88320000)");
+try { await usd([{ id: "p-aero-01", qty: 1 }]); console.log("FAIL: old product orderable"); } catch (e) { console.log("old product blocked:", e.message); }
+try { await usd([{ id: "p-vcu-bms", qty: 1 }], 0, 0); console.log("FAIL: zero fx"); } catch (e) { console.log("zero fx blocked:", e.message); }
+try { await order([{ id: "p-aero-package", qty: 1 }]); console.log("old JPY path still callable as owner (grant revoked for authenticated in Supabase)"); } catch (e) { console.log("jpy path:", e.message); }
+await run(`select mark_order_paid($1,'tu','card')`, [u1.order_id]);
+console.log("usd paid, stock aero/vcu:", await stock("p-aero-package"), await stock("p-vcu-bms"), "(expect 4, 10)");
+
+// 0006: bookings, one active booking per slot, public view of taken slots without personal data
+await db.exec(readFileSync(new URL("../supabase/migrations/0006_bookings.sql", import.meta.url), "utf8"));
+const bk = (d, t, st = "requested") => run(`insert into bookings(name,email,organisation,topic,slot_date,slot_time,status) values ('Tester','t@x.co','Team X','aero',$1,$2,$3) returning id`, [d, t, st]);
+const b1 = (await bk("2026-12-01", "09:00")).rows[0].id;
+try { await bk("2026-12-01", "09:00"); console.log("FAIL: double booking allowed"); } catch (e) { console.log("double booking blocked:", e.message.slice(0, 60)); }
+await run(`update bookings set status='cancelled' where id=$1`, [b1]);
+await bk("2026-12-01", "09:00"); console.log("slot reusable after cancel: ok");
+try { await bk("2026-12-02", "10:30"); console.log("FAIL: bad slot accepted"); } catch (e) { console.log("bad slot blocked"); }
+console.log("taken slots:", (await run(`select * from taken_slots('2026-11-01','2026-12-31')`)).rows.map(r => `${r.slot_date.toISOString?.().slice(0,10) ?? r.slot_date} ${r.slot_time}`), "columns:", Object.keys((await run(`select * from taken_slots('2026-11-01','2026-12-31')`)).rows[0]).join(","));

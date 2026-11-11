@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { currentUser, supabaseServer, supabaseService } from "@/lib/supabase/server";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { fxJpyIdr } from "@/lib/env";
+import { fxUsdIdr, shippingUsd } from "@/lib/env";
 import { PAY_WINDOW_MIN, createSnap, hasMidtrans } from "@/lib/midtrans";
 
 const Body = z.object({
@@ -16,6 +16,7 @@ const Body = z.object({
     postal: z.string().trim().regex(/^[0-9A-Za-z -]{3,10}$/),
     country: z.string().trim().min(2).max(56),
   }),
+  locale: z.enum(["en", "ja"]).optional(),
 });
 
 export async function POST(req: Request) {
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Check the highlighted fields.", fields: parsed.error.flatten().fieldErrors }, { status: 400 });
 
-  const fx = fxJpyIdr();
+  const fx = fxUsdIdr();
   if (!fx || !hasMidtrans()) return NextResponse.json({ error: "Payments are not configured yet." }, { status: 503 });
 
   // merge duplicate lines
@@ -41,13 +42,12 @@ export async function POST(req: Request) {
   );
 
   const sb = (await supabaseServer())!;
-  const shipping = Math.max(0, Number(process.env.SHIPPING_FLAT_JPY) || 0);
-  const { data, error } = await sb.rpc("create_order", { p_items: merged, p_contact: parsed.data.contact, p_shipping_jpy: shipping, p_fx: fx });
+  const { data, error } = await sb.rpc("create_order_usd", { p_items: merged, p_contact: parsed.data.contact, p_shipping_usd: shippingUsd(), p_fx_usd_idr: fx });
   if (error || !data?.[0]) {
     const msg = /insufficient stock/i.test(error?.message ?? "") ? "One of the parts just went out of stock. Update your cart." : "Could not create the order.";
     return NextResponse.json({ error: msg }, { status: 409 });
   }
-  const order = data[0] as { order_id: string; receipt_no: string; total_jpy: number; charged_idr: number };
+  const order = data[0] as { order_id: string; receipt_no: string; total_usd: number; charged_idr: number };
 
   try {
     const origin = new URL(req.url).origin;
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       orderId: order.order_id,
       grossIdr: Number(order.charged_idr),
       customer: { name: parsed.data.contact.name, email: parsed.data.contact.email, phone: parsed.data.contact.phone },
-      finishUrl: `${origin}/receipt/${order.order_id}`,
+      finishUrl: `${origin}${parsed.data.locale === "ja" ? "/ja" : ""}/receipt/${order.order_id}`,
     });
     // Kept so the buyer can resume from the receipt if they close the popup.
     await supabaseService()

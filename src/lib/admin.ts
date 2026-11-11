@@ -18,17 +18,17 @@ export async function overview(days: number) {
   await reconcileStale().catch(() => {});
   const from = since(days), to = new Date().toISOString();
   const [orders, funnel, review] = await Promise.all([
-    sb.from("orders").select("id, receipt_no, buyer_name, total_jpy, status, created_at").gte("created_at", from).order("created_at", { ascending: false }),
+    sb.from("orders").select("id, receipt_no, buyer_name, total_jpy, total_usd, status, created_at").gte("created_at", from).order("created_at", { ascending: false }),
     sb.rpc("funnel_counts", { p_from: from, p_to: to }),
     sb.from("orders").select("id", { count: "exact", head: true }).eq("needs_review", true),
   ]);
-  const list = (orders.data ?? []) as Pick<Order, "id" | "receipt_no" | "buyer_name" | "total_jpy" | "status" | "created_at">[];
+  const list = (orders.data ?? []) as Pick<Order, "id" | "receipt_no" | "buyer_name" | "total_jpy" | "total_usd" | "status" | "created_at">[];
   const paid = list.filter((o) => o.status === "paid");
   const steps = ((funnel.data ?? []) as { step: string; sessions: number }[]).map((s) => ({ step: s.step, n: Number(s.sessions) }));
   const home = steps.find((s) => s.step === "home")?.n ?? 0;
   const paidN = steps.find((s) => s.step === "paid")?.n ?? paid.length;
   return {
-    revenue: paid.reduce((s, o) => s + o.total_jpy, 0),
+    revenue: paid.reduce((s, o) => s + Number(o.total_usd ?? 0), 0), // USD; older JPY test orders are not counted
     paid: paid.length,
     pending: list.filter((o) => o.status === "pending").length,
     conversion: home ? (paidN / home) * 100 : null,
@@ -62,7 +62,7 @@ export async function receipts(f: ReceiptFilter) {
 export async function receiptsForExport(f: Omit<ReceiptFilter, "page">) {
   const sb = await supabaseServer();
   if (!sb) return [];
-  const { data } = await applyFilters(sb.from("orders").select("*, order_items(code, name, qty, unit_price_jpy)"), { ...f, page: 1 })
+  const { data } = await applyFilters(sb.from("orders").select("*, order_items(code, name, qty, unit_price_jpy, unit_price_usd)"), { ...f, page: 1 })
     .order("created_at", { ascending: false })
     .limit(5000);
   return (data ?? []) as Order[];

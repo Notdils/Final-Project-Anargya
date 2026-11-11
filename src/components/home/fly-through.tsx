@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useT } from "@/i18n/client";
 
 // Z fly-through (skill: motion-parallax). Camera dollies along Z on scroll; objects are projected
 // with perspective so they grow radially from the vanishing point. Two headlines swap mid-way.
@@ -39,10 +40,12 @@ const MARK = markPath();
 const CFG = { focal: 1000, travel: 3700, fogFar: 3200, fogNear: 2600, nearFade: 400, nearClip: 260, scrub: 0.6, staticP: 0.65, mouse: 0.08, mouseEase: 0.15 };
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
-const LINE_A = ["Designing", "cars?"];
-const LINE_B = ["We", "got", "you", "covered."];
 
 export function FlyThrough() {
+  const t = useT();
+  const lineA = t("Designing cars?").split(" ");
+  const lineB = t("We got you covered.").split(" ");
+  const label = `${t("Designing cars?")} ${t("We got you covered.")}`;
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -152,21 +155,21 @@ export function FlyThrough() {
   }, []);
 
   return (
-    <section ref={ref} className="mp" aria-label="Designing cars? We got you covered.">
+    <section ref={ref} className="mp" aria-label={label}>
       <div className="mp__stage">
         <svg className="mp__plane" data-x="0" data-y="0.04" data-z="2300" data-size="46" viewBox="0 0 400 160" aria-hidden>
           <path d={MARK} />
         </svg>
 
-        <h2 className="mp__title" aria-label="Designing cars? We got you covered.">
+        <h2 className="mp__title" aria-label={label}>
           <span className="mp__line mp__line--a" aria-hidden>
-            {LINE_A.map((w) => (
-              <span key={w} className="mp__word"><span>{w}</span></span>
+            {lineA.map((w, i) => (
+              <span key={i} className="mp__word"><span>{w}</span></span>
             ))}
           </span>
           <span className="mp__line mp__line--b" aria-hidden>
-            {LINE_B.map((w) => (
-              <span key={w} className="mp__word"><span>{w}</span></span>
+            {lineB.map((w, i) => (
+              <span key={i} className="mp__word"><span>{w}</span></span>
             ))}
           </span>
         </h2>

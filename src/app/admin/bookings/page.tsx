@@ -1,0 +1,77 @@
+import { CalendarClock } from "lucide-react";
+import { supabaseServer } from "@/lib/supabase/server";
+import { TOPICS, dateLabel, todayJst } from "@/lib/booking";
+import { jst } from "@/lib/format";
+
+export const metadata = { title: "Bookings" };
+
+type Booking = { id: string; name: string; email: string; organisation: string; topic: string; slot_date: string; slot_time: string; message: string | null; status: "requested" | "confirmed" | "cancelled"; created_at: string };
+
+const STATUS_STYLE = { requested: "bg-ochre-tint text-ink", confirmed: "bg-teal-tint text-teal", cancelled: "bg-surface-2 text-muted" } as const;
+const topicLabel = (id: string) => TOPICS.find((t) => t.id === id)?.label ?? id;
+
+export default async function AdminBookings({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
+  const show = (await searchParams).show === "past" ? "past" : "upcoming";
+  const sb = await supabaseServer();
+  const today = todayJst();
+  let rows: Booking[] = [];
+  if (sb) {
+    const q = sb.from("bookings").select("*");
+    const { data } = show === "upcoming"
+      ? await q.gte("slot_date", today).order("slot_date").order("slot_time").limit(200)
+      : await q.lt("slot_date", today).order("slot_date", { ascending: false }).limit(200);
+    rows = (data ?? []) as Booking[];
+  }
+  const waiting = rows.filter((r) => r.status === "requested").length;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-[-0.02em] md:text-[28px] md:leading-9">Bookings</h1>
+          <p className="text-sm text-muted">Consultation requests. Times are JST. Confirm by email, then mark the booking confirmed here.</p>
+        </div>
+        <nav aria-label="Booking range" className="flex gap-1 rounded-lg border border-line p-1 text-sm">
+          {(["upcoming", "past"] as const).map((s) => (
+            <a key={s} href={s === "upcoming" ? "/admin/bookings" : "/admin/bookings?show=past"} aria-current={show === s ? "page" : undefined} className={`rounded-md px-3 py-1 capitalize ${show === s ? "bg-teal text-white" : "text-muted"}`}>{s}</a>
+          ))}
+        </nav>
+      </div>
+
+      {show === "upcoming" && waiting > 0 && (
+        <p role="status" className="rounded-lg bg-ochre-tint p-3 text-sm"><strong>{waiting}</strong> {waiting === 1 ? "request is" : "requests are"} waiting for a reply.</p>
+      )}
+
+      {rows.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-line p-10 text-center">
+          <CalendarClock size={20} className="text-muted" aria-hidden />
+          <p className="font-medium">No {show} bookings.</p>
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {rows.map((b) => (
+            <li key={b.id} className="flex flex-col gap-3 rounded-xl border border-line p-4 md:flex-row md:items-start md:justify-between md:p-5">
+              <div className="flex min-w-0 flex-col gap-1">
+                <p className="font-mono text-sm">{dateLabel(b.slot_date)} · {b.slot_time} JST</p>
+                <p className="font-medium">{b.name} <span className="font-normal text-muted">· {b.organisation}</span></p>
+                <a href={`mailto:${b.email}`} className="text-sm text-teal [overflow-wrap:anywhere] hover:underline">{b.email}</a>
+                <p className="text-sm">{topicLabel(b.topic)}</p>
+                {b.message && <p className="max-w-[640px] whitespace-pre-line text-sm text-muted">{b.message}</p>}
+                <p className="text-xs text-muted">Requested {jst(b.created_at)}</p>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <span className={`rounded px-2 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[b.status]}`}>{b.status}</span>
+                {b.status !== "confirmed" && (
+                  <form action={`/api/admin/bookings/${b.id}`} method="post"><input type="hidden" name="status" value="confirmed" /><button className="btn btn-outline px-3">Confirm</button></form>
+                )}
+                {b.status !== "cancelled" && (
+                  <form action={`/api/admin/bookings/${b.id}`} method="post"><input type="hidden" name="status" value="cancelled" /><button className="btn btn-outline px-3 text-oxide">Cancel</button></form>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Wind, Zap, Box, Disc, Activity, Cog } from "lucide-react";
 import type { Category, Product } from "@/lib/data";
 import { categoryLabel } from "@/lib/data";
-import { yen } from "@/lib/format";
 import { PartRender, StockBadge } from "./product";
+import { Price } from "./price";
+import { useLp, useT } from "@/i18n/client";
 
 const ICON: Record<Category, typeof Wind> = { aero: Wind, electrical: Zap, chassis: Box, drivetrain: Cog, suspension: Disc };
 
@@ -22,6 +23,8 @@ function Brackets() {
 }
 
 function Card({ p, active }: { p: Product; active: boolean }) {
+  const t = useT();
+  const L = useLp();
   return (
     <div className="flex h-full flex-col gap-4 rounded-xl border border-stage-line bg-stage-2 p-4 text-white md:p-6">
       <div className="flex flex-col gap-2">
@@ -32,21 +35,21 @@ function Card({ p, active }: { p: Product; active: boolean }) {
         <h3 className="text-lg font-medium leading-6 md:text-[22px] md:leading-7">{p.name}</h3>
       </div>
       <div className="min-h-0 flex-1">
-        <PartRender dark label="Part 3D / turntable" />
+        <PartRender dark label={t("Part 3D / turntable")} image={p.image} alt={t("Preliminary 3D draft of the {name}", { name: p.name })} />
       </div>
       {active && (
         <>
           <div>
-            <p className="mb-2 text-sm font-medium">Specifications</p>
+            <p className="mb-2 text-sm font-medium">{t("Specifications")}</p>
             <dl className="grid grid-cols-1 gap-x-4 gap-y-1 font-mono text-[11px] uppercase text-neutral-400 sm:grid-cols-2">
               {[["Material", p.material], ["Weight", p.weight], ["Fits", p.fits], ["Lead time", p.leadTime]].map(([k, v]) => (
-                <div key={k} className="flex gap-2"><dt>{k}</dt><dd className="truncate">{v}</dd></div>
+                <div key={k} className="flex gap-2"><dt>{t(k)}</dt><dd className="truncate">{t(v)}</dd></div>
               ))}
             </dl>
           </div>
           <div className="flex items-center justify-between border-t border-stage-line pt-4">
-            <span className="font-mono font-medium">{yen(p.priceJpy)}</span>
-            <Link href={`/marketplace/${p.slug}`} className="btn btn-teal">View part</Link>
+            <Price usd={p.priceUsd} className="font-medium" subClassName="text-xs text-neutral-400" />
+            <Link href={L(`/marketplace/${p.slug}`)} className="btn btn-teal">{t("View part")}</Link>
           </div>
         </>
       )}
@@ -55,6 +58,7 @@ function Card({ p, active }: { p: Product; active: boolean }) {
 }
 
 export function Coverflow({ products, headingId = "featured-title" }: { products: Product[]; headingId?: string }) {
+  const t = useT();
   const [i, setI] = useState(Math.min(1, products.length - 1));
   const n = products.length;
   const go = useCallback((d: number) => setI((v) => (v + d + n) % n), [n]);
@@ -69,9 +73,9 @@ export function Coverflow({ products, headingId = "featured-title" }: { products
   return (
     <section aria-labelledby={headingId} className="overflow-hidden bg-stage py-12 text-white md:py-24">
       <div className="container-x mb-8 flex flex-col items-center gap-3 text-center md:mb-12">
-        <p className="eyebrow text-neutral-400">Marketplace</p>
+        <p className="eyebrow text-neutral-400">{t("Marketplace")}</p>
         <h2 id={headingId} className="text-[32px] font-semibold leading-10 tracking-[-0.03em] md:text-5xl md:leading-[56px]">
-          Featured parts
+          {t("Featured parts")}
         </h2>
       </div>
 
@@ -79,7 +83,7 @@ export function Coverflow({ products, headingId = "featured-title" }: { products
         ref={root}
         role="region"
         aria-roledescription="carousel"
-        aria-label="Featured parts"
+        aria-label={t("Featured parts")}
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === "ArrowLeft") go(-1); if (e.key === "ArrowRight") go(1); }}
         onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
@@ -116,7 +120,7 @@ export function Coverflow({ products, headingId = "featured-title" }: { products
 
       <div className="mt-8 flex justify-center md:mt-12">
         <div className="flex max-w-[calc(100vw-40px)] items-center gap-1 overflow-x-auto rounded-lg border border-stage-line bg-[#171717] p-1">
-          <button type="button" className="rounded p-2 text-neutral-400 hover:text-white" aria-label="Previous part" onClick={() => go(-1)}>
+          <button type="button" className="rounded p-2 text-neutral-400 hover:text-white" aria-label={t("Previous part")} onClick={() => go(-1)}>
             <ChevronLeft size={16} aria-hidden />
           </button>
           {products.map((p, k) => {
@@ -127,7 +131,7 @@ export function Coverflow({ products, headingId = "featured-title" }: { products
                 key={p.id}
                 type="button"
                 onClick={() => setI(k)}
-                aria-label={`${p.name}, ${categoryLabel(p.category)}`}
+                aria-label={`${p.name}, ${t(categoryLabel(p.category))}`}
                 aria-current={on}
                 className={`rounded p-2 ${on ? "bg-teal text-white" : "text-neutral-400 hover:text-white"}`}
               >
@@ -135,7 +139,7 @@ export function Coverflow({ products, headingId = "featured-title" }: { products
               </button>
             );
           })}
-          <button type="button" className="rounded p-2 text-neutral-400 hover:text-white" aria-label="Next part" onClick={() => go(1)}>
+          <button type="button" className="rounded p-2 text-neutral-400 hover:text-white" aria-label={t("Next part")} onClick={() => go(1)}>
             <ChevronRight size={16} aria-hidden />
           </button>
         </div>

@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, LayoutGrid, LogOut, Receipt } from "lucide-react";
+import { ArrowLeft, CalendarClock, LayoutGrid, LogOut, Receipt } from "lucide-react";
 
 const ITEMS = [
   { href: "/admin", label: "Overview", Icon: LayoutGrid },
   { href: "/admin/receipts", label: "Receipts", Icon: Receipt },
+  { href: "/admin/bookings", label: "Bookings", Icon: CalendarClock },
 ];
 
 export function AdminNav({ email }: { email: string | null }) {

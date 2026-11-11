@@ -5,6 +5,7 @@ import "./globals.css";
 import { CartProvider } from "@/components/cart";
 import { Tracker } from "@/components/tracker";
 import { SwRegister } from "@/components/sw-register";
+import { LocaleProvider } from "@/i18n/client";
 
 export const metadata: Metadata = {
   title: { default: "Anargya Corp", template: "%s · Anargya Corp" },
@@ -27,7 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[2000] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2">
           Skip to content
         </a>
-        <CartProvider>{children}</CartProvider>
+        <LocaleProvider><CartProvider>{children}</CartProvider></LocaleProvider>
         <Tracker />
         <SwRegister />
       </body>

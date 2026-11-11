@@ -1,7 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Menu, ShoppingCart, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Languages, Menu, ShoppingCart, X } from "lucide-react";
+import { useLocale, useLp, useT } from "@/i18n/client";
+import { lp, splitLocale } from "@/i18n";
 import { useCart } from "./cart";
 import { useAuth } from "./auth-state";
 
@@ -9,6 +12,7 @@ const LINKS = [
   { href: "/", label: "Home", key: "home" },
   { href: "/about", label: "About", key: "about" },
   { href: "/marketplace", label: "Marketplace", key: "marketplace" },
+  { href: "/consulting", label: "Consulting", key: "consulting" },
 ] as const;
 
 export function HeaderClient({
@@ -19,6 +23,12 @@ export function HeaderClient({
   active?: string;
 }) {
   const { ready: authReady, signedIn, isAdmin } = useAuth();
+  const t = useT();
+  const L = useLp();
+  const locale = useLocale();
+  const pathname = usePathname() ?? "/";
+  const other = locale === "en" ? "ja" : "en";
+  const switchHref = lp(splitLocale(pathname).path, other);
   const { count, ready } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -40,8 +50,8 @@ export function HeaderClient({
   }, [open]);
 
   const dark = variant === "overlay" && !scrolled;
-  const accountHref = isAdmin ? "/admin" : signedIn ? "/account" : "/login";
-  const accountLabel = isAdmin ? "Admin" : signedIn ? "Account" : "Log in";
+  const accountHref = isAdmin ? "/admin" : L(signedIn ? "/account" : "/login");
+  const accountLabel = t(isAdmin ? "Admin" : signedIn ? "Account" : "Log in");
 
   return (
     <header
@@ -50,8 +60,8 @@ export function HeaderClient({
         dark ? "bg-transparent text-white" : "border-b border-line bg-white/95 text-ink backdrop-blur"
       }`}
     >
-      <nav aria-label="Main" className="container-x flex h-16 items-center justify-between">
-        <Link href="/" className="text-base font-semibold tracking-[0.12em]">
+      <nav aria-label={t("Main")} className="container-x flex h-16 items-center justify-between">
+        <Link href={L("/")} className="text-base font-semibold tracking-[0.12em]">
           ANARGYA
         </Link>
 
@@ -61,13 +71,13 @@ export function HeaderClient({
             return (
               <li key={l.key}>
                 <Link
-                  href={l.href}
+                  href={L(l.href)}
                   aria-current={on ? "page" : undefined}
                   className={`relative text-sm font-medium after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:bg-teal after:transition-opacity ${
                     on ? "after:opacity-100" : `after:opacity-0 ${dark ? "text-neutral-400 hover:text-white" : "text-muted hover:text-ink"}`
                   }`}
                 >
-                  {l.label}
+                  {t(l.label)}
                 </Link>
               </li>
             );
@@ -75,9 +85,19 @@ export function HeaderClient({
         </ul>
 
         <div className="flex items-center gap-2">
+          <a
+            href={switchHref}
+            hrefLang={other}
+            lang={other}
+            aria-label={other === "ja" ? "日本語に切り替え" : "Switch to English"}
+            className={`btn px-2 font-mono text-xs ${dark ? "btn-outline-dark" : "btn-outline"}`}
+          >
+            <Languages size={16} aria-hidden />
+            <span>{other === "ja" ? "日本語" : "EN"}</span>
+          </a>
           <Link
-            href="/cart"
-            aria-label={`Cart, ${ready ? count : 0} items`}
+            href={L("/cart")}
+            aria-label={t("Cart, {n} items", { n: ready ? count : 0 })}
             className={`btn px-2 ${dark ? "btn-outline-dark" : "btn-outline"}`}
           >
             <ShoppingCart size={16} aria-hidden />
@@ -88,12 +108,12 @@ export function HeaderClient({
           <Link href={accountHref} className={`btn hidden md:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"} ${authReady ? "" : "invisible"}`}>
             {accountLabel}
           </Link>
-          <Link href="/marketplace" className={`btn hidden md:inline-flex ${dark ? "btn-teal" : "btn-ochre"}`}>
-            Shop parts
+          <Link href={L("/marketplace")} className={`btn hidden md:inline-flex ${dark ? "btn-teal" : "btn-ochre"}`}>
+            {t("Shop parts")}
           </Link>
           <button
             type="button"
-            aria-label="Open menu"
+            aria-label={t("Open menu")}
             aria-expanded={open}
             onClick={() => setOpen(true)}
             className={`btn px-2 md:hidden ${dark ? "btn-outline-dark" : "btn-outline"}`}
@@ -107,11 +127,11 @@ export function HeaderClient({
         ref={dialog}
         onClose={() => setOpen(false)}
         className="m-0 ml-auto h-dvh max-h-none w-[min(320px,85vw)] bg-white p-0 text-ink backdrop:bg-black/50"
-        aria-label="Menu"
+        aria-label={t("Menu")}
       >
         <div className="flex h-16 items-center justify-between border-b border-line px-5">
           <span className="text-base font-semibold tracking-[0.12em]">ANARGYA</span>
-          <button type="button" className="btn btn-outline px-2" aria-label="Close menu" onClick={() => setOpen(false)}>
+          <button type="button" className="btn btn-outline px-2" aria-label={t("Close menu")} onClick={() => setOpen(false)}>
             <X size={16} aria-hidden />
           </button>
         </div>
@@ -119,11 +139,11 @@ export function HeaderClient({
           {LINKS.map((l) => (
             <li key={l.key}>
               <Link
-                href={l.href}
+                href={L(l.href)}
                 onClick={() => setOpen(false)}
                 className={`block border-b border-line py-4 text-lg font-medium ${active === l.key ? "text-teal" : ""}`}
               >
-                {l.label}
+                {t(l.label)}
               </Link>
             </li>
           ))}
@@ -134,8 +154,8 @@ export function HeaderClient({
           </li>
         </ul>
         <div className="px-5">
-          <Link href="/marketplace" onClick={() => setOpen(false)} className="btn btn-ochre btn-lg w-full">
-            Shop parts
+          <Link href={L("/marketplace")} onClick={() => setOpen(false)} className="btn btn-ochre btn-lg w-full">
+            {t("Shop parts")}
           </Link>
         </div>
       </dialog>

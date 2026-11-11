@@ -1,14 +1,16 @@
 "use client";
 import { useId, useState } from "react";
+import { useT } from "@/i18n/client";
 
 const TABS = ["Specifications", "Overview", "Shipping"] as const;
 
 export function DetailTabs({ specs, overview }: { specs: [string, string][]; overview: string }) {
+  const tr = useT();
   const [tab, setTab] = useState<(typeof TABS)[number]>("Specifications");
   const id = useId();
   return (
     <div className="flex flex-col gap-6">
-      <div role="tablist" aria-label="Part details" className="flex gap-5 border-b border-line md:gap-8">
+      <div role="tablist" aria-label={tr("Part details")} className="flex gap-5 border-b border-line md:gap-8">
         {TABS.map((t, i) => (
           <button
             key={t}
@@ -24,7 +26,7 @@ export function DetailTabs({ specs, overview }: { specs: [string, string][]; ove
             }}
             className={`-mb-px border-b-2 py-3 text-sm font-medium ${tab === t ? "border-teal text-teal" : "border-transparent text-muted hover:text-ink"}`}
           >
-            {t}
+            {tr(t)}
           </button>
         ))}
       </div>
@@ -33,17 +35,17 @@ export function DetailTabs({ specs, overview }: { specs: [string, string][]; ove
           <dl>
             {specs.map(([k, v]) => (
               <div key={k} className="flex justify-between gap-4 border-b border-line py-3 text-sm">
-                <dt className="text-muted">{k}</dt>
-                <dd className="font-mono">{v}</dd>
+                <dt className="text-muted">{tr(k)}</dt>
+                <dd className="font-mono">{tr(v)}</dd>
               </div>
             ))}
           </dl>
         )}
-        {tab === "Overview" && <p className="text-[#404040]">{overview}</p>}
+        {tab === "Overview" && <p className="text-[#404040]">{tr(overview)}</p>}
         {tab === "Shipping" && (
           <div className="flex flex-col gap-3 text-[#404040]">
-            <p>[PLACEHOLDER] Shipping regions, carriers, and lead times from Procurement &amp; Logistics.</p>
-            <p>Prices are shown in JPY. Payment is charged in IDR through Midtrans at the rate shown at checkout.</p>
+            <p>{tr("[PLACEHOLDER] Shipping regions, carriers, and lead times from Procurement & Logistics.")}</p>
+            <p>{tr("Prices are set in USD, with yen shown for reference. Payment is charged in IDR through Midtrans at the rate shown at checkout.")}</p>
           </div>
         )}
       </div>

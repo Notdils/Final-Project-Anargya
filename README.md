@@ -40,7 +40,7 @@ Without Supabase env vars the site still renders with the placeholder catalog (a
 ## Supabase setup
 
 1. Create a new Supabase project.
-2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0004`).
+2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0006`).
 3. Auth → URL configuration: set Site URL to the deployed domain and add `https://<domain>/auth/callback` to Redirect URLs (password reset and email confirmation links land there).
 4. Register an account on the site, then make it admin (SQL editor):
    ```sql
@@ -71,7 +71,7 @@ Passwords are shared with the judges outside the repo.
 
 1. Sandbox dashboard → Settings → Access keys: generate a server key with **Snap Checkout: Write**, **Core API: Read**, **Expire transaction: Write**; copy it and the client key into env.
 2. Settings → Payment → Notification URL: `https://<domain>/api/midtrans/notify`. The notification only triggers a status lookup; the order is updated from what Midtrans's status API returns. If the amount differs from what we charged, the order is not marked paid and shows as **Needs review** in the admin.
-3. Set `FX_JPY_IDR` (rate confirmed by Finance). Checkout stays disabled until it is set.
+3. Set `FX_USD_IDR` and `NEXT_PUBLIC_FX_USD_JPY` (rates confirmed by Finance). Checkout stays disabled until `FX_USD_IDR` is set.
 
 ## PWA / Android (TWA)
 
@@ -81,7 +81,7 @@ Passwords are shared with the judges outside the repo.
 
 ## Placeholders to replace
 
-Everything marked `[PLACEHOLDER]` or `[CITY]`: product names, prices (all set to ¥10,000 only so checkout can be demoed), stock, specs, story, mission/vision, values, business-plan slots, company address, receipt fields (pending Finance), shipping (`SHIPPING_FLAT_JPY`), fly-through objects (waiting for the part renders), per-part 3D models (`products.model_url`).
+Everything marked `[PLACEHOLDER]` or `[CITY]`: stock and lead times of the four parts, specs, story, mission/vision, values, business-plan slots, company address, receipt fields (pending Finance), shipping (`SHIPPING_FLAT_USD`), consulting copy, launch poster (Graphic Design), fly-through objects (waiting for the part renders), per-part 3D models (`products.model_url`).
 
 ## Scripts
 

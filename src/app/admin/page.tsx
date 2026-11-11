@@ -3,7 +3,8 @@ import { AlertTriangle, MoreHorizontal } from "lucide-react";
 import { overview, parseDays } from "@/lib/admin";
 import { RangeSelect } from "@/components/admin/range-select";
 import { OrderStatusBadge } from "@/components/status-badge";
-import { jst, yen } from "@/lib/format";
+import { jst } from "@/lib/format";
+import { orderAmount, usd } from "@/lib/money";
 
 export const metadata = { title: "Overview" };
 
@@ -14,7 +15,7 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
   const d = await overview(days);
   const top = Math.max(1, ...(d?.funnel.map((s) => s.n) ?? [1]));
   const kpis = [
-    ["Revenue (JPY)", d ? yen(d.revenue) : "—", "Paid orders only"],
+    ["Revenue (USD)", d ? usd(d.revenue) : "-", "Paid orders only"],
     ["Paid orders", d ? String(d.paid) : "—", `Last ${days} days`],
     ["Pending payment", d ? String(d.pending) : "—", "Awaiting Midtrans"],
     ["Conversion", d?.conversion != null ? `${d.conversion.toFixed(1)}%` : "—", "Home → Paid"],
@@ -96,7 +97,7 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
                     <td className="px-4 py-3 font-mono">{o.receipt_no}</td>
                     <td className="px-4 py-3">{o.buyer_name}</td>
                     <td className="px-4 py-3 font-mono">{jst(o.created_at)}</td>
-                    <td className="px-4 py-3 text-right font-mono">{yen(o.total_jpy)}</td>
+                    <td className="px-4 py-3 text-right font-mono">{orderAmount(o)}</td>
                     <td className="px-4 py-3"><OrderStatusBadge status={o.status} /></td>
                     <td className="px-4 py-3"><Link href={`/receipt/${o.id}`} aria-label={`Open ${o.receipt_no}`}><MoreHorizontal size={16} className="text-muted" aria-hidden /></Link></td>
                   </tr>
