@@ -266,7 +266,7 @@ function EditSheet({ draft, isNew, canWrite, onClose, onSaved }: { draft: Draft;
                     <div className="flex items-center gap-3 rounded-lg border border-line p-3">
                       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-surface-2 text-teal">{kind === "image" ? <Upload size={18} aria-hidden /> : <Box size={18} aria-hidden />}</span>
                       <span className="flex min-w-0 flex-1 flex-col"><span className="truncate font-mono text-[13px]">{fileName(url)}</span><span className="text-xs text-muted">{kind === "image" ? "WebP, PNG or JPEG · max 1 MB" : "GLB · max 10 MB · compress before uploading"}</span></span>
-                      <label className={`btn btn-outline shrink-0 px-2.5 py-1.5 text-[13px] ${canWrite ? "cursor-pointer" : "pointer-events-none opacity-50"}`}>
+                      <label className={`btn btn-outline shrink-0 px-2.5 min-h-8 py-1.5 text-[13px] ${canWrite ? "cursor-pointer" : "pointer-events-none opacity-50"}`}>
                         <Upload size={14} aria-hidden />{uploading === kind ? "Uploading…" : url ? "Replace" : "Upload"}
                         <input type="file" className="sr-only" accept={kind === "image" ? "image/webp,image/png,image/jpeg" : ".glb,model/gltf-binary"} disabled={!canWrite || !!uploading}
                           onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(kind, f); e.target.value = ""; }} />

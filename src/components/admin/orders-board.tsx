@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { destinationLabel } from "@/lib/shipping";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AlertCircle, AlertTriangle, Box, Check, ChevronRight, Clock, Copy, ExternalLink, Search, Truck, X } from "lucide-react";
@@ -130,7 +131,7 @@ function OrderSheet({ o, canFulfil, onClose }: { o: Order; canFulfil: boolean; o
     router.refresh();
   }
 
-  const address = `${o.buyer_name}\n${o.address}\n${o.city} ${o.postal_code}\n${o.country}\n${o.phone}`;
+  const address = `${o.buyer_name}\n${o.address}\n${o.city} ${o.postal_code}\n${destinationLabel(o.country, o.ship_region)}\n${o.phone}${o.address_note ? `\nNote: ${o.address_note}` : ""}`;
   const paid = o.status === "paid";
   const nextStep: Fulfilment | null = status === "to_pack" ? "shipped" : status === "shipped" ? "delivered" : null;
   const h = "eyebrow text-teal";
@@ -205,8 +206,16 @@ function OrderSheet({ o, canFulfil, onClose }: { o: Order; canFulfil: boolean; o
 
           <section className="flex flex-col gap-3">
             <h3 className={h}>Customer and address</h3>
-            <address className="whitespace-pre-line text-sm not-italic leading-6 text-[#404040]">{o.email}{"\n"}{address}</address>
-            <button type="button" className="btn btn-outline w-fit px-3 py-1.5 text-[13px]" onClick={() => navigator.clipboard?.writeText(address).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); })}>
+            <address className="whitespace-pre-line text-sm not-italic leading-6 text-[#404040]">{o.email}{"\n"}{address.replace(/\nNote: [\s\S]*$/, "")}</address>
+            {o.address_note && (
+              <div className="rounded-lg bg-surface p-3 text-sm leading-6">
+                <p className="eyebrow text-muted">Address details</p>
+                {/* links shown as text unless https; opened without referrer */}
+                <p className="whitespace-pre-line [overflow-wrap:anywhere]">{o.address_note.split(/(https:\/\/[^\s]+)/g).map((part, i) =>
+                  /^https:\/\//.test(part) ? <a key={i} href={part} target="_blank" rel="noopener noreferrer nofollow" className="text-teal underline">{part}</a> : part)}</p>
+              </div>
+            )}
+            <button type="button" className="btn btn-outline w-fit px-3 min-h-8 py-1.5 text-[13px]" onClick={() => navigator.clipboard?.writeText(address).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); })}>
               <Copy size={14} aria-hidden />{copied ? "Copied" : "Copy address"}
             </button>
           </section>

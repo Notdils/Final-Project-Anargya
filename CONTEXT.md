@@ -33,11 +33,12 @@ Dokumen untuk sesi Claude berikutnya. Baca bersama `DECISIONS.md` dan `TODO.md`.
 ## Stack dan struktur
 - Next.js 15 App Router, React 19.1.10, Tailwind v4, R3F + drei, GSAP ScrollTrigger, Supabase, Midtrans Snap sandbox, ExcelJS.
 - `src/lib`: data, catalog, money (USD/JPY), booking, booking-pay, midtrans, reconcile, rate-limit, safe-next, Supabase.
-- `supabase/migrations` `0001` sampai `0011`. `tests/sql.test.mjs` menjalankan semuanya di PGlite (`node tests/sql.test.mjs`).
+- `supabase/migrations` `0001` sampai `0014`. `tests/sql.test.mjs` menjalankan semuanya di PGlite (`node tests/sql.test.mjs`).
 - Env: `FX_USD_IDR`, `NEXT_PUBLIC_FX_USD_JPY` (dibaca saat build, perlu redeploy), `SHIPPING_FLAT_USD`, `CONSULT_FEE_USD`, kunci Supabase dan Midtrans. Rahasia hanya di Vercel env.
 
 ## Ditahan (jangan dikerjakan sampai user minta)
-- PWA/APK, page loader, chatbot (rencana ada di `chatbot-plan.md` yang dikirim ke user).
+- PWA/APK, page loader, chatbot (rencana ada di `chatbot-plan.md` yang dikirim ke user), visualisasi globe 3D (#5, diganti field form; lihat di bawah).
+- Ongkir per tujuan (0013): checkout punya select negara (Asia) dan, untuk Jepang, pilihan Timur/Barat (JP-EAST, JP-WEST; [PLACEHOLDER] Timur = Hokkaido, Tohoku, Kanto, Chubu). Server menghitung ongkir dari `shipping_zones`; zona tanpa tarif memakai `SHIPPING_FLAT_USD`. Admin → Shipping (perm `shipping.manage`: ops, finance, admin). Nama negara dari tabel tetap di `src/lib/shipping.ts` (bukan Intl, supaya tidak hydration mismatch).
 
 ## Cara kerja dengan user
 Bahasa Indonesia, langsung, tanpa em dash. Tanya dulu untuk pekerjaan besar atau ambigu. Figma dulu untuk UI baru. Jangan mengarang fakta. Git dipegang user (Claude tidak commit atau push, dan tidak pernah menambahkan diri sebagai co-author). Jangan menghapus file, pakai `_to_delete/`. Folder ada di `D:\Anargya-Corp`. Build dan screenshot dilakukan di cloud (`node_modules` di laptop berisi binary Windows). Kirim file ke laptop sebagai tar base64, lalu cek md5 (gambar biner rusak kalau dikirim langsung). Matikan `next-server` lama sebelum start ulang.

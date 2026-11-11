@@ -114,9 +114,9 @@ export function MarketplaceGrid({ products }: { products: Product[] }) {
       </div>
 
       <div className="-mx-5 flex gap-2 overflow-x-auto px-5 md:mx-0 md:px-0 xl:hidden" role="group" aria-label={t("Category")}>
-        <button type="button" onClick={() => { setCats(new Set()); setPage(1); }} className={`btn shrink-0 px-3 py-1.5 ${cats.size === 0 ? "bg-teal text-white" : "btn-outline"}`} aria-pressed={cats.size === 0}>{t("All parts")}</button>
+        <button type="button" onClick={() => { setCats(new Set()); setPage(1); }} className={`btn shrink-0 px-3 min-h-8 py-1.5 ${cats.size === 0 ? "bg-teal text-white" : "btn-outline"}`} aria-pressed={cats.size === 0}>{t("All parts")}</button>
         {usedCats.map((c) => (
-          <button key={c.id} type="button" onClick={() => toggle(c.id)} aria-pressed={cats.has(c.id)} className={`btn shrink-0 px-3 py-1.5 ${cats.has(c.id) ? "bg-teal text-white" : "btn-outline"}`}>{t(c.label)}</button>
+          <button key={c.id} type="button" onClick={() => toggle(c.id)} aria-pressed={cats.has(c.id)} className={`btn shrink-0 px-3 min-h-8 py-1.5 ${cats.has(c.id) ? "bg-teal text-white" : "btn-outline"}`}>{t(c.label)}</button>
         ))}
       </div>
 

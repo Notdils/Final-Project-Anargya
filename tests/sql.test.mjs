@@ -143,3 +143,17 @@ await run(`insert into admin_audit(actor, action, target) values ($1, 'test', 'x
 // 0012: specs
 await db.exec(readFileSync(new URL("../supabase/migrations/0012_product_specs.sql", import.meta.url), "utf8"));
 console.log("specs:", (await run(`select id, material, lead_time from products where id in ('p-upright-kit','p-aero-package','p-vcu-bms','p-pedal-box') order by id`)).rows.map(r => `${r.id}: ${r.material} / ${r.lead_time}`).join(" | "));
+
+// 0013: shipping zones
+await db.exec(readFileSync(new URL("../supabase/migrations/0013_shipping.sql", import.meta.url), "utf8"));
+await db.exec(readFileSync(new URL("../supabase/migrations/0013_shipping.sql", import.meta.url), "utf8")); // re-run is safe
+const zc = (await run(`select kind, count(*) n, count(*) filter (where active) a from shipping_zones group by kind order by kind`)).rows;
+console.log("zones:", zc.map((r) => `${r.kind} ${r.a}/${r.n} active`).join(" | "), "| jp regions:", (await run(`select string_agg(code, ',' order by code) c from shipping_zones where kind='jp_region'`)).rows[0].c);
+for (const role of ["ops", "finance", "catalog"]) {
+  await db.exec(`select set_config('test.jwt','${JSON.stringify({ app_metadata: { role } })}',false)`);
+  console.log(`shipping.manage ${role}:`, (await run(`select has_perm('shipping.manage') ok`)).rows[0].ok);
+}
+try { await run(`update shipping_zones set rate_usd=-1 where code='SG'`); console.log("FAIL: negative rate accepted"); } catch { console.log("negative rate blocked"); }
+await run(`update orders set ship_country='JP', ship_region='JP-EAST', shipping_zone='JP-EAST', address_note='Blue gate https://maps.app.goo.gl/x' where id=$1`, [fo]);
+try { await run(`update orders set ship_region='JP-13' where id=$1`, [fo]); console.log("FAIL: bad region accepted"); } catch { console.log("bad region blocked"); }
+console.log("order destination:", Object.values((await run(`select ship_country, ship_region, shipping_zone from orders where id=$1`, [fo])).rows[0]).join(" "));

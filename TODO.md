@@ -1,6 +1,10 @@
 # TODO: Anargya Corp (11 Nov 2026)
 
 ## Butuh user (sebelum demo)
+- [ ] Jalankan SQL `0014_part_models_fix.sql` (model 3D aero = sayap depan + belakang + diffuser; upright tanpa model).
+- [ ] Kirim file GLB wheel hub / upright.
+- [ ] Jalankan SQL `0013_shipping.sql` (ongkir per tujuan). Wajib sebelum deploy versi ini supaya kolom `ship_country/ship_prefecture/shipping_zone` ada.
+- [ ] Isi tarif dan estimasi hari per zona di Admin → Shipping setelah data PLSS datang. Putuskan daftar negara dan batas Jepang Timur/Barat (sekarang [PLACEHOLDER]: Timur = Hokkaido, Tohoku, Kanto, Chubu). Indonesia dan Myanmar nonaktif.
 - [ ] Jalankan SQL `0007` sampai `0011` berurutan. `0009` dan `0011` harus jalan bersamaan dengan deploy (checkout memakai `create_order_usd_srv`, admin memakai `has_perm`).
 - [ ] Vercel env: `CONSULT_FEE_USD` (dari Finance), cek `FX_USD_IDR`, `NEXT_PUBLIC_FX_USD_JPY`, `SHIPPING_FLAT_USD`. Redeploy setelah mengubah env.
 - [ ] `npm install` di laptop (React 19.1.10, override `uuid`), lalu commit dan push.
@@ -22,6 +26,7 @@
 - [ ] PWA/APK (TWA, `assetlinks.json`).
 - [ ] Loader transisi antar halaman.
 - [ ] Chatbot (lihat `chatbot-plan.md`; butuh keputusan scope, provider, budget).
+- [ ] (Hold #5, opsional) Visualisasi globe 3D di atas data `shipping_zones`. Versi field form sudah jalan. Dulu: (Asia saja; negara di luar Asia tampil abu-abu dan tidak bisa dipilih). Negara selain Jepang: card nama negara + estimasi ongkir USD/¥. Jepang: dibagi per wilayah (belum ditentukan). Menunggu tarif dari PLSS dan keputusan wilayah Jepang. Pakai juga untuk ongkir di checkout (dihitung server).
 
 ## Belum dibuat (perlu Figma dulu, tanya user)
 - [ ] Tampilan audit log di admin (data sudah dicatat di `admin_audit`).

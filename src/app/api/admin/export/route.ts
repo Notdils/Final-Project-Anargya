@@ -1,11 +1,12 @@
 import ExcelJS from "exceljs";
 import { currentUser } from "@/lib/supabase/server";
 import { can } from "@/lib/rbac";
+import { destinationLabel } from "@/lib/shipping";
 import { parseDays, parseStatus, receiptsForExport } from "@/lib/admin";
 
 // Draft column set until Finance (FAB) confirms the fields.
 const COLS = [
-  ["receipt_no", "Receipt no"], ["created_at", "Created (UTC)"], ["paid_at", "Paid at (UTC)"], ["buyer_name", "Buyer"], ["email", "Email"],
+  ["receipt_no", "Receipt no"], ["created_at", "Created (UTC)"], ["paid_at", "Paid at (UTC)"], ["buyer_name", "Buyer"], ["email", "Email"], ["destination", "Destination"], ["shipping_zone", "Shipping zone"], ["address_note", "Address details"],
   ["items", "Items"], ["qty", "Qty"], ["subtotal_usd", "Subtotal USD"], ["shipping_usd", "Shipping USD"], ["total_usd", "Total USD"],
   ["charged_idr", "Charged IDR"], ["fx_usd_idr", "FX IDR/USD"], ["total_jpy", "Total JPY (orders before USD pricing)"], ["method", "Method"], ["midtrans_txn_id", "Midtrans txn"], ["status", "Status"], ["oversold", "Oversold (refund or restock)"], ["needs_review", "Needs review"], ["review_note", "Review note"],
 ] as const;
@@ -26,6 +27,7 @@ export async function GET(req: Request) {
   const flat = rows.map((o) => ({
     ...o,
     items: (o.order_items ?? []).map((i) => `${i.code} x${i.qty}`).join("; "),
+    destination: destinationLabel(o.country, o.ship_region),
     qty: (o.order_items ?? []).reduce((s, i) => s + i.qty, 0),
     // numeric columns arrive as strings from PostgREST: keep them numeric for Excel
     subtotal_usd: o.subtotal_usd == null ? null : Number(o.subtotal_usd),

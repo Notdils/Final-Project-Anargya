@@ -55,8 +55,8 @@ const base = {
 // diffuser, front wing + nose, VCU/BMS and rear wing, so the uprights and pedal box cards show aero parts
 // for now. Change it here and in supabase/migrations/0007_part_models.sql.
 const MODELS: Record<string, string> = {
-  "uprights-wheel-hub-kit": "/models/parts/diffuser.glb",
-  "custom-aero-package": "/models/parts/front-wing.glb",
+  // uprights-wheel-hub-kit: no 3D model yet (wheel hub file pending), shows the render image
+  "custom-aero-package": "/models/parts/aero-package.glb", // front wing + rear wing + diffuser in car position
   "custom-vcu-bms-unit": "/models/parts/vcu-bms.glb",
   "brake-pedal-box": "/models/parts/pedal-box.glb",
 };

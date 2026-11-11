@@ -11,6 +11,7 @@ export type Order = {
   subtotal_jpy: number | null; shipping_jpy: number | null; total_jpy: number | null; fx_rate: number | null; charged_idr: number;
   subtotal_usd: number | string | null; shipping_usd: number | string | null; total_usd: number | string | null; fx_usd_idr: number | string | null;
   status: OrderStatus; oversold?: boolean; needs_review?: boolean; review_note?: string | null; snap_redirect_url?: string | null; pay_expires_at?: string | null; method: string | null; midtrans_txn_id: string | null; created_at: string; paid_at: string | null;
+  ship_country?: string | null; ship_region?: string | null; shipping_zone?: string | null; address_note?: string | null;
   fulfilment_status?: Fulfilment; carrier?: string | null; tracking_no?: string | null; shipped_at?: string | null; delivered_at?: string | null;
   order_items?: OrderItem[];
 };
@@ -24,7 +25,7 @@ export async function getOrder(id: string): Promise<Order | null> {
   return (data as Order) ?? null;
 }
 
-export type SavedAddress = { buyer_name: string; phone: string; address: string; city: string; postal_code: string; country: string };
+export type SavedAddress = { buyer_name: string; phone: string; address: string; city: string; postal_code: string; country: string; ship_country?: string | null; ship_region?: string | null; address_note?: string | null };
 
 /** The buyer's most recent shipping details (RLS: own orders only). Used to prefill checkout. */
 export async function lastAddress(): Promise<SavedAddress | null> {
@@ -34,7 +35,7 @@ export async function lastAddress(): Promise<SavedAddress | null> {
   if (!auth.user) return null;
   const { data } = await sb
     .from("orders")
-    .select("buyer_name, phone, address, city, postal_code, country")
+    .select("*") // includes ship_country / ship_region once SQL 0013 has run
     .eq("user_id", auth.user.id) // admins can read every order: only prefill with your own
     .order("created_at", { ascending: false })
     .limit(1)

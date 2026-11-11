@@ -40,7 +40,7 @@ Without Supabase env vars the site still renders with the placeholder catalog (a
 ## Supabase setup
 
 1. Create a new Supabase project.
-2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0011`).
+2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0014`).
 3. Auth → URL configuration: set Site URL to the deployed domain and add `https://<domain>/auth/callback` to Redirect URLs (password reset and email confirmation links land there).
 4. Register an account on the site, then make it admin (SQL editor):
    ```sql
@@ -103,6 +103,8 @@ The role is stored in `app_metadata.role` (only the server can write it). Access
 | `ops` | Orders and fulfilment (carrier, tracking), Bookings |
 | `finance` | Overview, Receipts and exports, Orders read-only |
 | none | Customer |
+
+Shipping: checkout asks for the destination country (Asia list in `shipping_zones`) and, for Japan, East or West (`JP-EAST`, `JP-WEST`). The order API looks up the zone rate on the server; a zone without a rate uses `SHIPPING_FLAT_USD`. Ops and Finance edit rates, days and on/off in Admin → Shipping (`0013`).
 
 To add a role, change `PERMS` in `src/lib/rbac.ts` and `has_perm()` in a new migration together. Product media go to the public Supabase Storage bucket `part-media` (created by `0011`); uploads only go through `/api/admin/products/[id]/media`, which checks the role and the file content (WebP/PNG/JPEG up to 1 MB, binary glTF up to 10 MB).
 

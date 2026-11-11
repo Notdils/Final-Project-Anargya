@@ -4,7 +4,8 @@ import { CheckoutSteps } from "@/components/checkout-steps";
 import { CheckoutForm } from "@/components/checkout-form";
 import { listProducts } from "@/lib/catalog";
 import { currentUser } from "@/lib/supabase/server";
-import { fxUsdIdr, hasSupabase, shippingUsd, MIDTRANS_CLIENT_KEY, MIDTRANS_SNAP_JS } from "@/lib/env";
+import { fxUsdIdr, hasSupabase, MIDTRANS_CLIENT_KEY, MIDTRANS_SNAP_JS } from "@/lib/env";
+import { shippingData } from "@/lib/shipping-server";
 import { hasMidtrans } from "@/lib/midtrans";
 import { lastAddress } from "@/lib/orders";
 import { translator, type Locale } from "@/i18n";
@@ -12,7 +13,7 @@ import { translator, type Locale } from "@/i18n";
 
 export default async function CheckoutView({ locale }: { locale: Locale }) {
   const t = translator(locale);
-  const [products, { user }, saved] = await Promise.all([listProducts(), currentUser(), lastAddress()]);
+  const [products, { user }, saved, shipping] = await Promise.all([listProducts(), currentUser(), lastAddress(), shippingData()]);
   const fx = fxUsdIdr();
   const ready = hasSupabase && hasMidtrans() && fx !== null;
   return (
@@ -28,7 +29,7 @@ export default async function CheckoutView({ locale }: { locale: Locale }) {
           email={user?.email ?? ""}
           saved={saved}
           fx={fx}
-          shippingUsd={shippingUsd()}
+          shipping={shipping}
           ready={ready}
           snapJs={MIDTRANS_SNAP_JS}
           clientKey={MIDTRANS_CLIENT_KEY}

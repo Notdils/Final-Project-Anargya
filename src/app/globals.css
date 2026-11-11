@@ -57,8 +57,12 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    /* Same height for every variant: the border is always there (transparent on filled buttons),
+       so outline and filled buttons line up, and min-height keeps icon-only and text-xs buttons equal. */
+    min-height: 40px;
+    border: 1px solid transparent;
     border-radius: 8px;
-    padding: 8px 16px;
+    padding: 0 16px;
     font-size: 14px;
     line-height: 20px;
     font-weight: 500;
@@ -66,8 +70,7 @@ body {
     transition: background-color 0.15s, border-color 0.15s, color 0.15s;
   }
   .btn-lg {
-    padding-top: 12px;
-    padding-bottom: 12px;
+    min-height: 48px;
   }
   .btn-ochre {
     background: var(--color-ochre);
@@ -92,7 +95,7 @@ body {
     background: #262626;
   }
   .btn-outline {
-    border: 1px solid var(--color-line);
+    border-color: var(--color-line);
     background: #fff;
     color: var(--color-ink);
   }
@@ -100,7 +103,7 @@ body {
     background: var(--color-surface);
   }
   .btn-outline-dark {
-    border: 1px solid #404040;
+    border-color: #404040;
     color: #fff;
   }
   .btn-outline-dark:hover {

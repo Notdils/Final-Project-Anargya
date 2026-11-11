@@ -10,6 +10,7 @@ import { getOrder } from "@/lib/orders";
 import { reconcileOrder } from "@/lib/reconcile";
 import { jst, rupiah, yen } from "@/lib/format";
 import { usd } from "@/lib/money";
+import { destinationLabel } from "@/lib/shipping";
 import { lp, translator, type Locale } from "@/i18n";
 
 
@@ -93,9 +94,10 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
                 </div>
               </header>
               <hr className="border-line" />
-              <dl className="grid gap-3 text-sm md:grid-cols-3 md:gap-6">
+              <dl className="grid gap-3 text-sm sm:grid-cols-2 md:grid-cols-4 md:gap-6">
                 <div><dt className="eyebrow text-muted">{t("Issued")}</dt><dd>{jst(o.paid_at ?? o.created_at)}</dd></div>
                 <div><dt className="eyebrow text-muted">{t("Billed to")}</dt><dd className="[overflow-wrap:anywhere]">{o.buyer_name}<br />{o.email}</dd></div>
+                <div><dt className="eyebrow text-muted">{t("Ship to")}</dt><dd>{o.city}<br />{destinationLabel(o.country, o.ship_region, locale, o.ship_country)}</dd></div>
                 <div><dt className="eyebrow text-muted">{t("Payment")}</dt><dd>Midtrans{o.method ? ` · ${o.method}` : ""}<br /><span className="font-mono text-xs">{o.midtrans_txn_id ?? t("awaiting")}</span></dd></div>
               </dl>
               <hr className="border-line" />

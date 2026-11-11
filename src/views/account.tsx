@@ -10,6 +10,7 @@ import { lastAddress, type Order } from "@/lib/orders";
 import { reconcileOrder } from "@/lib/reconcile";
 import { TOPICS, dateLabel } from "@/lib/booking";
 import { lp, translator, type Locale } from "@/i18n";
+import { destinationLabel } from "@/lib/shipping";
 
 
 type Row = Pick<Order, "id" | "receipt_no" | "total_jpy" | "total_usd" | "status" | "created_at"> & { order_items?: { name: string; qty: number }[] };
@@ -136,7 +137,7 @@ export default async function AccountView({ locale }: { locale: Locale }) {
                 {saved ? (
                   <>
                     <address className="text-sm not-italic leading-6">
-                      {saved.buyer_name}<br />{saved.address}<br />{saved.city} {saved.postal_code}<br />{saved.country}<br />
+                      {saved.buyer_name}<br />{saved.address}<br />{saved.city} {saved.postal_code}<br />{destinationLabel(saved.country, saved.ship_region, locale, saved.ship_country)}<br />
                       <span className="text-muted">{saved.phone}</span>
                     </address>
                     <p className="text-xs text-muted">{t("Taken from your latest order and filled in at checkout. Change it there for your next order.")}</p>

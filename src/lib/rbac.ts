@@ -7,20 +7,20 @@ export type Role = StaffRole | "customer";
 
 export type Perm =
   | "overview.read" | "receipts.read" | "orders.read" | "orders.fulfil"
-  | "bookings.read" | "bookings.manage" | "products.read" | "products.write" | "users.manage";
+  | "bookings.read" | "bookings.manage" | "products.read" | "products.write" | "users.manage" | "shipping.manage";
 
 const PERMS: Record<StaffRole, Perm[] | "all"> = {
   admin: "all",
   catalog: ["products.read", "products.write"],
-  ops: ["orders.read", "orders.fulfil", "bookings.read", "bookings.manage"],
-  finance: ["overview.read", "receipts.read", "orders.read"],
+  ops: ["orders.read", "orders.fulfil", "bookings.read", "bookings.manage", "shipping.manage"],
+  finance: ["overview.read", "receipts.read", "orders.read", "shipping.manage"],
 };
 
 export const ROLE_INFO: Record<Role, { label: string; desc: string }> = {
   admin: { label: "Admin", desc: "Everything, including users and roles." },
   catalog: { label: "Catalog", desc: "Products: prices, stock, images and 3D models." },
-  ops: { label: "Operations", desc: "Orders and shipping, consultation bookings." },
-  finance: { label: "Finance", desc: "Overview, receipts and exports. Orders read-only." },
+  ops: { label: "Operations", desc: "Orders, shipping rates, consultation bookings." },
+  finance: { label: "Finance", desc: "Overview, receipts, exports, shipping rates. Orders read-only." },
   customer: { label: "Customer", desc: "No admin access." },
 };
 
@@ -39,6 +39,7 @@ export const ADMIN_SECTIONS = [
   { href: "/admin/receipts", label: "Receipts", perm: "receipts.read" },
   { href: "/admin/bookings", label: "Bookings", perm: "bookings.read" },
   { href: "/admin/products", label: "Products", perm: "products.read" },
+  { href: "/admin/shipping", label: "Shipping", perm: "shipping.manage" },
   { href: "/admin/users", label: "Users", perm: "users.manage" },
 ] as const satisfies readonly { href: string; label: string; perm: Perm }[];
 
@@ -48,6 +49,7 @@ const API_PERMS: [RegExp, Perm][] = [
   [/^\/api\/admin\/bookings/, "bookings.manage"],
   [/^\/api\/admin\/products/, "products.write"],
   [/^\/api\/admin\/users/, "users.manage"],
+  [/^\/api\/admin\/shipping/, "shipping.manage"],
 ];
 
 /** Permission needed for an admin page or admin API path (null = any staff role). */
