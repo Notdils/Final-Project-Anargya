@@ -15,6 +15,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const parsed = Body.safeParse(raw);
   if (!parsed.success) return NextResponse.json({ error: "bad status" }, { status: 400 });
   const sb = (await supabaseServer())!;
+  if (parsed.data.status === "cancelled") {
+    const { data: cur } = await sb.from("bookings").select("pay_status").eq("id", id).maybeSingle();
+    // the buyer may be paying right now: let the payment finish or expire first
+    if (cur?.pay_status === "pending") return NextResponse.json({ error: "Payment is still pending. Wait until it is paid or expired." }, { status: 409 });
+  }
   const { error } = await sb.from("bookings").update({ status: parsed.data.status }).eq("id", id);
   if (error) {
     const msg = error.code === "23505" ? "Another booking already holds this slot." : "Could not update.";

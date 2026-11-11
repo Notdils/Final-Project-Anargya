@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     password: parsed.data.password,
     options: { data: { full_name: parsed.data.name }, emailRedirectTo: `${origin}/auth/callback?next=/marketplace` },
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  // One message for every failure, so the form does not reveal which emails already have an account.
+  if (error) return NextResponse.json({ error: "Could not create the account. If you already have one, log in or reset your password." }, { status: 400 });
   return NextResponse.json({ confirm: !data.session, redirect: "/marketplace" });
 }

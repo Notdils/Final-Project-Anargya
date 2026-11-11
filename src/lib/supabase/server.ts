@@ -9,6 +9,7 @@ export async function supabaseServer() {
   if (!hasSupabase) return null;
   const store = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookieOptions: { secure: process.env.NODE_ENV === "production" },
     cookies: {
       getAll: () => store.getAll(),
       setAll: (list) => {

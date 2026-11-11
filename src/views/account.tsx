@@ -20,7 +20,7 @@ export default async function AccountView({ locale }: { locale: Locale }) {
   const sb = await supabaseServer();
   const load = async () =>
     sb
-      ? ((await sb.from("orders").select("id, receipt_no, total_jpy, total_usd, status, created_at, order_items(name, qty)").order("created_at", { ascending: false }).limit(50)).data as Row[] | null) ?? []
+      ? ((await sb.from("orders").select("id, receipt_no, total_jpy, total_usd, status, created_at, order_items(name, qty)").eq("user_id", user?.id ?? "").order("created_at", { ascending: false }).limit(50)).data as Row[] | null) ?? []
       : [];
   let orders = await load();
   const pending = orders.filter((o) => o.status === "pending").slice(0, 5);

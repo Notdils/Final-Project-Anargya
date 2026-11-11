@@ -27,9 +27,12 @@ export type SavedAddress = { buyer_name: string; phone: string; address: string;
 export async function lastAddress(): Promise<SavedAddress | null> {
   const sb = await supabaseServer();
   if (!sb) return null;
+  const { data: auth } = await sb.auth.getUser();
+  if (!auth.user) return null;
   const { data } = await sb
     .from("orders")
     .select("buyer_name, phone, address, city, postal_code, country")
+    .eq("user_id", auth.user.id) // admins can read every order: only prefill with your own
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();

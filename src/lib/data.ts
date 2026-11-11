@@ -51,8 +51,17 @@ const base = {
 
 // Fallback catalog (same as supabase/migrations/0005_usd_catalog.sql), used when Supabase is not configured.
 // Selling prices in USD from Finance's preliminary sheet.
+// PREVIEW mapping of the 4 delivered models (public/models/parts) to the 4 cards. The files contain a
+// diffuser, front wing + nose, VCU/BMS and rear wing, so the uprights and pedal box cards show aero parts
+// for now. Change it here and in supabase/migrations/0007_part_models.sql.
+const MODELS: Record<string, string> = {
+  "uprights-wheel-hub-kit": "/models/parts/diffuser.glb",
+  "custom-aero-package": "/models/parts/front-wing.glb",
+  "custom-vcu-bms-unit": "/models/parts/vcu-bms.glb",
+  "brake-pedal-box": "/models/parts/pedal-box.glb",
+};
 const part = (p: Pick<Product, "id" | "slug" | "code" | "name" | "category" | "priceUsd" | "unit" | "stock" | "description">): Product => ({
-  ...base, ...p, featured: true, image: `/parts/${p.slug}.webp`,
+  ...base, ...p, featured: true, image: `/parts/${p.slug}.webp`, modelUrl: MODELS[p.slug] ?? null,
 });
 export const PLACEHOLDER_PRODUCTS: Product[] = [
   part({ id: "p-upright-kit", slug: "uprights-wheel-hub-kit", code: "AN-SUSP-01", name: "Uprights & Wheel Hub Assembly Kit", category: "suspension", priceUsd: 2880, unit: "set", stock: 8,

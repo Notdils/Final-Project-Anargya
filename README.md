@@ -40,7 +40,7 @@ Without Supabase env vars the site still renders with the placeholder catalog (a
 ## Supabase setup
 
 1. Create a new Supabase project.
-2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0006`).
+2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0008`).
 3. Auth → URL configuration: set Site URL to the deployed domain and add `https://<domain>/auth/callback` to Redirect URLs (password reset and email confirmation links land there).
 4. Register an account on the site, then make it admin (SQL editor):
    ```sql
@@ -81,7 +81,7 @@ Passwords are shared with the judges outside the repo.
 
 ## Placeholders to replace
 
-Everything marked `[PLACEHOLDER]` or `[CITY]`: stock and lead times of the four parts, specs, story, mission/vision, values, business-plan slots, company address, receipt fields (pending Finance), shipping (`SHIPPING_FLAT_USD`), consulting copy, launch poster (Graphic Design), fly-through objects (waiting for the part renders), per-part 3D models (`products.model_url`).
+Everything marked `[PLACEHOLDER]` or `[CITY]`: stock and lead times of the four parts, specs, story, mission/vision, values, business-plan slots, company address, receipt fields (pending Finance), shipping (`SHIPPING_FLAT_USD`), consulting copy, launch poster (Graphic Design), fly-through objects (waiting for the part renders), per-part 3D models (`products.model_url`; the current mapping in `0007` is a preview: diffuser on the uprights card, rear wing on the pedal box card), consultation fee (`CONSULT_FEE_USD`).
 
 ## Scripts
 

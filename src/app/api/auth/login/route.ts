@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase/server";
-import { clientIp, hit } from "@/lib/rate-limit";
+import { clientIp, hit, rateLimit } from "@/lib/rate-limit";
+import { safeNext } from "@/lib/safe-next";
 
 const Body = z.object({ email: z.string().email().max(120), password: z.string().min(1).max(200), next: z.string().optional() });
 const MAX = 5;
 const WINDOW = 300; // 5 failed attempts per 5 minutes per email+IP
 
-const safeNext = (n?: string) => (n && n.startsWith("/") && !n.startsWith("//") && !n.startsWith("/api") ? n : null);
 
 export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
@@ -16,7 +16,11 @@ export async function POST(req: Request) {
   if (!sb) return NextResponse.json({ error: "Login is not configured yet." }, { status: 503 });
 
   const email = parsed.data.email.toLowerCase();
-  const key = `login:${email}:${await clientIp()}`;
+  const ip = await clientIp();
+  // Separate caps per email (password spraying from many IPs) and per IP (one IP trying many emails).
+  if (!(await rateLimit(`login-email:${email}`, 20, 3600)) || !(await rateLimit(`login-ip:${ip}`, 30, 600)))
+    return NextResponse.json({ error: "Too many attempts. Try again later.", locked: true }, { status: 429 });
+  const key = `login:${email}:${ip}`;
   const tries = await hit(`${key}:peek`, WINDOW); // counts attempts, including successful ones
   if (tries > MAX) return NextResponse.json({ error: "Too many attempts. Try again in 5 minutes.", locked: true }, { status: 429 });
 

@@ -3,6 +3,7 @@ import { supabaseService } from "@/lib/supabase/server";
 import { fetchStatus, validSignature } from "@/lib/midtrans";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { flagAmountMismatch } from "@/lib/reconcile";
+import { applyBookingStatus } from "@/lib/booking-pay";
 
 // Midtrans HTTP notification. Set this URL in the Midtrans dashboard:
 //   https://<domain>/api/midtrans/notify
@@ -16,12 +17,21 @@ export async function POST(req: Request) {
   // from Midtrans ourselves, authenticated with our server key.
   if (!n.signature_key || !validSignature(n)) console.warn("midtrans notify: signature mismatch", n.order_id);
 
-  const status = await fetchStatus(n.order_id);
   const sb = supabaseService();
-  if (!status || !sb) return NextResponse.json({ ok: false }, { status: 503 });
-
+  if (!sb) return NextResponse.json({ ok: false }, { status: 503 });
+  // Look the id up first, so random ids never spend a Midtrans API call.
   const { data: order } = await sb.from("orders").select("id, charged_idr, status").eq("id", n.order_id).maybeSingle();
-  if (!order) return NextResponse.json({ ok: true }); // unknown order: acknowledge, do nothing
+  if (!order) {
+    // consultation bookings share the Midtrans account; their id is the booking id
+    const { data: booking } = await sb.from("bookings").select("id, charged_idr, pay_expires_at").eq("id", n.order_id).eq("pay_status", "pending").maybeSingle();
+    if (!booking) return NextResponse.json({ ok: true }); // unknown id: acknowledge, do nothing
+    const bs = await fetchStatus(n.order_id);
+    if (!bs) return NextResponse.json({ ok: false }, { status: 503 });
+    await applyBookingStatus(booking, bs, false);
+    return NextResponse.json({ ok: true });
+  }
+  const status = await fetchStatus(n.order_id);
+  if (!status) return NextResponse.json({ ok: false }, { status: 503 });
   if (Number(status.gross_amount) !== Number(order.charged_idr)) {
     // Acknowledge (stops retries) but do not mark paid: a person checks it from the admin.
     await flagAmountMismatch(order.id, status.gross_amount, Number(order.charged_idr));

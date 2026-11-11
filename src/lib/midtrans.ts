@@ -11,12 +11,15 @@ const auth = () => "Basic " + Buffer.from(serverKey() + ":").toString("base64");
 
 /** Minutes a buyer has to finish paying. Shown on the receipt; the order expires after this. */
 export const PAY_WINDOW_MIN = 60;
+/** Consultation slots are scarce: an unpaid booking holds its slot for this long only. */
+export const BOOKING_PAY_WINDOW_MIN = 15;
 
 export async function createSnap(input: {
   orderId: string;
   grossIdr: number;
   customer: { name: string; email: string; phone: string };
   finishUrl: string;
+  expiryMin?: number;
 }) {
   const res = await fetch(SNAP, {
     method: "POST",
@@ -26,7 +29,7 @@ export async function createSnap(input: {
       customer_details: { first_name: input.customer.name, email: input.customer.email, phone: input.customer.phone },
       credit_card: { secure: true },
       callbacks: { finish: input.finishUrl },
-      expiry: { unit: "minutes", duration: PAY_WINDOW_MIN },
+      expiry: { unit: "minutes", duration: input.expiryMin ?? PAY_WINDOW_MIN },
     }),
     cache: "no-store",
   });

@@ -35,7 +35,7 @@ function Card({ p, active }: { p: Product; active: boolean }) {
         <h3 className="text-lg font-medium leading-6 md:text-[22px] md:leading-7">{p.name}</h3>
       </div>
       <div className="min-h-0 flex-1">
-        <PartRender dark label={t("Part 3D / turntable")} image={p.image} alt={t("Preliminary 3D draft of the {name}", { name: p.name })} />
+        <PartRender dark label={t("Part 3D / turntable")} image={p.image} model={p.modelUrl} spin={active} alt={t("Preliminary 3D draft of the {name}", { name: p.name })} />
       </div>
       {active && (
         <>

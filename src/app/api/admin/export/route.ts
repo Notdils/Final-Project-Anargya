@@ -12,7 +12,7 @@ const COLS = [
 // Block CSV/Excel formula injection from user-entered fields.
 const safe = (v: unknown) => {
   const s = v == null ? "" : String(v);
-  return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+  return /^[\s]*[=+\-@]/.test(s) || /^[\t\r\n]/.test(s) ? `'${s}` : s;
 };
 
 export async function GET(req: Request) {

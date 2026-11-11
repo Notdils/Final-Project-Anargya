@@ -5,7 +5,9 @@ import { jst } from "@/lib/format";
 
 export const metadata = { title: "Bookings" };
 
-type Booking = { id: string; name: string; email: string; organisation: string; topic: string; slot_date: string; slot_time: string; message: string | null; status: "requested" | "confirmed" | "cancelled"; created_at: string };
+type Booking = { id: string; name: string; email: string; organisation: string; topic: string; slot_date: string; slot_time: string; message: string | null; status: "requested" | "confirmed" | "cancelled"; created_at: string; phone?: string | null; pay_status?: string; fee_usd?: number | null; charged_idr?: number | null; needs_review?: boolean };
+
+const PAY_STYLE: Record<string, string> = { paid: "bg-teal-tint text-teal", pending: "bg-ochre-tint text-ink", failed: "bg-oxide-tint text-oxide", expired: "bg-surface-2 text-muted", unpaid: "bg-surface-2 text-muted" };
 
 const STATUS_STYLE = { requested: "bg-ochre-tint text-ink", confirmed: "bg-teal-tint text-teal", cancelled: "bg-surface-2 text-muted" } as const;
 const topicLabel = (id: string) => TOPICS.find((t) => t.id === id)?.label ?? id;
@@ -29,7 +31,7 @@ export default async function AdminBookings({ searchParams }: { searchParams: Pr
       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
         <div>
           <h1 className="text-2xl font-semibold tracking-[-0.02em] md:text-[28px] md:leading-9">Bookings</h1>
-          <p className="text-sm text-muted">Consultation requests. Times are JST. Confirm by email, then mark the booking confirmed here.</p>
+          <p className="text-sm text-muted">Consultations. Times are JST. Paid bookings are confirmed automatically; send the call link by email.</p>
         </div>
         <nav aria-label="Booking range" className="flex gap-1 rounded-lg border border-line p-1 text-sm">
           {(["upcoming", "past"] as const).map((s) => (
@@ -55,16 +57,19 @@ export default async function AdminBookings({ searchParams }: { searchParams: Pr
                 <p className="font-mono text-sm">{dateLabel(b.slot_date)} · {b.slot_time} JST</p>
                 <p className="font-medium">{b.name} <span className="font-normal text-muted">· {b.organisation}</span></p>
                 <a href={`mailto:${b.email}`} className="text-sm text-teal [overflow-wrap:anywhere] hover:underline">{b.email}</a>
+                {b.phone && <p className="text-sm">{b.phone}</p>}
                 <p className="text-sm">{topicLabel(b.topic)}</p>
                 {b.message && <p className="max-w-[640px] whitespace-pre-line text-sm text-muted">{b.message}</p>}
                 <p className="text-xs text-muted">Requested {jst(b.created_at)}</p>
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 <span className={`rounded px-2 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[b.status]}`}>{b.status}</span>
+                {b.pay_status && b.pay_status !== "unpaid" && <span className={`rounded px-2 py-0.5 text-xs font-medium capitalize ${PAY_STYLE[b.pay_status] ?? ""}`}>{b.pay_status}{b.fee_usd != null ? ` · $${Number(b.fee_usd)}` : ""}</span>}
+                {b.needs_review && <span className="rounded bg-oxide-tint px-2 py-0.5 text-xs font-medium text-oxide">Needs review</span>}
                 {b.status !== "confirmed" && (
                   <form action={`/api/admin/bookings/${b.id}`} method="post"><input type="hidden" name="status" value="confirmed" /><button className="btn btn-outline px-3">Confirm</button></form>
                 )}
-                {b.status !== "cancelled" && (
+                {b.status !== "cancelled" && b.pay_status !== "pending" && (
                   <form action={`/api/admin/bookings/${b.id}`} method="post"><input type="hidden" name="status" value="cancelled" /><button className="btn btn-outline px-3 text-oxide">Cancel</button></form>
                 )}
               </div>

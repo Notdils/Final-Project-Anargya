@@ -99,3 +99,25 @@ await run(`update bookings set status='cancelled' where id=$1`, [b1]);
 await bk("2026-12-01", "09:00"); console.log("slot reusable after cancel: ok");
 try { await bk("2026-12-02", "10:30"); console.log("FAIL: bad slot accepted"); } catch (e) { console.log("bad slot blocked"); }
 console.log("taken slots:", (await run(`select * from taken_slots('2026-11-01','2026-12-31')`)).rows.map(r => `${r.slot_date.toISOString?.().slice(0,10) ?? r.slot_date} ${r.slot_time}`), "columns:", Object.keys((await run(`select * from taken_slots('2026-11-01','2026-12-31')`)).rows[0]).join(","));
+
+// 0007/0008: part models, paid bookings
+await db.exec(readFileSync(new URL("../supabase/migrations/0007_part_models.sql", import.meta.url), "utf8"));
+console.log("models:", (await run(`select id, model_url from products where model_url is not null order by id`)).rows.map(r => `${r.id}=${r.model_url}`).join(" "));
+await db.exec(readFileSync(new URL("../supabase/migrations/0008_booking_payment.sql", import.meta.url), "utf8"));
+await db.exec(readFileSync(new URL("../supabase/migrations/0008_booking_payment.sql", import.meta.url), "utf8")); // re-run is safe
+const pb = (await run(`insert into bookings(name,email,phone,organisation,topic,slot_date,slot_time,fee_usd,fx_usd_idr,charged_idr,pay_status,pay_expires_at) values ('Pat','p@x.co','+8190','Team','aero','2026-12-03','11:00',100,16300,1630000,'pending', now() + interval '1 hour') returning id`)).rows[0].id;
+try { await run(`insert into bookings(name,email,organisation,topic,slot_date,slot_time) values ('Quinn','q@x.co','Team','aero','2026-12-03','11:00')`); console.log("FAIL: pending booking does not hold slot"); } catch { console.log("pending payment holds slot: ok"); }
+await run(`update bookings set pay_status='expired', status='cancelled' where id=$1`, [pb]);
+await run(`insert into bookings(name,email,organisation,topic,slot_date,slot_time) values ('Quinn','q@x.co','Team','aero','2026-12-03','11:00')`); console.log("expired payment frees slot: ok");
+try { await run(`update bookings set pay_status='weird' where id=$1`, [pb]); console.log("FAIL: bad pay_status accepted"); } catch { console.log("bad pay_status blocked"); }
+
+// 0009: orders only through the server function; one unpaid booking per user
+await db.exec(readFileSync(new URL("../supabase/migrations/0009_security_fixes.sql", import.meta.url), "utf8"));
+const canAuth = async (fn) => (await run(`select has_function_privilege('authenticated', '${fn}', 'execute') as ok`)).rows[0].ok;
+console.log("authenticated can run create_order_usd:", await canAuth("public.create_order_usd(jsonb,jsonb,numeric,numeric)"), "| create_order_usd_srv:", await canAuth("public.create_order_usd_srv(uuid,jsonb,jsonb,numeric,numeric)"));
+const c9 = { email: "a@x.co", name: "Alice", phone: "+81 90 1234", address: "1-2-3 Somewhere", city: "Tokyo", postal: "100-0001", country: "Japan" };
+const so = (await run(`select * from create_order_usd_srv($1, $2, $3, 0, 16300)`, [U1, JSON.stringify([{ id: "p-vcu-bms", qty: 1 }]), JSON.stringify(c9)])).rows[0];
+console.log("server order:", so.total_usd, so.charged_idr);
+try { await run(`select * from create_order_usd_srv($1, $2, $3, 0, 16300)`, [U1, JSON.stringify([{ id: "p-vcu-bms", qty: 1 }]), JSON.stringify({ ...c9, city: "x".repeat(5000) })]); console.log("FAIL: oversized contact accepted"); } catch { console.log("oversized contact blocked"); }
+await run(`insert into bookings(user_id,name,email,organisation,topic,slot_date,slot_time,pay_status) values ($1,'Alice','a@x.co','Team','aero','2026-12-04','09:00','pending')`, [U1]);
+try { await run(`insert into bookings(user_id,name,email,organisation,topic,slot_date,slot_time,pay_status) values ($1,'Alice','a@x.co','Team','aero','2026-12-04','11:00','pending')`, [U1]); console.log("FAIL: second pending booking allowed"); } catch (e) { console.log("second pending booking blocked:", /one_pending/.test(e.message)); }

@@ -4,12 +4,28 @@ import { createServerClient } from "@supabase/ssr";
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
-const NEEDS_LOGIN = [/^\/checkout/, /^\/account/, /^\/receipt\//, /^\/app$/, /^\/reset-password$/];
+const NEEDS_LOGIN = [/^\/consulting\/booking\//, /^\/checkout/, /^\/account/, /^\/receipt\//, /^\/app$/, /^\/reset-password$/];
 // Japanese pages live under /ja; rules are written for the unprefixed path.
 const strip = (p: string) => (p === "/ja" ? "/" : p.startsWith("/ja/") ? p.slice(3) : p);
 const NEEDS_ADMIN = [/^\/admin/, /^\/api\/admin\//];
 
+// Webhooks from Midtrans come from another origin by design (verified via the status API instead).
+const CROSS_SITE_OK = new Set(["/api/midtrans/notify"]);
+
+/** Blocks cross-site POSTs to our API (login CSRF and friends): the Origin must be this site. */
+function crossSite(req: NextRequest) {
+  if (req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS") return false;
+  if (CROSS_SITE_OK.has(req.nextUrl.pathname)) return false;
+  const origin = req.headers.get("origin");
+  if (!origin) return req.headers.get("sec-fetch-site") === "cross-site";
+  return origin !== req.nextUrl.origin;
+}
+
 export async function middleware(req: NextRequest) {
+  if (req.nextUrl.pathname.startsWith("/api/")) {
+    if (crossSite(req)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    if (!req.nextUrl.pathname.startsWith("/api/admin/")) return NextResponse.next(); // the routes check auth themselves
+  }
   const full = req.nextUrl.pathname;
   const ja = full === "/ja" || full.startsWith("/ja/");
   const path = strip(full);
@@ -18,6 +34,7 @@ export async function middleware(req: NextRequest) {
 
   let res = NextResponse.next({ request: req });
   const sb = createServerClient(URL_, KEY, {
+    cookieOptions: { secure: process.env.NODE_ENV === "production" },
     cookies: {
       getAll: () => req.cookies.getAll(),
       setAll: (list) => {
@@ -59,9 +76,11 @@ export const config = {
     "/app",
     "/reset-password",
     "/admin/:path*",
-    "/api/admin/:path*",
+    "/api/:path*",
     "/login",
     "/register",
+    "/consulting/booking/:path*",
+    "/ja/consulting/booking/:path*",
     "/ja/checkout/:path*",
     "/ja/account/:path*",
     "/ja/receipt/:path*",

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AlertCircle, Check, Eye, EyeOff } from "lucide-react";
+import { safeNext } from "@/lib/safe-next";
 import { useLp, useT } from "@/i18n/client";
 
 export function Req() {
@@ -76,7 +77,7 @@ export function LoginForm({ next, linkError }: { next?: string; linkError?: bool
       const res = await fetch("/api/auth/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: fd.get("email"), password: fd.get("password"), next }) });
       const data = await res.json();
       if (!res.ok) return setErr(typeof data.left === "number" && data.left > 0 ? t(data.left === 1 ? "Email or password is incorrect. 1 attempt left before a 5-minute lock." : "Email or password is incorrect. {n} attempts left before a 5-minute lock.", { n: data.left }) : t(data.error ?? "Could not log in."));
-      window.location.assign(L(data.redirect));
+      window.location.assign(L(safeNext(data.redirect) ?? "/marketplace"));
     } catch {
       setErr(t("Network error. Try again."));
     } finally {

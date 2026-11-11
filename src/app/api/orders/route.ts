@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { currentUser, supabaseServer, supabaseService } from "@/lib/supabase/server";
+import { currentUser, supabaseService } from "@/lib/supabase/server";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { fxUsdIdr, shippingUsd } from "@/lib/env";
 import { PAY_WINDOW_MIN, createSnap, hasMidtrans } from "@/lib/midtrans";
@@ -41,8 +41,10 @@ export async function POST(req: Request) {
     }, {}),
   );
 
-  const sb = (await supabaseServer())!;
-  const { data, error } = await sb.rpc("create_order_usd", { p_items: merged, p_contact: parsed.data.contact, p_shipping_usd: shippingUsd(), p_fx_usd_idr: fx });
+  // Server-only RPC (0009): rate and shipping come from env here, never from the client.
+  const sb = supabaseService();
+  if (!sb) return NextResponse.json({ error: "Payments are not configured yet." }, { status: 503 });
+  const { data, error } = await sb.rpc("create_order_usd_srv", { p_user: user.id, p_items: merged, p_contact: parsed.data.contact, p_shipping_usd: shippingUsd(), p_fx_usd_idr: fx });
   if (error || !data?.[0]) {
     const msg = /insufficient stock/i.test(error?.message ?? "") ? "One of the parts just went out of stock. Update your cart." : "Could not create the order.";
     return NextResponse.json({ error: msg }, { status: 409 });

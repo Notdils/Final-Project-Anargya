@@ -6,6 +6,6 @@ let client: ReturnType<typeof createBrowserClient> | null = null;
 
 export function supabaseBrowser() {
   if (!hasSupabase) return null;
-  client ??= createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  client ??= createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY, { cookieOptions: { secure: location.protocol === "https:" } });
   return client;
 }
