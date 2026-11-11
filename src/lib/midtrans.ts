@@ -45,7 +45,7 @@ export function validSignature(n: { order_id: string; status_code: string; gross
 /** Second check: ask Midtrans directly instead of trusting the notification body. */
 export async function fetchStatus(orderId: string) {
   const res = await fetch(`${CORE}/${encodeURIComponent(orderId)}/status`, { headers: { Authorization: auth(), Accept: "application/json" }, cache: "no-store" });
-  if (!res.ok) return null;
+  if (!res.ok) { console.error(`midtrans status HTTP ${res.status} for ${orderId}`); return null; } // 401/403: server key lacks Core API read
   return (await res.json()) as { transaction_status: string; fraud_status?: string; transaction_id: string; payment_type: string; gross_amount: string };
 }
 
@@ -55,11 +55,15 @@ export async function fetchStatus(orderId: string) {
  */
 export async function lookupStatus(orderId: string) {
   const res = await fetch(`${CORE}/${encodeURIComponent(orderId)}/status`, { headers: { Authorization: auth(), Accept: "application/json" }, cache: "no-store" }).catch(() => null);
-  if (!res) return null;
+  if (!res) { console.error(`midtrans status: network error for ${orderId}`); return null; }
   const body = (await res.json().catch(() => null)) as { status_code?: string; transaction_status?: string; fraud_status?: string; transaction_id?: string; payment_type?: string; gross_amount?: string } | null;
   if (!body) return null;
   if (res.status === 404 || body.status_code === "404") return { missing: true as const };
-  if (!res.ok || !body.transaction_status) return null;
+  if (!res.ok || !body.transaction_status) {
+    // visible in Vercel → Logs; 401/403 usually means the server key has no "Core API: Read" access
+    console.error(`midtrans status ${res.status}/${body.status_code ?? "-"} for ${orderId}: ${(body as { status_message?: string }).status_message ?? ""}`);
+    return null;
+  }
   return { missing: false as const, ...body, transaction_status: body.transaction_status };
 }
 

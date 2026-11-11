@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { notFound } from "next/navigation";
 import { AlertCircle, CalendarCheck, Clock } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -35,12 +36,13 @@ export default async function BookingStatusView({ id, locale }: { id: string; lo
     b.pay_status === "paid"
       ? { cls: "bg-teal-tint", tcls: "text-teal", icon: <CalendarCheck size={20} className="text-teal" aria-hidden />, title: t("Booking confirmed"), body: t("We will email the video call link to {email} before the session.", { email: b.email }) }
       : b.pay_status === "pending"
-        ? { cls: "bg-ochre-tint", tcls: "text-ink", icon: <Clock size={20} className="text-ochre" aria-hidden />, title: t("Waiting for payment"), body: open ? t("Your slot is held until {time}. If you already paid, refresh in a moment.", { time: jst(b.pay_expires_at!) }) : t("We are confirming the payment with Midtrans. Refresh in a moment.") }
+        ? { cls: "bg-ochre-tint", tcls: "text-ink", icon: <Clock size={20} className="text-ochre" aria-hidden />, title: t("Waiting for payment"), body: open ? t("Your slot is held until {time}. If you already paid, this page updates by itself in a few seconds.", { time: jst(b.pay_expires_at!) }) : t("We are confirming your payment, please wait a moment.") }
         : { cls: "bg-surface-2", tcls: "text-ink", icon: <AlertCircle size={20} className="text-muted" aria-hidden />, title: t("Booking not completed"), body: t("No money was taken and the slot was released. You can book another time.") };
 
   return (
     <>
       <SiteHeader active="consulting" />
+      {b.pay_status === "pending" && <AutoRefresh />}
       <main id="main" className="min-h-[70vh] pt-16">
         <div className="container-x flex justify-center py-6 md:py-12">
           <div className="flex w-full max-w-[640px] flex-col gap-6">

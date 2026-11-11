@@ -41,7 +41,8 @@ export async function POST(req: Request) {
   const s = status.transaction_status;
   const paid = s === "settlement" || (s === "capture" && (status.fraud_status ?? "accept") === "accept");
   if (paid) {
-    await sb.rpc("mark_order_paid", { p_order: order.id, p_txn: status.transaction_id, p_method: status.payment_type });
+    const { error } = await sb.rpc("mark_order_paid", { p_order: order.id, p_txn: status.transaction_id, p_method: status.payment_type });
+    if (error) { console.error(`mark_order_paid failed for ${order.id}: ${error.message}`); return NextResponse.json({ ok: false }, { status: 500 }); } // Midtrans retries
   } else if (["deny", "cancel", "failure"].includes(s)) {
     await sb.rpc("mark_order_status", { p_order: order.id, p_status: "failed", p_txn: status.transaction_id });
   } else if (s === "expire") {

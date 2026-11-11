@@ -345,7 +345,6 @@ export const JA: Record<string, string> = {
   "Payment failed": "お支払い失敗",
   "Payment expired": "お支払い期限切れ",
   "A copy of this receipt is available in your account ({email}).": "この領収書はアカウント（{email}）からいつでも確認できます。",
-  "Your order is held until {time}. If you already paid, refresh in a moment.": "ご注文は{time}まで確保されています。お支払い済みの場合は、少し待ってからページを更新してください。",
   "No money was taken. Your parts are still available in the marketplace.": "料金は請求されていません。パーツは引き続きマーケットプレイスで購入できます。",
   "Continue payment": "支払いを続ける",
   "Use another method": "別の方法で支払う",
@@ -465,7 +464,6 @@ export const JA: Record<string, string> = {
   Consultation: "コンサルティング",
   "Booking confirmed": "予約が確定しました",
   "We will email the video call link to {email} before the session.": "セッション前に {email} 宛てにビデオ通話のリンクをお送りします。",
-  "Your slot is held until {time}. If you already paid, refresh in a moment.": "予約枠は{time}まで確保されています。お支払い済みの場合は、少し待ってからページを更新してください。",
   "Booking not completed": "予約は完了していません",
   "No money was taken and the slot was released. You can book another time.": "料金は請求されておらず、予約枠は解放されました。別の時間で予約できます。",
   "Booked by": "予約者",
@@ -611,4 +609,6 @@ export const JA: Record<string, string> = {
   "Replace the saved one with these details for future orders.": "今後のご注文用に、保存済みの住所をこの内容に置き換えます。",
   "300 × 260 × 300 mm per wheel assembly": "300 × 260 × 300 mm（ホイールアセンブリ1基あたり）",
   "Front wing 1,380 × 480 × 320 mm\nRear wing 1,150 × 420 × 450 mm\nDiffuser 1,200 × 650 × 180 mm": "フロントウイング 1,380 × 480 × 320 mm\nリアウイング 1,150 × 420 × 450 mm\nディフューザー 1,200 × 650 × 180 mm",
+  "Your order is held until {time}. If you already paid, this page updates by itself in a few seconds.": "ご注文は{time}まで確保されています。お支払い済みの場合、このページは数秒で自動更新されます。",
+  "Your slot is held until {time}. If you already paid, this page updates by itself in a few seconds.": "枠は{time}まで確保されています。お支払い済みの場合、このページは数秒で自動更新されます。",
 };

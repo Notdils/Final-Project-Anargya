@@ -8,6 +8,7 @@ import { PrintButton } from "@/components/print-button";
 import { ChangePayment } from "@/components/change-payment";
 import { getOrder } from "@/lib/orders";
 import { reconcileOrder } from "@/lib/reconcile";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { jst, rupiah, yen } from "@/lib/format";
 import { usd } from "@/lib/money";
 import { destinationLabel } from "@/lib/shipping";
@@ -35,6 +36,7 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
   return (
     <>
       <div className="print:hidden"><SiteHeader /></div>
+      {o.status === "pending" && !o.needs_review && <AutoRefresh />}
       <main id="main" className="pt-16 print:pt-0">
         <div className="container-x flex justify-center py-6 md:py-12">
           <div className="flex w-full max-w-[720px] flex-col gap-6">
@@ -48,7 +50,7 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
                       ? t("A copy of this receipt is available in your account ({email}).", { email: o.email })
                       : o.status === "pending"
                         ? open
-                          ? t("Your order is held until {time}. If you already paid, refresh in a moment.", { time: jst(o.pay_expires_at!) })
+                          ? t("Your order is held until {time}. If you already paid, this page updates by itself in a few seconds.", { time: jst(o.pay_expires_at!) })
                           : t("We are confirming your payment, please wait a moment.")
                         : t("No money was taken. Your parts are still available in the marketplace.")}
                   </p>

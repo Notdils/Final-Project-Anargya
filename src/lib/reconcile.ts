@@ -56,10 +56,12 @@ async function sync(o: { id: string; charged_idr: number; pay_expires_at: string
       return;
     }
     const s = st.transaction_status;
+    if (Number(st.gross_amount) !== Number(o.charged_idr)) console.error(`amount mismatch for ${o.id}: Midtrans ${st.gross_amount}, ours ${o.charged_idr}`);
     if (Number(st.gross_amount) !== Number(o.charged_idr)) return flagAmountMismatch(o.id, st.gross_amount, Number(o.charged_idr));
-    if (s === "settlement" || (s === "capture" && (st.fraud_status ?? "accept") === "accept"))
-      await sb.rpc("mark_order_paid", { p_order: o.id, p_txn: st.transaction_id, p_method: st.payment_type });
-    else if (["deny", "cancel", "failure"].includes(s))
+    if (s === "settlement" || (s === "capture" && (st.fraud_status ?? "accept") === "accept")) {
+      const { error } = await sb.rpc("mark_order_paid", { p_order: o.id, p_txn: st.transaction_id, p_method: st.payment_type });
+      if (error) console.error(`mark_order_paid failed for ${o.id}: ${error.message}`);
+    } else if (["deny", "cancel", "failure"].includes(s))
       await sb.rpc("mark_order_status", { p_order: o.id, p_status: "failed", p_txn: st.transaction_id });
   }
 }
