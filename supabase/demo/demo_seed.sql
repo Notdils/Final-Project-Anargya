@@ -4,7 +4,6 @@
 -- 3. Run migrations 0001-0005 first. Edit the two emails below if you used different ones, then run this file once.
 -- Everything it creates is tagged so demo_cleanup.sql can remove it:
 --   orders: buyer_name starts with '[DEMO]', midtrans_txn_id starts with 'DEMO-'
---   events: session_id starts with 'demo-'
 -- It never touches product stock and creates no Midtrans transactions.
 
 do $$
@@ -63,17 +62,6 @@ begin
   insert into order_items(order_id, product_id, code, name, qty, unit_price_usd)
   values (oid, prod.id, prod.code, prod.name, 1, prod.price_usd);
 
-  -- Funnel traffic: 240 sessions, each going a few steps deep.
-  insert into events(session_id, type, path, created_at)
-  select 'demo-' || lpad(s::text, 6, '0'), 'page_view', p.path, now() - make_interval(days => (s * 13) % 30, mins => (s * 17) % 600) + p.off
-  from generate_series(1, 240) s
-  cross join lateral (values
-    ('/', interval '0 s', true),
-    ('/marketplace', interval '40 s', s % 10 < 6),
-    ('/marketplace/custom-aero-package', interval '90 s', s % 10 < 4),
-    ('/checkout', interval '200 s', s % 20 < 3)
-  ) as p(path, off, keep)
-  where p.keep;
 end $$;
 
 -- Check

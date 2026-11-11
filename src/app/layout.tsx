@@ -3,7 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { CartProvider } from "@/components/cart";
-import { Tracker } from "@/components/tracker";
+import { Analytics } from "@vercel/analytics/next";
 import { SwRegister } from "@/components/sw-register";
 import { LocaleProvider } from "@/i18n/client";
 import { CurrencyProvider } from "@/components/currency";
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Skip to content
         </a>
         <LocaleProvider><CurrencyProvider rates={{ JPY: FX_USD_JPY, IDR: fxUsdIdr() }}><CartProvider>{children}</CartProvider></CurrencyProvider></LocaleProvider>
-        <Tracker />
+        <Analytics /> {/* page views and visitors: Vercel → project → Analytics */}
         <SwRegister />
       </body>
     </html>

@@ -45,8 +45,8 @@ type Row = Pick<Order, "id" | "receipt_no" | "buyer_name" | "total_jpy" | "total
 const pct = (cur: number, prev: number) => (prev ? ((cur - prev) / prev) * 100 : null);
 
 /**
- * Everything the Overview page shows, from 5 reads run in parallel: orders (current + previous period, with items),
- * the event funnel, paid consultations, new accounts, and the action counts.
+ * Everything the Overview page shows, from 4 reads run in parallel: orders (current + previous period, with items),
+ * paid consultations, new accounts, and the action counts. Page views live in Vercel Analytics.
  */
 export async function overviewStats(range: (typeof RANGES)[number]) {
   const sb = await supabaseServer();
@@ -56,10 +56,9 @@ export async function overviewStats(range: (typeof RANGES)[number]) {
   const from = now - span, prevFrom = now - 2 * span;
   const iso = (t: number) => new Date(t).toISOString();
   const svc = supabaseService();
-  const [ord, funnel, books, users, actions] = await Promise.all([
+  const [ord, books, users, actions] = await Promise.all([
     sb.from("orders").select("id, receipt_no, buyer_name, total_jpy, total_usd, status, created_at, user_id, fulfilment_status, ship_country, ship_region, needs_review, order_items(product_id, name, qty, unit_price_usd)")
       .gte("created_at", iso(prevFrom)).order("created_at", { ascending: false }).limit(10000),
-    sb.rpc("funnel_counts", { p_from: iso(from), p_to: iso(now) }),
     sb.from("bookings").select("pay_status, fee_usd, created_at").gte("created_at", iso(prevFrom)).eq("pay_status", "paid").limit(5000),
     svc ? svc.auth.admin.listUsers({ page: 1, perPage: 1000 }) : Promise.resolve({ data: null }),
     Promise.all([
@@ -103,9 +102,6 @@ export async function overviewStats(range: (typeof RANGES)[number]) {
     dest.set(key, d);
   }
 
-  const steps = ((funnel.data ?? []) as { step: string; sessions: number }[]).map((s) => ({ step: s.step, n: Number(s.sessions) }));
-  const checkout = steps.find((s) => s.step === "checkout")?.n ?? 0;
-  const paidSessions = steps.find((s) => s.step === "paid")?.n ?? paidCur.length;
 
   const bk = (books.data ?? []) as { fee_usd: number | null; created_at: string }[];
   const bkCur = bk.filter(inCur), bkPrev = bk.filter((b) => !inCur(b));
@@ -120,16 +116,15 @@ export async function overviewStats(range: (typeof RANGES)[number]) {
       revenue: { v: revenue, d: pct(revenue, revenuePrev) },
       orders: { v: paidCur.length, d: pct(paidCur.length, paidPrev.length) },
       aov: { v: aov, d: pct(aov, aovPrev) },
-      conversion: { v: checkout ? (paidSessions / checkout) * 100 : null },
       newCustomers: { v: svc ? newCur : null, d: pct(newCur, newPrev) },
       buyers,
+      units: [...prod.values()].reduce((n, p) => n + p.units, 0),
       consultations: { v: bkCur.length, revenue: bkCur.reduce((s, b) => s + Number(b.fee_usd ?? 0), 0), d: pct(bkCur.length, bkPrev.length) },
     },
     actions: { toPack, waiting, review },
     series: buckets,
     products: [...prod.values()].sort((a, b) => b.revenue - a.revenue),
     destinations: [...dest.values()].sort((a, b) => b.revenue - a.revenue).slice(0, 8),
-    funnel: steps,
     recent: all.filter(inCur).slice(0, 10),
   };
 }

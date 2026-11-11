@@ -9,8 +9,6 @@ import { orderAmount, usd } from "@/lib/money";
 
 export const metadata = { title: "Overview" };
 
-const LABEL: Record<string, string> = { home: "Home", marketplace: "Marketplace", part: "Part detail", checkout: "Checkout started", paid: "Paid" };
-
 function Delta({ d }: { d?: number | null }) {
   if (d === undefined) return null;
   if (d === null || !Number.isFinite(d)) return <span className="text-xs text-muted">No earlier data</span>;
@@ -27,13 +25,12 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
   await guardPage("overview.read");
   const range = parseRange((await searchParams).range);
   const d = await overviewStats(range);
-  const top = Math.max(1, ...(d?.funnel.map((s) => s.n) ?? [1]));
   const k = d?.kpi;
   const kpis: [string, string, React.ReactNode][] = [
     ["Revenue", k ? usd(k.revenue.v) : "–", <Delta key="r" d={k?.revenue.d} />],
     ["Paid orders", k ? String(k.orders.v) : "–", <Delta key="o" d={k?.orders.d} />],
     ["Average order value", k ? usd(Math.round(k.aov.v)) : "–", <Delta key="a" d={k?.aov.d} />],
-    ["Checkout → paid", k?.conversion.v != null ? `${k.conversion.v.toFixed(1)}%` : "–", <span key="c" className="text-xs text-muted">Sessions that started checkout and paid</span>],
+    ["Units sold", k ? String(k.units) : "–", <span key="u" className="text-xs text-muted">{k ? `${k.buyers} paying ${k.buyers === 1 ? "customer" : "customers"}` : ""}</span>],
     ["New customers", k?.newCustomers.v != null ? String(k.newCustomers.v) : "–", k?.newCustomers.v != null ? <Delta key="n" d={k.newCustomers.d} /> : <span key="n" className="text-xs text-muted">Needs the service key</span>],
     ["Paid consultations", k ? String(k.consultations.v) : "–", <span key="b" className="text-xs text-muted">{k ? `${usd(k.consultations.revenue)} in fees` : ""}</span>],
   ];
@@ -105,31 +102,6 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
         ))}
       </ul>
 
-      <section aria-labelledby="funnel" className="flex flex-col gap-4 rounded-xl border border-line p-5">
-        <div>
-          <h2 id="funnel" className="font-semibold">Conversion funnel</h2>
-          <p className="text-xs text-muted">Unique sessions per step (first-party events), paid = paid orders.</p>
-        </div>
-        {d && d.funnel.length ? (
-          <ol className="flex flex-col gap-3">
-            {d.funnel.map((s, i) => {
-              const prev = i ? d.funnel[i - 1].n : 0;
-              const pct = i === 0 ? 100 : prev ? (s.n / prev) * 100 : 0;
-              return (
-                <li key={s.step} className="grid grid-cols-1 gap-1.5 md:grid-cols-[128px_1fr_112px] md:items-center md:gap-4">
-                  <span className="text-[13px]">{LABEL[s.step] ?? s.step}</span>
-                  <span className="h-6 rounded bg-surface-2" aria-hidden>
-                    <span className="block h-full rounded bg-teal" style={{ width: `${Math.max(1, (s.n / top) * 100)}%` }} />
-                  </span>
-                  <span className="font-mono text-xs text-[#404040] md:text-right">{s.n.toLocaleString()} · {i === 0 ? "100" : pct.toFixed(1)}%</span>
-                </li>
-              );
-            })}
-          </ol>
-        ) : (
-          <p className="text-sm text-muted">No events yet.</p>
-        )}
-      </section>
 
       <section aria-labelledby="recent" className="flex flex-col gap-3">
         <div className="flex items-center justify-between">

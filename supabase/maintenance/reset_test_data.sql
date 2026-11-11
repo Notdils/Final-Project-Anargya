@@ -1,6 +1,6 @@
 -- Reset test data before a clean run (12 Nov). Run in Supabase SQL Editor. CANNOT BE UNDONE.
 --
--- Deletes: all orders and their items, voucher uses, consultation bookings, analytics events (funnel),
+-- Deletes: all orders and their items, voucher uses, consultation bookings,
 --          admin audit log, rate-limit counters, and every user's saved shipping address.
 -- Resets:  receipt numbers start again at ANR-2026-000001; stock goes back to 8 / 5 / 12 / 6.
 -- Keeps:   user accounts and their roles, products (prices, specs, models), vouchers, shipping rates.
@@ -12,7 +12,6 @@ delete from public.voucher_redemptions;
 delete from public.order_items;
 delete from public.orders;
 delete from public.bookings;
-delete from public.events;
 delete from public.admin_audit;
 delete from public.rate_limits;
 
@@ -29,4 +28,4 @@ commit;
 
 -- Check: every count should be 0.
 select (select count(*) from public.orders) as orders, (select count(*) from public.bookings) as bookings,
-       (select count(*) from public.events) as events, (select count(*) from public.voucher_redemptions) as voucher_uses;
+       (select count(*) from public.voucher_redemptions) as voucher_uses;

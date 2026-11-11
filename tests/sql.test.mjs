@@ -195,3 +195,13 @@ const reset = await db.exec(readFileSync(new URL("../supabase/maintenance/reset_
 console.log("after reset:", reset.at(-1).rows[0], "| meta:", (await run(`select raw_user_meta_data m from auth.users where id=$1`, [U1])).rows[0].m, "| products:", (await run(`select count(*) n from products`)).rows[0].n);
 const fresh = (await run(`select * from create_order_usd_srv($1,$2,$3,0,16300,null)`, [U1, JSON.stringify([{ id: "p-vcu-bms", qty: 1 }]), JSON.stringify(c9)])).rows[0];
 console.log("first receipt after reset:", fresh.receipt_no);
+
+// maintenance: schema check (all migrations applied above, so nothing should be missing)
+const chk = await db.exec(readFileSync(new URL("../supabase/maintenance/check_schema.sql", import.meta.url), "utf8"));
+console.log("missing after all migrations:", chk.at(-1).rows.length);
+
+// 0019: drop events
+for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migrations/0019_drop_events.sql", import.meta.url), "utf8"));
+console.log("events table gone:", (await run(`select to_regclass('public.events') r`)).rows[0].r === null);
+const reset2 = await db.exec(readFileSync(new URL("../supabase/maintenance/reset_test_data.sql", import.meta.url), "utf8"));
+console.log("reset still works:", reset2.at(-1).rows[0]);
