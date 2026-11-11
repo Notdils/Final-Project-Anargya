@@ -37,32 +37,40 @@ export async function reconcileStale() {
 }
 
 /** Sync one pending order with Midtrans now (receipt view). Backup for a missed webhook. */
-export async function reconcileOrder(id: string) {
+export async function reconcileOrder(id: string): Promise<string> {
   const sb = supabaseService();
-  if (!sb || !hasMidtrans()) return;
-  const { data } = await sb.from("orders").select("id, charged_idr, pay_expires_at").eq("id", id).eq("status", "pending").eq("needs_review", false).maybeSingle();
-  if (data) await sync(data);
+  if (!sb || !hasMidtrans()) return "not configured";
+  const { data, error } = await sb.from("orders").select("id, charged_idr, pay_expires_at").eq("id", id).eq("status", "pending").eq("needs_review", false).maybeSingle();
+  if (error) { console.error(`reconcile read failed for ${id}: ${error.message}`); return `read failed: ${error.message}`; }
+  if (!data) return "not pending (or not visible to the service key)";
+  return sync(data);
 }
 
-async function sync(o: { id: string; charged_idr: number; pay_expires_at: string | null }) {
+async function sync(o: { id: string; charged_idr: number; pay_expires_at: string | null }): Promise<string> {
   const sb = supabaseService()!;
   const pastDeadline = !!o.pay_expires_at && new Date(o.pay_expires_at).getTime() + GRACE_MS < Date.now();
-  {
-    const st = await lookupStatus(o.id);
-    if (!st) return; // could not reach Midtrans: try again next time
-    if (st.missing && !pastDeadline) { console.info(`midtrans: no transaction yet for ${o.id}`); return; } // buyer has not picked a method yet, window still open
-    if (st.missing || st.transaction_status === "expire") {
-      await sb.rpc("mark_order_status", { p_order: o.id, p_status: "expired", p_txn: st.missing ? null : st.transaction_id });
-      return;
-    }
-    const s = st.transaction_status;
-    console.info(`midtrans status for ${o.id}: ${s}${st.fraud_status ? `/${st.fraud_status}` : ""}`);
-    if (Number(st.gross_amount) !== Number(o.charged_idr)) console.error(`amount mismatch for ${o.id}: Midtrans ${st.gross_amount}, ours ${o.charged_idr}`);
-    if (Number(st.gross_amount) !== Number(o.charged_idr)) return flagAmountMismatch(o.id, st.gross_amount, Number(o.charged_idr));
-    if (s === "settlement" || (s === "capture" && (st.fraud_status ?? "accept") === "accept")) {
-      const { error } = await sb.rpc("mark_order_paid", { p_order: o.id, p_txn: st.transaction_id, p_method: st.payment_type });
-      if (error) console.error(`mark_order_paid failed for ${o.id}: ${error.message}`);
-    } else if (["deny", "cancel", "failure"].includes(s))
-      await sb.rpc("mark_order_status", { p_order: o.id, p_status: "failed", p_txn: st.transaction_id });
+  const st = await lookupStatus(o.id);
+  if (!st) return "could not read Midtrans";
+  if (st.missing && !pastDeadline) { console.info(`midtrans: no transaction yet for ${o.id}`); return "no transaction yet"; }
+  if (st.missing || st.transaction_status === "expire") {
+    await sb.rpc("mark_order_status", { p_order: o.id, p_status: "expired", p_txn: st.missing ? null : st.transaction_id });
+    return "expired";
   }
+  const s = st.transaction_status;
+  console.info(`midtrans status for ${o.id}: ${s}${st.fraud_status ? `/${st.fraud_status}` : ""}`);
+  if (Number(st.gross_amount) !== Number(o.charged_idr)) {
+    console.error(`amount mismatch for ${o.id}: Midtrans ${st.gross_amount}, ours ${o.charged_idr}`);
+    await flagAmountMismatch(o.id, st.gross_amount, Number(o.charged_idr));
+    return "amount mismatch";
+  }
+  if (s === "settlement" || (s === "capture" && (st.fraud_status ?? "accept") === "accept")) {
+    const { error } = await sb.rpc("mark_order_paid", { p_order: o.id, p_txn: st.transaction_id, p_method: st.payment_type });
+    if (error) { console.error(`mark_order_paid failed for ${o.id}: ${error.message}`); return `mark paid failed: ${error.message}`; }
+    return "marked paid";
+  }
+  if (["deny", "cancel", "failure"].includes(s)) {
+    await sb.rpc("mark_order_status", { p_order: o.id, p_status: "failed", p_txn: st.transaction_id });
+    return "failed";
+  }
+  return `still ${s}`;
 }

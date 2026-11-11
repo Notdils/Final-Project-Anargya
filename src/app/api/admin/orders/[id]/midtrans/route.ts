@@ -17,7 +17,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   const sb = supabaseService();
   if (!sb) return NextResponse.json({ error: "Not configured." }, { status: 503 });
   const midtrans = await rawStatus(id);
-  await reconcileOrder(id);
-  const { data } = await sb.from("orders").select("status, charged_idr, needs_review, review_note").eq("id", id).maybeSingle();
-  return NextResponse.json({ midtrans, order: data });
+  const before = await sb.from("orders").select("id, status, charged_idr, needs_review, pay_expires_at").eq("id", id).maybeSingle();
+  const sync = await reconcileOrder(id);
+  const { data, error } = await sb.from("orders").select("status, charged_idr, needs_review, review_note").eq("id", id).maybeSingle();
+  // db: what the server (service key) can see, so a key or permission problem shows up here
+  return NextResponse.json({ midtrans, order: data, db: { found: Boolean(before.data), readError: before.error?.message ?? error?.message ?? null, sync } });
 }

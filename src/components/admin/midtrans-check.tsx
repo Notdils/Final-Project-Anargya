@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 
-type Res = { midtrans?: Record<string, string | number | undefined>; order?: { status: string; charged_idr: number; needs_review: boolean; review_note: string | null } | null; error?: string };
+type Res = { midtrans?: Record<string, string | number | undefined>; order?: { status: string; charged_idr: number; needs_review: boolean; review_note: string | null } | null; db?: { found: boolean; readError: string | null; sync: string }; error?: string };
 
 /** Admin drawer: check a pending order with Midtrans now and show the raw answer. */
 export function MidtransCheck({ orderId }: { orderId: string }) {
@@ -19,6 +19,7 @@ export function MidtransCheck({ orderId }: { orderId: string }) {
   }
   const m = res?.midtrans;
   const hint = !m ? null
+    : res?.db && !res.db.found ? "The server cannot see this order. SUPABASE_SERVICE_ROLE_KEY in Vercel is probably not the secret (service_role) key of this Supabase project."
     : m.http === 401 || m.http === 403 ? "The server key is rejected for status checks. Create a server key with Core API: Read and set MIDTRANS_SERVER_KEY in Vercel."
     : m.statusCode === "404" ? "Midtrans has no transaction for this order: the buyer has not chosen a payment method yet."
     : m.transactionStatus === "pending" ? "Midtrans still says pending: the buyer has not finished paying (e.g. VA or QRIS not paid / not simulated)."
@@ -36,6 +37,9 @@ export function MidtransCheck({ orderId }: { orderId: string }) {
           <dt className="text-muted">Amount</dt><dd>{m.grossAmount ?? "–"} (ours {res?.order?.charged_idr ?? "–"})</dd>
           {m.statusMessage && <><dt className="text-muted">Message</dt><dd className="font-sans">{m.statusMessage}</dd></>}
           <dt className="text-muted">Our status now</dt><dd>{res?.order?.status ?? "–"}</dd>
+          <dt className="text-muted">Server sees order</dt><dd>{res?.db ? (res.db.found ? "yes" : "no") : "–"}</dd>
+          <dt className="text-muted">Sync result</dt><dd className="font-sans">{res?.db?.sync ?? "–"}</dd>
+          {res?.db?.readError && <><dt className="text-muted">DB error</dt><dd className="font-sans text-oxide">{res.db.readError}</dd></>}
         </dl>
       )}
       {hint && <p className="text-[13px]">{hint}</p>}
