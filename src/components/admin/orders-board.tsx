@@ -197,7 +197,7 @@ function OrderSheet({ o, canFulfil, onClose }: { o: Order; canFulfil: boolean; o
               ))}
             </ul>
             <dl className="flex flex-col gap-1.5 border-t border-line pt-3">
-              {o.total_usd != null && <>{row("Subtotal", usd(Number(o.subtotal_usd)))}{row("Shipping", Number(o.shipping_usd) ? usd(Number(o.shipping_usd)) : "Included")}{row("Total (USD)", usd(Number(o.total_usd)), true)}</>}
+              {o.total_usd != null && <>{row("Subtotal", usd(Number(o.subtotal_usd)))}{row("Shipping cost", Number(o.shipping_usd) ? usd(Number(o.shipping_usd)) : "Included")}{row("Total (USD)", usd(Number(o.total_usd)), true)}</>}
               {row("Charged (IDR)", `Rp ${Number(o.charged_idr).toLocaleString("id-ID")}`)}
               {o.fx_usd_idr != null && row("Rate", `${Number(o.fx_usd_idr).toLocaleString("id-ID")} IDR/USD`)}
             </dl>

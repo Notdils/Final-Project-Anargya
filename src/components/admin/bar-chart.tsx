@@ -8,7 +8,7 @@ const fmt = (kind: Kind, n: number) => (kind === "usd" ? `$${Math.round(n).toLoc
 
 /** Rounds the axis max up to 1, 2 or 5 × 10^n so gridlines land on round numbers. */
 function niceMax(v: number) {
-  if (v <= 0) return 1;
+  if (v <= 0) return 1; // empty chart: axis 0..1, gridlines 0 and 1 only
   const p = 10 ** Math.floor(Math.log10(v));
   return [1, 2, 5, 10].map((m) => m * p).find((m) => m >= v)!;
 }
@@ -20,7 +20,11 @@ function niceMax(v: number) {
 export function BarChart({ data, kind, title, unit }: { data: Point[]; kind: Kind; title: string; unit: string }) {
   const format = (n: number) => fmt(kind, n);
   const [hover, setHover] = useState<number | null>(null);
+  const [page, setPage] = useState(0);
   const id = useId();
+  const ROWS = 10; // table view, 10 rows per page
+  const pages = Math.max(1, Math.ceil(data.length / ROWS));
+  const empty = data.every((d) => d.value === 0);
   const W = 640, H = 200, L = 48, B = 24, T = 8;
   const max = niceMax(Math.max(...data.map((d) => d.value)));
   const bw = (W - L) / Math.max(1, data.length);
@@ -32,7 +36,8 @@ export function BarChart({ data, kind, title, unit }: { data: Point[]; kind: Kin
       <div className="relative">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-labelledby={`${id}-t`}>
           <title id={`${id}-t`}>{title}</title>
-          {[0, 0.5, 1].map((f) => (
+          {/* a middle gridline only when it lands on a whole number */}
+          {(max >= 2 ? [0, 0.5, 1] : [0, 1]).map((f) => (
             <g key={f}>
               <line x1={L} x2={W} y1={y(max * f)} y2={y(max * f)} stroke="#E5E5E5" strokeWidth={1} />
               <text x={L - 8} y={y(max * f) + 4} textAnchor="end" className="fill-[#737373] font-mono text-[11px]">{format(max * f)}</text>
@@ -58,6 +63,7 @@ export function BarChart({ data, kind, title, unit }: { data: Point[]; kind: Kin
           })}
           <line x1={L} x2={W} y1={H - B} y2={H - B} stroke="#D4D4D4" strokeWidth={1} />
         </svg>
+        {empty && <p className="pointer-events-none absolute inset-x-0 top-1/3 text-center text-sm text-muted">Nothing in this range yet.</p>}
         {h && hover !== null && (
           <div role="status" className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 rounded-lg border border-line bg-white px-3 py-2 text-xs shadow-sm"
             style={{ left: `${((L + hover * bw + bw / 2) / W) * 100}%` }}>
@@ -69,8 +75,17 @@ export function BarChart({ data, kind, title, unit }: { data: Point[]; kind: Kin
       <details className="text-xs">
         <summary className="cursor-pointer text-muted">Show as table</summary>
         <table className="mt-2 w-full max-w-sm">
-          <tbody>{data.map((d, i) => <tr key={i} className="border-t border-line"><td className="py-1">{d.label}</td><td className="py-1 text-right font-mono">{format(d.value)}</td></tr>)}</tbody>
+          <tbody>{data.slice(page * ROWS, page * ROWS + ROWS).map((d, i) => <tr key={i} className="border-t border-line"><td className="py-1">{d.label}</td><td className="py-1 text-right font-mono">{format(d.value)}</td></tr>)}</tbody>
         </table>
+        {pages > 1 && (
+          <div className="mt-2 flex max-w-sm items-center justify-between">
+            <span className="text-muted">Rows {page * ROWS + 1}–{Math.min(data.length, page * ROWS + ROWS)} of {data.length}</span>
+            <span className="flex items-center gap-1">
+              <button type="button" className="btn btn-outline min-h-8 px-2 py-0 text-xs" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</button>
+              <button type="button" className="btn btn-outline min-h-8 px-2 py-0 text-xs" disabled={page >= pages - 1} onClick={() => setPage(page + 1)}>Next</button>
+            </span>
+          </div>
+        )}
       </details>
     </figure>
   );

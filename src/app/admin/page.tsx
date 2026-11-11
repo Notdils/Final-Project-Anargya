@@ -53,6 +53,31 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
         </nav>
       </div>
 
+      <div className="grid gap-4 xl:grid-cols-2">
+        <section aria-labelledby="rev-chart" className="flex flex-col gap-3 rounded-xl border border-line p-5">
+          <h2 id="rev-chart" className="font-semibold">Revenue <span className="font-normal text-muted">per {range.bucket}</span></h2>
+          {d ? <BarChart data={d.series.map((b) => ({ label: b.label, value: b.revenue }))} kind="usd" unit="revenue" title={`Revenue per ${range.bucket}, ${range.long}`} /> : <p className="text-sm text-muted">Connect Supabase to see data.</p>}
+        </section>
+        <section aria-labelledby="ord-chart" className="flex flex-col gap-3 rounded-xl border border-line p-5">
+          <h2 id="ord-chart" className="font-semibold">Paid orders <span className="font-normal text-muted">per {range.bucket}</span></h2>
+          {d ? <BarChart data={d.series.map((b) => ({ label: b.label, value: b.orders }))} kind="count" unit="paid orders" title={`Paid orders per ${range.bucket}, ${range.long}`} /> : <p className="text-sm text-muted">Connect Supabase to see data.</p>}
+        </section>
+        <section aria-labelledby="by-product" className="flex flex-col gap-4 rounded-xl border border-line p-5">
+          <div>
+            <h2 id="by-product" className="font-semibold">Revenue by part</h2>
+            <p className="text-xs text-muted">Which parts bring the money, and how many units.</p>
+          </div>
+          <RankBars rows={(d?.products ?? []).map((p) => ({ name: p.name, value: p.revenue, note: `${p.units} ${p.units === 1 ? "unit" : "units"}` }))} kind="usd" empty="No paid orders in this range." />
+        </section>
+        <section aria-labelledby="by-dest" className="flex flex-col gap-4 rounded-xl border border-line p-5">
+          <div>
+            <h2 id="by-dest" className="font-semibold">Revenue by destination</h2>
+            <p className="text-xs text-muted">Where paid orders ship. Top 8.</p>
+          </div>
+          <RankBars rows={(d?.destinations ?? []).map((x) => ({ name: x.name, value: x.revenue, note: `${x.orders} ${x.orders === 1 ? "order" : "orders"}` }))} kind="usd" empty="No paid orders in this range." />
+        </section>
+      </div>
+
       {d && (d.actions.review > 0 || d.actions.toPack > 0 || d.actions.waiting > 0) && (
         <ul className="flex flex-col gap-2 md:flex-row">
           {d.actions.review > 0 && (
@@ -79,31 +104,6 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
           </li>
         ))}
       </ul>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <section aria-labelledby="rev-chart" className="flex flex-col gap-3 rounded-xl border border-line p-5">
-          <h2 id="rev-chart" className="font-semibold">Revenue <span className="font-normal text-muted">per {range.bucket}</span></h2>
-          {d ? <BarChart data={d.series.map((b) => ({ label: b.label, value: b.revenue }))} kind="usd" unit="revenue" title={`Revenue per ${range.bucket}, ${range.long}`} /> : <p className="text-sm text-muted">Connect Supabase to see data.</p>}
-        </section>
-        <section aria-labelledby="ord-chart" className="flex flex-col gap-3 rounded-xl border border-line p-5">
-          <h2 id="ord-chart" className="font-semibold">Paid orders <span className="font-normal text-muted">per {range.bucket}</span></h2>
-          {d ? <BarChart data={d.series.map((b) => ({ label: b.label, value: b.orders }))} kind="count" unit="paid orders" title={`Paid orders per ${range.bucket}, ${range.long}`} /> : <p className="text-sm text-muted">Connect Supabase to see data.</p>}
-        </section>
-        <section aria-labelledby="by-product" className="flex flex-col gap-4 rounded-xl border border-line p-5">
-          <div>
-            <h2 id="by-product" className="font-semibold">Revenue by part</h2>
-            <p className="text-xs text-muted">Which parts bring the money, and how many units.</p>
-          </div>
-          <RankBars rows={(d?.products ?? []).map((p) => ({ name: p.name, value: p.revenue, note: `${p.units} ${p.units === 1 ? "unit" : "units"}` }))} kind="usd" empty="No paid orders in this range." />
-        </section>
-        <section aria-labelledby="by-dest" className="flex flex-col gap-4 rounded-xl border border-line p-5">
-          <div>
-            <h2 id="by-dest" className="font-semibold">Revenue by destination</h2>
-            <p className="text-xs text-muted">Where paid orders ship. Top 8.</p>
-          </div>
-          <RankBars rows={(d?.destinations ?? []).map((x) => ({ name: x.name, value: x.revenue, note: `${x.orders} ${x.orders === 1 ? "order" : "orders"}` }))} kind="usd" empty="No paid orders in this range." />
-        </section>
-      </div>
 
       <section aria-labelledby="funnel" className="flex flex-col gap-4 rounded-xl border border-line p-5">
         <div>

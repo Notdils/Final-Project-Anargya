@@ -100,7 +100,7 @@ export function ShippingManager({ zones, flatUsd, live }: { zones: Zone[]; flatU
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-[-0.02em] md:text-[28px] md:leading-9">Shipping</h1>
+        <h1 className="text-2xl font-semibold tracking-[-0.02em] md:text-[28px] md:leading-9">Shipping Cost</h1>
         <p className="text-sm text-muted">Rates by destination. Checkout asks for the country and, in Japan, East or West; the server charges the zone rate. An empty rate uses the flat rate ({flatUsd ? `$${flatUsd}` : "free"}).</p>
       </header>
       {!live && <p className="flex items-start gap-2 rounded-lg bg-ochre-tint p-3 text-sm"><AlertCircle size={16} className="mt-0.5 shrink-0 text-ochre" aria-hidden />Read-only preview. Run SQL 0013 in Supabase to edit rates.</p>}

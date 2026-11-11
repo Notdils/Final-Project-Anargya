@@ -40,7 +40,7 @@ export const ADMIN_SECTIONS = [
   { href: "/admin/bookings", label: "Bookings", perm: "bookings.read" },
   { href: "/admin/products", label: "Products", perm: "products.read" },
   { href: "/admin/vouchers", label: "Vouchers", perm: "products.write" },
-  { href: "/admin/shipping", label: "Shipping", perm: "shipping.manage" },
+  { href: "/admin/shipping", label: "Shipping Cost", perm: "shipping.manage" },
   { href: "/admin/users", label: "Users", perm: "users.manage" },
 ] as const satisfies readonly { href: string; label: string; perm: Perm }[];
 
