@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import { currentUser } from "@/lib/supabase/server";
+import { can } from "@/lib/rbac";
 import { parseDays, parseStatus, receiptsForExport } from "@/lib/admin";
 
 // Draft column set until Finance (FAB) confirms the fields.
@@ -17,7 +18,7 @@ const safe = (v: unknown) => {
 
 export async function GET(req: Request) {
   const { role } = await currentUser();
-  if (role !== "admin") return new Response("forbidden", { status: 403 }); // middleware also checks
+  if (!can(role, "receipts.read")) return new Response("forbidden", { status: 403 }); // middleware also checks
 
   const sp = new URL(req.url).searchParams;
   const format = sp.get("format") === "xlsx" ? "xlsx" : "csv";

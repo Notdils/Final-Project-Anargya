@@ -60,8 +60,15 @@ const MODELS: Record<string, string> = {
   "custom-vcu-bms-unit": "/models/parts/vcu-bms.glb",
   "brake-pedal-box": "/models/parts/pedal-box.glb",
 };
+// Specs from the team (11 Nov). Same values as supabase/migrations/0012_product_specs.sql.
+const SPECS: Record<string, Pick<Product, "material" | "weight" | "fits" | "leadTime">> = {
+  "p-upright-kit": { material: "Aluminium, high-tensile alloy steel", weight: "4–4.5 kg per set", fits: 'Formula Student 10" or 13" wheels (PCD 4×98 / 4×100)', leadTime: "3–4 weeks" },
+  "p-aero-package": { material: "Carbon fiber, aluminium", weight: "9–11 kg total", fits: "FSAE-standard tubular spaceframe or monocoque chassis", leadTime: "4–5 weeks" },
+  "p-vcu-bms": { material: "Aluminium", weight: "1.2–1.8 kg total", fits: "EV powertrains, configured to your team's communication protocol", leadTime: "3–4 weeks" },
+  "p-pedal-box": { material: "Aluminium", weight: "2.8–3.4 kg", fits: "Hydraulic braking systems", leadTime: "2–3 weeks" },
+};
 const part = (p: Pick<Product, "id" | "slug" | "code" | "name" | "category" | "priceUsd" | "unit" | "stock" | "description">): Product => ({
-  ...base, ...p, featured: true, image: `/parts/${p.slug}.webp`, modelUrl: MODELS[p.slug] ?? null,
+  ...base, ...p, ...SPECS[p.id], featured: true, image: `/parts/${p.slug}.webp`, modelUrl: MODELS[p.slug] ?? null,
 });
 export const PLACEHOLDER_PRODUCTS: Product[] = [
   part({ id: "p-upright-kit", slug: "uprights-wheel-hub-kit", code: "AN-SUSP-01", name: "Uprights & Wheel Hub Assembly Kit", category: "suspension", priceUsd: 2880, unit: "set", stock: 8,

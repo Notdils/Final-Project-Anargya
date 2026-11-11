@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Package, UserRound } from "lucide-react";
+import { CalendarDays, ChevronRight, MapPin, Package, UserRound } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SlimFooter } from "@/components/site-footer";
 import { OrderStatusBadge } from "@/components/status-badge";
@@ -8,6 +8,7 @@ import { jst } from "@/lib/format";
 import { orderAmount, usd } from "@/lib/money";
 import { lastAddress, type Order } from "@/lib/orders";
 import { reconcileOrder } from "@/lib/reconcile";
+import { TOPICS, dateLabel } from "@/lib/booking";
 import { lp, translator, type Locale } from "@/i18n";
 
 
@@ -29,6 +30,12 @@ export default async function AccountView({ locale }: { locale: Locale }) {
     orders = await load();
   }
   const saved = await lastAddress();
+  type BookingRow = { id: string; slot_date: string; slot_time: string; topic: string; pay_status: string; status: string };
+  const bookings: BookingRow[] = sb && user
+    ? (((await sb.from("bookings").select("id, slot_date, slot_time, topic, pay_status, status").eq("user_id", user.id).order("slot_date", { ascending: false }).limit(20)).data as BookingRow[] | null) ?? [])
+    : [];
+  const bookingBadge = (b: BookingRow) =>
+    b.status === "confirmed" ? ["Confirmed", "bg-teal-tint text-teal"] : b.pay_status === "pending" ? ["Waiting for payment", "bg-ochre-tint text-ink"] : b.status === "cancelled" ? ["Not completed", "bg-surface-2 text-muted"] : ["Requested", "bg-ochre-tint text-ink"];
   const paid = orders.filter((o) => o.status === "paid");
   const spent = paid.reduce((s, o) => s + Number(o.total_usd ?? 0), 0); // USD orders only (older JPY test orders excluded)
   const waiting = orders.filter((o) => o.status === "pending").length;
@@ -88,6 +95,31 @@ export default async function AccountView({ locale }: { locale: Locale }) {
                   })}
                 </ul>
               )}
+
+              <section aria-labelledby="consult-title" className="mt-6 flex flex-col gap-3">
+                <h2 id="consult-title" className="flex items-center gap-2 text-lg font-semibold"><CalendarDays size={18} className="text-teal" aria-hidden />{t("Consultations")}</h2>
+                {bookings.length === 0 ? (
+                  <p className="text-sm text-muted">{t("No consultations yet.")}</p>
+                ) : (
+                  <ul className="flex flex-col gap-2">
+                    {bookings.map((b) => {
+                      const [label, cls] = bookingBadge(b);
+                      return (
+                        <li key={b.id}>
+                          <Link href={L(`/consulting/booking/${b.id}`)} className="flex items-center justify-between gap-3 rounded-lg border border-line p-4 hover:bg-surface">
+                            <span className="flex min-w-0 flex-col gap-0.5">
+                              <span className="font-mono text-sm">{dateLabel(b.slot_date, locale === "ja" ? "ja-JP" : "en-GB")} · {b.slot_time} JST</span>
+                              <span className="truncate text-sm text-muted">{t(TOPICS.find((x) => x.id === b.topic)?.label ?? b.topic)}</span>
+                            </span>
+                            <span className="flex shrink-0 items-center gap-2"><span className={`rounded px-1.5 py-0.5 text-xs font-medium ${cls}`}>{t(label)}</span><ChevronRight size={16} className="text-muted" aria-hidden /></span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                <Link href={L("/consulting")} className="w-fit text-sm font-medium text-teal hover:underline">{t("Book a consultation")} →</Link>
+              </section>
             </section>
 
             <aside className="flex flex-col gap-4">

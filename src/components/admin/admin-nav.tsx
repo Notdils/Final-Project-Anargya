@@ -1,16 +1,15 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, CalendarClock, LayoutGrid, LogOut, Receipt } from "lucide-react";
+import { ArrowLeft, Box, CalendarClock, LayoutGrid, LogOut, Receipt, ShoppingBag, Users } from "lucide-react";
+import { ADMIN_SECTIONS, ROLE_INFO, can, type Role } from "@/lib/rbac";
 
-const ITEMS = [
-  { href: "/admin", label: "Overview", Icon: LayoutGrid },
-  { href: "/admin/receipts", label: "Receipts", Icon: Receipt },
-  { href: "/admin/bookings", label: "Bookings", Icon: CalendarClock },
-];
+const ICONS: Record<string, typeof Box> = { "/admin": LayoutGrid, "/admin/orders": ShoppingBag, "/admin/receipts": Receipt, "/admin/bookings": CalendarClock, "/admin/products": Box, "/admin/users": Users };
 
-export function AdminNav({ email }: { email: string | null }) {
+export function AdminNav({ email, role }: { email: string | null; role: Role | null }) {
   const path = usePathname();
+  // without Supabase (demo mode) show every section
+  const ITEMS = ADMIN_SECTIONS.filter((s) => role === null || can(role, s.perm)).map((s) => ({ ...s, Icon: ICONS[s.href] }));
   const isOn = (h: string) => (h === "/admin" ? path === "/admin" : path.startsWith(h));
   return (
     <>
@@ -49,6 +48,7 @@ export function AdminNav({ email }: { email: string | null }) {
           <span className="grid h-7 w-7 place-items-center rounded-full bg-teal text-xs font-medium text-white" aria-hidden>{(email ?? "A")[0].toUpperCase()}</span>
           <div className="hidden min-w-0 flex-col xl:flex">
             <span className="truncate text-[13px] font-medium">{email ?? "Not signed in"}</span>
+            {role && <span className="text-xs text-muted">{ROLE_INFO[role].label}</span>}
             <form action="/api/auth/logout" method="post"><button className="flex items-center gap-1 text-xs text-muted hover:text-ink"><LogOut size={12} aria-hidden />Log out</button></form>
           </div>
         </div>

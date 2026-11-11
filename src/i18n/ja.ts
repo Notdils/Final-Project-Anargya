@@ -473,4 +473,31 @@ export const JA: Record<string, string> = {
   "Booking not completed": "予約は完了していません",
   "No money was taken and the slot was released. You can book another time.": "料金は請求されておらず、予約枠は解放されました。別の時間で予約できます。",
   "Booked by": "予約者",
+
+  // Account consultations, shipping status
+  Consultations: "コンサルティング予約",
+  "No consultations yet.": "まだ予約はありません。",
+  Confirmed: "確定",
+  "Not completed": "未完了",
+  Requested: "リクエスト済み",
+  Shipped: "発送済み",
+  Delivered: "配達済み",
+  "Being packed": "梱包中",
+  "We will add the tracking number here when your parts ship.": "発送時にここへ追跡番号を表示します。",
+
+  // Part specifications (0012)
+  "Aluminium, high-tensile alloy steel": "アルミニウム、高張力合金鋼",
+  "Carbon fiber, aluminium": "カーボンファイバー、アルミニウム",
+  Aluminium: "アルミニウム",
+  "4–4.5 kg per set": "1セット4〜4.5 kg",
+  "9–11 kg total": "合計9〜11 kg",
+  "1.2–1.8 kg total": "合計1.2〜1.8 kg",
+  "2.8–3.4 kg": "2.8〜3.4 kg",
+  'Formula Student 10" or 13" wheels (PCD 4×98 / 4×100)': "フォーミュラ・スチューデント用10インチ／13インチホイール（PCD 4×98／4×100）",
+  "FSAE-standard tubular spaceframe or monocoque chassis": "FSAE規格の鋼管スペースフレームまたはモノコックシャシー",
+  "EV powertrains, configured to your team's communication protocol": "EVパワートレイン対応、チームの通信プロトコルに合わせて設定",
+  "Hydraulic braking systems": "油圧ブレーキシステム",
+  "2–3 weeks": "2〜3週間",
+  "3–4 weeks": "3〜4週間",
+  "4–5 weeks": "4〜5週間",
 };

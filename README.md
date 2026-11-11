@@ -24,7 +24,7 @@ Design source: Figma file "Anargya", page **Anargya Corp: Final Project**, secti
 | `/marketplace/[slug]` | Part detail, 3D viewer frame, add to cart |
 | `/cart`, `/checkout`, `/receipt/[id]` | Cart, Midtrans checkout, printable receipt |
 | `/login`, `/register`, `/forgot-password`, `/reset-password`, `/account` | Auth (server routes with rate limit), password reset, order history |
-| `/admin`, `/admin/receipts` | KPIs, conversion funnel, receipts table, CSV/XLSX export (admin role only) |
+| `/admin` … | Staff area: Overview, Orders (fulfilment), Receipts (CSV/XLSX), Bookings, Products (prices, stock, media upload), Users (roles). Menu and access depend on the role, see below |
 | `/app` | PWA start URL, redirects by role |
 
 ## Run locally
@@ -40,14 +40,15 @@ Without Supabase env vars the site still renders with the placeholder catalog (a
 ## Supabase setup
 
 1. Create a new Supabase project.
-2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0008`).
+2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0011`).
 3. Auth → URL configuration: set Site URL to the deployed domain and add `https://<domain>/auth/callback` to Redirect URLs (password reset and email confirmation links land there).
 4. Register an account on the site, then make it admin (SQL editor):
    ```sql
    update auth.users
    set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'
-   where email = 'YOUR_EMAIL';
+   where id = 'YOUR_USER_UUID'; -- copy the UUID from Authentication → Users (safer than matching by email)
    ```
+   After that, give other people roles from **Admin → Users** (every change is logged in `admin_audit`).
    Log out and in again so the session picks up the role.
 
 Security notes:
@@ -90,3 +91,18 @@ npx tsc --noEmit   # type check
 npm run lint
 npm run build
 ```
+
+## Roles (RBAC)
+
+The role is stored in `app_metadata.role` (only the server can write it). Access is checked three times: middleware, the page or API route (`src/lib/rbac.ts`), and Postgres RLS (`has_perm()` in `0011`).
+
+| Role | Can use |
+|---|---|
+| `admin` | Everything, including Users and roles |
+| `catalog` | Products: prices, stock, active/featured, render image and 3D model upload |
+| `ops` | Orders and fulfilment (carrier, tracking), Bookings |
+| `finance` | Overview, Receipts and exports, Orders read-only |
+| none | Customer |
+
+To add a role, change `PERMS` in `src/lib/rbac.ts` and `has_perm()` in a new migration together. Product media go to the public Supabase Storage bucket `part-media` (created by `0011`); uploads only go through `/api/admin/products/[id]/media`, which checks the role and the file content (WebP/PNG/JPEG up to 1 MB, binary glTF up to 10 MB).
+

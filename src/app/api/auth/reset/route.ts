@@ -1,3 +1,4 @@
+import { homeFor, isStaff, toRole } from "@/lib/rbac";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
@@ -16,6 +17,6 @@ export async function POST(req: Request) {
   const sb = (await supabaseServer())!;
   const { error } = await sb.auth.updateUser({ password: parsed.data.password });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  const role = (user.app_metadata as { role?: string }).role;
-  return NextResponse.json({ redirect: role === "admin" ? "/admin" : "/marketplace" });
+  const role = toRole((user.app_metadata as { role?: string }).role);
+  return NextResponse.json({ redirect: role && isStaff(role) ? homeFor(role) : "/marketplace" });
 }

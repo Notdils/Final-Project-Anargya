@@ -1,3 +1,4 @@
+import { guardPage } from "@/lib/admin-guard";
 import { CalendarClock } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase/server";
 import { TOPICS, dateLabel, todayJst } from "@/lib/booking";
@@ -13,6 +14,7 @@ const STATUS_STYLE = { requested: "bg-ochre-tint text-ink", confirmed: "bg-teal-
 const topicLabel = (id: string) => TOPICS.find((t) => t.id === id)?.label ?? id;
 
 export default async function AdminBookings({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
+  await guardPage("bookings.read");
   const show = (await searchParams).show === "past" ? "past" : "upcoming";
   const sb = await supabaseServer();
   const today = todayJst();

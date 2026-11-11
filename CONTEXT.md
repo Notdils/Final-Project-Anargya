@@ -27,12 +27,13 @@ Dokumen untuk sesi Claude berikutnya. Baca bersama `DECISIONS.md` dan `TODO.md`.
 - **Model 3D per part** di `public/models/parts/` (meshopt + webp). Tampil di part detail (viewer: putar, zoom, reset, fullscreen) dan di card grid/coverflow (berputar saat hover / card aktif). Mapping sementara: uprights = diffuser, aero = nose + sayap depan, VCU = VCU, pedal box = pedal box. `rear-wing.glb` belum dipakai.
 - **Checkout Midtrans:** order hanya dibuat server lewat `create_order_usd_srv` (kurs `FX_USD_IDR` dan ongkir dari env). Lanjutkan bayar, ganti metode, rekonsiliasi status, flag "Needs review" kalau nominal tidak cocok.
 - **Consulting = booking berbayar** satu layar: kalender Senin-Jumat 30 hari, slot 09:00/11:00/14:00/16:00 JST, form, bayar Midtrans (`CONSULT_FEE_USD`). Wajib login, satu booking belum dibayar per user, slot ditahan 15 menit, otomatis `confirmed` setelah bayar. Status di `/consulting/booking/[id]`.
+- **Admin + RBAC:** role `admin`, `catalog`, `ops`, `finance` (lihat README bagian Roles). Halaman Orders (status kirim + resi, tampil di receipt pembeli), Products (edit, toggle, upload gambar/GLB ke bucket `part-media`), Users (ganti role dengan konfirmasi email, tidak bisa ubah role sendiri), Bookings. Semua perubahan dicatat di `admin_audit`. Account customer menampilkan daftar konsultasi.
 - **Keamanan (audit 11 Nov):** RLS di semua tabel, cek Origin untuk POST `/api`, `safeNext` untuk redirect login, rate limit per email dan per IP, service worker hanya cache halaman publik, HSTS, CSP mode Report-Only. Laporan lengkap di luar repo (sudah dikirim ke user).
 
 ## Stack dan struktur
 - Next.js 15 App Router, React 19.1.10, Tailwind v4, R3F + drei, GSAP ScrollTrigger, Supabase, Midtrans Snap sandbox, ExcelJS.
 - `src/lib`: data, catalog, money (USD/JPY), booking, booking-pay, midtrans, reconcile, rate-limit, safe-next, Supabase.
-- `supabase/migrations` `0001` sampai `0010`. `tests/sql.test.mjs` menjalankan semuanya di PGlite (`node tests/sql.test.mjs`).
+- `supabase/migrations` `0001` sampai `0011`. `tests/sql.test.mjs` menjalankan semuanya di PGlite (`node tests/sql.test.mjs`).
 - Env: `FX_USD_IDR`, `NEXT_PUBLIC_FX_USD_JPY` (dibaca saat build, perlu redeploy), `SHIPPING_FLAT_USD`, `CONSULT_FEE_USD`, kunci Supabase dan Midtrans. Rahasia hanya di Vercel env.
 
 ## Ditahan (jangan dikerjakan sampai user minta)

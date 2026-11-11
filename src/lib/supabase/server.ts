@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient as createPlainClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { SUPABASE_URL, SUPABASE_ANON_KEY, hasSupabase } from "@/lib/env";
+import { toRole, type Role } from "@/lib/rbac";
 
 /** Session-aware client for Server Components, Route Handlers and Server Actions. RLS applies. */
 export async function supabaseServer() {
@@ -33,13 +34,13 @@ export function supabaseService() {
   return createPlainClient(SUPABASE_URL, key, { auth: { persistSession: false } });
 }
 
-export type Role = "customer" | "admin";
+export type { Role };
 
 export async function currentUser() {
   const sb = await supabaseServer();
   if (!sb) return { user: null, role: null as Role | null };
   const { data } = await sb.auth.getUser();
   const user = data.user;
-  const role = ((user?.app_metadata as { role?: Role } | undefined)?.role ?? (user ? "customer" : null)) as Role | null;
+  const role = user ? toRole((user.app_metadata as { role?: string } | undefined)?.role) : null;
   return { user, role };
 }

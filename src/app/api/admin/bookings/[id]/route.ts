@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
+import { can } from "@/lib/rbac";
 
 const Body = z.object({ status: z.enum(["requested", "confirmed", "cancelled"]) });
 
 /** Admin changes a booking status. RLS also requires admin for the update. */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { role } = await currentUser();
-  if (role !== "admin") return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!can(role, "bookings.manage")) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const id = (await params).id;
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "bad id" }, { status: 400 });
   const ct = req.headers.get("content-type") ?? "";

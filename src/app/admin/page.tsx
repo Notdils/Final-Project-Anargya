@@ -1,3 +1,4 @@
+import { guardPage } from "@/lib/admin-guard";
 import Link from "next/link";
 import { AlertTriangle, MoreHorizontal } from "lucide-react";
 import { overview, parseDays } from "@/lib/admin";
@@ -11,6 +12,7 @@ export const metadata = { title: "Overview" };
 const LABEL: Record<string, string> = { home: "Home", marketplace: "Marketplace", part: "Part detail", checkout: "Checkout started", paid: "Paid" };
 
 export default async function AdminOverview({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
+  await guardPage("overview.read");
   const days = parseDays((await searchParams).days);
   const d = await overview(days);
   const top = Math.max(1, ...(d?.funnel.map((s) => s.n) ?? [1]));

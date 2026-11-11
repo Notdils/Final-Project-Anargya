@@ -18,8 +18,12 @@ const CSP = [
   "frame-ancestors 'none'",
 ].join("; ");
 
+const supabaseHost = (() => { try { return new URL(supabase).hostname; } catch { return null; } })();
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // product renders uploaded from the admin live in the Supabase Storage bucket "part-media"
+  images: supabaseHost ? { remotePatterns: [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/part-media/**" }] } : undefined,
   async headers() {
     return [
       {

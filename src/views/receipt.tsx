@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { AlertCircle, Box, CheckCircle2, Clock, Truck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SlimFooter } from "@/components/site-footer";
 import { OrderStatusBadge } from "@/components/status-badge";
@@ -66,6 +66,19 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
                 <AlertCircle size={20} className="shrink-0" aria-hidden />
                 {t("Your payment went through, but the last unit of a part was sold moments earlier. Our team will contact you about a refund or a restock date.")}
               </p>
+            )}
+            {o.status === "paid" && (
+              <div className="flex items-start gap-3 rounded-lg border border-line p-4">
+                {o.fulfilment_status === "to_pack" || !o.fulfilment_status ? <Box size={20} className="shrink-0 text-teal" aria-hidden /> : o.fulfilment_status === "shipped" ? <Truck size={20} className="shrink-0 text-teal" aria-hidden /> : <CheckCircle2 size={20} className="shrink-0 text-teal" aria-hidden />}
+                <div className="flex flex-col gap-0.5 text-sm">
+                  <p className="font-semibold">{t(o.fulfilment_status === "shipped" ? "Shipped" : o.fulfilment_status === "delivered" ? "Delivered" : "Being packed")}</p>
+                  {o.fulfilment_status && o.fulfilment_status !== "to_pack" ? (
+                    <p className="text-[#404040]">{o.carrier} · <span className="font-mono">{o.tracking_no}</span>{o.shipped_at ? ` · ${jst(o.shipped_at)}` : ""}</p>
+                  ) : (
+                    <p className="text-[#404040]">{t("We will add the tracking number here when your parts ship.")}</p>
+                  )}
+                </div>
+              </div>
             )}
             <article aria-label={t("Receipt {no}", { no: o.receipt_no })} className="flex flex-col gap-5 rounded-xl border border-line p-5 md:p-8 print:border-0 print:p-0">
               <header className="flex flex-col justify-between gap-3 md:flex-row">

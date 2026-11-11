@@ -1,3 +1,4 @@
+import { guardPage } from "@/lib/admin-guard";
 import Link from "next/link";
 import { AlertTriangle, ChevronLeft, ChevronRight, Download, Search } from "lucide-react";
 import { PAGE_SIZE, parseDays, parseStatus, receipts } from "@/lib/admin";
@@ -11,6 +12,7 @@ export const metadata = { title: "Receipts" };
 type SP = { q?: string; status?: string; days?: string; page?: string };
 
 export default async function AdminReceipts({ searchParams }: { searchParams: Promise<SP> }) {
+  await guardPage("receipts.read");
   const sp = await searchParams;
   const f = { q: (sp.q ?? "").slice(0, 60), status: parseStatus(sp.status), days: parseDays(sp.days), page: Math.max(1, Number(sp.page) || 1) };
   const r = await receipts(f);

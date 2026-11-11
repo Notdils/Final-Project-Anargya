@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase/server";
 import { clientIp, hit, rateLimit } from "@/lib/rate-limit";
 import { safeNext } from "@/lib/safe-next";
+import { homeFor, isStaff, toRole } from "@/lib/rbac";
 
 const Body = z.object({ email: z.string().email().max(120), password: z.string().min(1).max(200), next: z.string().optional() });
 const MAX = 5;
@@ -32,6 +33,6 @@ export async function POST(req: Request) {
       { status: 401 },
     );
   }
-  const role = (data.user.app_metadata as { role?: string }).role === "admin" ? "admin" : "customer";
-  return NextResponse.json({ redirect: safeNext(parsed.data.next) ?? (role === "admin" ? "/admin" : "/marketplace") });
+  const role = toRole((data.user.app_metadata as { role?: string }).role);
+  return NextResponse.json({ redirect: safeNext(parsed.data.next) ?? (isStaff(role) ? homeFor(role) : "/marketplace") });
 }

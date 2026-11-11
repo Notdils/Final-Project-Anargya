@@ -34,3 +34,6 @@
 | 11 Nov | Model 3D per part dipasang sementara apa adanya (uprights card = diffuser) | Diminta user untuk preview. Ganti saat GLB upright ada |
 | 11 Nov | Order dibuat hanya oleh server (`create_order_usd_srv`), satu booking belum dibayar per user, slot ditahan 15 menit | Hasil audit keamanan 11 Nov |
 | 11 Nov | PWA, page loader, chatbot ditahan | Diminta user. Rencana chatbot sudah dibuat |
+| 11 Nov | RBAC dengan 4 role staf (admin, catalog, ops, finance), dicek di middleware, route, dan RLS | Diminta user: role based access. Peta izin di `src/lib/rbac.ts` = `has_perm()` |
+| 11 Nov | Media produk diunggah ke Supabase Storage `part-media` lewat server (cek role + isi file) | Diminta user: products pakai upload storage |
+| 11 Nov | Status kirim (To pack, Shipped, Delivered) + kurir + resi diisi ops, tampil di receipt | Desain Admin Orders |

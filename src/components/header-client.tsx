@@ -50,7 +50,7 @@ export function HeaderClient({
   }, [open]);
 
   const dark = variant === "overlay" && !scrolled;
-  const accountHref = isAdmin ? "/admin" : L(signedIn ? "/account" : "/login");
+  const accountHref = isAdmin ? "/app" : L(signedIn ? "/account" : "/login");
   const accountLabel = t(isAdmin ? "Admin" : signedIn ? "Account" : "Log in");
 
   return (

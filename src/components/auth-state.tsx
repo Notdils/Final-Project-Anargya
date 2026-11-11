@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
+import { isStaff, toRole } from "@/lib/rbac";
 
 // Display-only auth state for static pages: read from the session cookie in the browser,
 // no network round trip. Access control stays on the server (middleware, route handlers, RLS).
@@ -10,7 +11,7 @@ let cached: AuthState | null = null;
 const from = (user: { app_metadata?: Record<string, unknown> } | null | undefined): AuthState => ({
   ready: true,
   signedIn: Boolean(user),
-  isAdmin: user?.app_metadata?.role === "admin",
+  isAdmin: isStaff(toRole(user?.app_metadata?.role)), // any staff role: links to the admin area
 });
 
 export function useAuth(): AuthState {

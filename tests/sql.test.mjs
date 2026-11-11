@@ -121,3 +121,25 @@ console.log("server order:", so.total_usd, so.charged_idr);
 try { await run(`select * from create_order_usd_srv($1, $2, $3, 0, 16300)`, [U1, JSON.stringify([{ id: "p-vcu-bms", qty: 1 }]), JSON.stringify({ ...c9, city: "x".repeat(5000) })]); console.log("FAIL: oversized contact accepted"); } catch { console.log("oversized contact blocked"); }
 await run(`insert into bookings(user_id,name,email,organisation,topic,slot_date,slot_time,pay_status) values ($1,'Alice','a@x.co','Team','aero','2026-12-04','09:00','pending')`, [U1]);
 try { await run(`insert into bookings(user_id,name,email,organisation,topic,slot_date,slot_time,pay_status) values ($1,'Alice','a@x.co','Team','aero','2026-12-04','11:00','pending')`, [U1]); console.log("FAIL: second pending booking allowed"); } catch (e) { console.log("second pending booking blocked:", /one_pending/.test(e.message)); }
+
+// 0011: role-based permissions, fulfilment columns, audit
+await db.exec(readFileSync(new URL("../supabase/migrations/0011_rbac_fulfilment_media.sql", import.meta.url), "utf8"));
+await db.exec(readFileSync(new URL("../supabase/migrations/0011_rbac_fulfilment_media.sql", import.meta.url), "utf8")); // re-run is safe
+const perms = ["products.write", "orders.read", "orders.fulfil", "bookings.manage", "overview.read", "receipts.read", "users.manage"];
+for (const role of ["admin", "catalog", "ops", "finance", ""]) {
+  await db.exec(`select set_config('test.jwt','${JSON.stringify({ app_metadata: role ? { role } : {} })}',false)`);
+  const r = (await run(`select ${perms.map((p, i) => `has_perm('${p}') p${i}`).join(",")}`)).rows[0];
+  console.log(`perms ${role || "customer"}:`, perms.filter((_, i) => r[`p${i}`]).join(" ") || "none");
+}
+await db.exec(`select set_config('test.jwt','{"app_metadata":{"role":"ops"}}',false)`);
+try { await run(`select * from funnel_counts(now() - interval '1 day', now())`); console.log("FAIL: ops ran funnel_counts"); } catch { console.log("funnel_counts blocked for ops"); }
+await db.exec(`select set_config('test.jwt','{"app_metadata":{"role":"finance"}}',false)`);
+console.log("funnel_counts for finance:", (await run(`select count(*) n from funnel_counts(now() - interval '1 day', now())`)).rows[0].n);
+const fo = (await run(`select id from orders limit 1`)).rows[0].id;
+await run(`update orders set fulfilment_status='shipped', carrier='X', tracking_no='123' where id=$1`, [fo]);
+try { await run(`update orders set fulfilment_status='lost' where id=$1`, [fo]); console.log("FAIL: bad fulfilment accepted"); } catch { console.log("bad fulfilment status blocked"); }
+await run(`insert into admin_audit(actor, action, target) values ($1, 'test', 'x')`, [U1]); console.log("audit rows:", (await run(`select count(*) n from admin_audit`)).rows[0].n);
+
+// 0012: specs
+await db.exec(readFileSync(new URL("../supabase/migrations/0012_product_specs.sql", import.meta.url), "utf8"));
+console.log("specs:", (await run(`select id, material, lead_time from products where id in ('p-upright-kit','p-aero-package','p-vcu-bms','p-pedal-box') order by id`)).rows.map(r => `${r.id}: ${r.material} / ${r.lead_time}`).join(" | "));

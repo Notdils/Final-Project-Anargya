@@ -1,7 +1,7 @@
 # TODO: Anargya Corp (11 Nov 2026)
 
 ## Butuh user (sebelum demo)
-- [ ] Jalankan SQL `0007` sampai `0010` berurutan. `0009` harus jalan bersamaan dengan deploy (checkout memakai `create_order_usd_srv`).
+- [ ] Jalankan SQL `0007` sampai `0011` berurutan. `0009` dan `0011` harus jalan bersamaan dengan deploy (checkout memakai `create_order_usd_srv`, admin memakai `has_perm`).
 - [ ] Vercel env: `CONSULT_FEE_USD` (dari Finance), cek `FX_USD_IDR`, `NEXT_PUBLIC_FX_USD_JPY`, `SHIPPING_FLAT_USD`. Redeploy setelah mengubah env.
 - [ ] `npm install` di laptop (React 19.1.10, override `uuid`), lalu commit dan push.
 - [ ] Tes di production: checkout, booking konsultasi sampai `confirmed`, login EN dan JA, viewer 3D.
@@ -24,8 +24,7 @@
 - [ ] Chatbot (lihat `chatbot-plan.md`; butuh keputusan scope, provider, budget).
 
 ## Belum dibuat (perlu Figma dulu, tanya user)
-- [ ] Admin Products (harga, stok, featured, `model_url`) dan Admin Orders/Users.
-- [ ] Daftar booking di halaman Account customer.
+- [ ] Tampilan audit log di admin (data sudah dicatat di `admin_audit`).
 
 ## Teknis kecil
 - [ ] Tes performa hero, fly-through, dan card 3D di HP kelas menengah.

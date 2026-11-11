@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { can, homeFor, isStaff, permForPath, toRole } from "@/lib/rbac";
 
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -46,7 +47,8 @@ export async function middleware(req: NextRequest) {
   });
   const { data } = await sb.auth.getUser(); // validates the JWT with Supabase, refreshes cookies
   const user = data.user;
-  const role = (user?.app_metadata as { role?: string } | undefined)?.role ?? (user ? "customer" : null);
+  const role = user ? toRole((user.app_metadata as { role?: string } | undefined)?.role) : null;
+  const home = role ? (isStaff(role) ? homeFor(role) : "/marketplace") : "/marketplace";
 
   const redirect = (to: string) => {
     const u = req.nextUrl.clone();
@@ -57,11 +59,14 @@ export async function middleware(req: NextRequest) {
 
   if (NEEDS_ADMIN.some((r) => r.test(path))) {
     if (!user) return path.startsWith("/api/") ? NextResponse.json({ error: "unauthorized" }, { status: 401 }) : redirect("/login");
-    if (role !== "admin") return path.startsWith("/api/") ? NextResponse.json({ error: "forbidden" }, { status: 403 }) : redirect("/marketplace");
+    if (!isStaff(role)) return path.startsWith("/api/") ? NextResponse.json({ error: "forbidden" }, { status: 403 }) : redirect("/marketplace");
+    // each admin page and API needs its own permission (see src/lib/rbac.ts); routes check again
+    const need = permForPath(path);
+    if (need && !can(role, need)) return path.startsWith("/api/") ? NextResponse.json({ error: "forbidden" }, { status: 403 }) : redirect(home);
   }
   if (NEEDS_LOGIN.some((r) => r.test(path)) && !user) return redirect("/login");
-  if (path === "/app") return redirect(role === "admin" ? "/admin" : "/marketplace");
-  if ((path === "/login" || path === "/register") && user) return redirect(role === "admin" ? "/admin" : "/marketplace");
+  if (path === "/app") return redirect(home);
+  if ((path === "/login" || path === "/register") && user) return redirect(home);
 
   return res;
 }
