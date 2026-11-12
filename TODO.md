@@ -1,7 +1,7 @@
 # TODO: Anargya Corp (11 Nov 2026)
 
 ## Butuh user (sebelum demo)
-- [ ] Jalankan SQL `0015_product_overview.sql`, `0016_vouchers.sql`, `0017_spd_prices_topics.sql` (harga SPD + topik konsultasi baru), `0018_product_dimensions.sql`, `0019_drop_events.sql` (hapus tabel events), `0020_order_idempotency.sql`, lalu `0021_product_finish.sql` (finish produk). **0016 wajib sebelum deploy versi ini**: checkout memanggil `create_order_usd_srv` versi baru (dengan voucher).
+- [ ] Jalankan SQL `0015_product_overview.sql`, `0016_vouchers.sql`, `0017_spd_prices_topics.sql` (harga SPD + topik konsultasi baru), `0018_product_dimensions.sql`, `0019_drop_events.sql` (hapus tabel events), `0020_order_idempotency.sql`, `0021_product_finish.sql` (finish produk), lalu `0022_wheel_hub_model.sql` (model 3D wheel hub). **0016 wajib sebelum deploy versi ini**: checkout memanggil `create_order_usd_srv` versi baru (dengan voucher).
 - [ ] (Ditahan, menunggu divisi) Pajak: JP consumption tax 10% untuk tujuan Jepang, ekspor 0%; siapa bayar bea masuk negara lain (DAP/DDP).
 - [ ] (Ditahan, menunggu divisi) Kebijakan retur dan garansi.
 - [ ] (Ditahan sampai akhir) RBAC: uji semua role.
