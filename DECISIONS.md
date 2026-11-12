@@ -40,3 +40,4 @@
 | 12 Nov | Chatbot dan visualisasi globe dibatalkan; page loader dibuat (bar progres teal di atas) | Diminta user |
 | 12 Nov | Funnel buatan sendiri dan tabel `events` dihapus; kunjungan pakai Vercel Analytics | Diminta user (0019) |
 | 12 Nov | Fly-through parallax tetap jalan penuh walau `prefers-reduced-motion` aktif | Diminta user, setelah diberi opsi versi lembut (fade tanpa zoom). Risiko: pengguna sensitif gerakan |
+| 12 Nov | Five-year plan jadi timeline vertikal, satu tahun per layar (100vh), bulatan aktif membesar di tengah layar; slot poster dihapus. Judul hero jadi "Parts & Consultation" satu baris | Diminta user, desain di Figma section "V3 · Home / Five-year plan (vertical, one year per screen)" |

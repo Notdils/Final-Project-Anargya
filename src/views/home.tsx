@@ -6,6 +6,7 @@ import { Hero } from "@/components/home/hero";
 import { Preloader } from "@/components/home/preloader";
 import { PRELOADER_BOOT } from "@/components/home/preloader-boot";
 import { FlyThrough } from "@/components/home/fly-through";
+import { Roadmap } from "@/components/home/roadmap";
 import { Coverflow } from "@/components/coverflow";
 import { listProducts } from "@/lib/catalog";
 import { GuestOnly } from "@/components/auth-state";
@@ -13,14 +14,6 @@ import { lp, translator, type Locale } from "@/i18n";
 
 
 // Five-year roadmap from the SPD (business plan), paraphrased.
-const STEPS = [
-  ["Year 1 · Establishment", "Research and development of four EV modules (VCU/BMS, aero, uprights, pedal box), validated through field testing."],
-  ["Year 2 · Market entry", "Component packages launch in Japan, with demos for Formula Student teams and our consulting service."],
-  ["Year 3 · Expansion", "More teams as customers, full engineering consulting, and preparation for a complete car."],
-  ["Year 4 · Diversification", "A complete formula car prototype, built with a manufacturing partner."],
-  ["Year 5 · Consolidation", "Small-series formula car production and a base of returning customers."],
-];
-
 const VALUES = [
   [Ruler, "[PLACEHOLDER] Value 1"],
   [Factory, "[PLACEHOLDER] Value 2"],
@@ -45,29 +38,17 @@ export default async function HomeView({ locale }: { locale: Locale }) {
         <Hero />
         <FlyThrough />
 
-        <section aria-labelledby="how-title" className="container-x py-12 md:py-24">
-          <h2 id="how-title" className="mx-auto mb-8 max-w-[640px] text-center text-[28px] font-semibold leading-9 tracking-[-0.02em] md:mb-12 md:text-4xl md:leading-[44px]">
-            {t("Our five-year plan")}
-          </h2>
-          <div className="grid gap-6 md:gap-10 xl:grid-cols-[1.2fr_1fr]">
-            {/* Slot for the launch poster from Graphic Design: the corporation, parts distribution, consulting, expansion. Portrait 4:5. */}
-            <figure className="mx-auto grid aspect-[4/5] w-full max-w-[560px] place-items-center rounded-xl bg-surface-2 p-6 text-center font-mono text-xs uppercase tracking-wider text-neutral-500">
-              {t("Launch poster [from Graphic Design]")}
-            </figure>
-            <div className="flex flex-col gap-4 md:gap-6">
-              <ol className="flex flex-col gap-4 md:gap-6">
-                {STEPS.map(([h, d]) => (
-                  <li key={h} className="border-t border-teal pt-4 md:pt-6">
-                    <h3 className="font-medium">{t(h)}</h3>
-                    <p className="text-sm text-muted">{t(d)}</p>
-                  </li>
-                ))}
-              </ol>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Link href={L("/marketplace")} className="btn btn-outline">{t("Explore marketplace")}</Link>
-                <Link href={L("/consulting")} className="btn btn-outline">{t("Book a consultation")}</Link>
-              </div>
-            </div>
+        <section aria-labelledby="how-title" className="pt-12 md:pt-24">
+          <div className="container-x mx-auto flex max-w-[640px] flex-col items-center gap-2 text-center">
+            <p className="eyebrow text-muted">{t("Our five-year plan")}</p>
+            <h2 id="how-title" className="text-[28px] font-semibold leading-9 tracking-[-0.02em] md:text-4xl md:leading-[44px]">
+              {t("From four parts to a full car.")}
+            </h2>
+          </div>
+          <Roadmap />
+          <div className="container-x flex flex-col justify-center gap-3 pb-12 sm:flex-row md:pb-24">
+            <Link href={L("/marketplace")} className="btn btn-outline">{t("Explore marketplace")}</Link>
+            <Link href={L("/consulting")} className="btn btn-outline">{t("Book a consultation")}</Link>
           </div>
         </section>
 

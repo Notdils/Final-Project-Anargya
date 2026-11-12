@@ -297,10 +297,8 @@ export function Hero() {
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div className="pointer-events-auto flex flex-col gap-4 md:gap-6">
             <p className="eyebrow text-neutral-400">{t("Nagoya, Japan · Formula EV design")}</p>
-            <h1 id="hero-title" className="text-[40px] font-semibold leading-[44px] tracking-[-0.03em] md:text-[56px] md:leading-[56px] xl:text-[72px] xl:leading-[72px]">
-              {t("Formula EV parts")}
-              <br />
-              {t("and engineering support.")}
+            <h1 id="hero-title" className="whitespace-nowrap text-[30px] font-semibold leading-9 tracking-[-0.03em] min-[400px]:text-[34px] md:text-5xl md:leading-[52px] xl:text-[64px] xl:leading-[68px]">
+              {t("Parts & Consultation")}
             </h1>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link href={L("/marketplace")} className="btn btn-teal">{t("Explore marketplace")}</Link>
