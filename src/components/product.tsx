@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { AlertTriangle, Check } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check } from "lucide-react";
 import { categoryLabel, isLowStock, type Product } from "@/lib/data";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -93,7 +93,7 @@ export function ProductCard({ product }: { product: Product }) {
   const L = useLp();
   const [hover, setHover] = useState(false);
   return (
-    <article onPointerEnter={() => setHover(true)} onPointerLeave={() => setHover(false)} className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-white transition-shadow hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
+    <article onPointerEnter={() => setHover(true)} onPointerLeave={() => setHover(false)} className="product-card group relative flex flex-col overflow-hidden rounded-xl border border-line bg-white">
       <div className="relative aspect-[4/3]">
         <PartRender image={product.image} model={product.modelUrl} spin={hover} alt={t("Preliminary 3D draft of the {name}", { name: product.name })} />
         <div className="absolute left-3 top-3">
@@ -109,7 +109,10 @@ export function ProductCard({ product }: { product: Product }) {
         </h3>
         <div className="flex items-center justify-between">
           <Price usd={product.priceUsd} className="text-sm" />
-          <span className="text-sm font-medium text-teal group-hover:underline">{t("View")}</span>
+          <span className="inline-flex items-center gap-1 text-sm font-medium text-teal">
+            {t("View")}
+            <ArrowRight aria-hidden className="product-card__arrow size-4" />
+          </span>
         </div>
       </div>
     </article>

@@ -238,7 +238,7 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
         <aside aria-labelledby="bk-sum" className="flex h-fit flex-col gap-4 rounded-xl border border-line bg-white p-5 xl:sticky xl:top-20">
           <h2 id="bk-sum" className="font-semibold">{t("Summary")}</h2>
           <dl className="flex flex-col gap-2 text-sm">
-            <div className="flex justify-between gap-3"><dt className="text-muted">{t("Session")}</dt><dd className="text-right">{t("30-minute video call")}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-muted">{t("Session")}</dt><dd className="text-right">{t("90-minute video call")}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Date")}</dt><dd className="text-right">{date ? dl(date) : "-"}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Time")}</dt><dd className="text-right font-mono">{time ? (local && date ? <>{(() => { const z = slotInZone(date, time, tz, loc); return `${z.day ? `${z.day}, ` : ""}${z.time} (${utcOffset(tz)})`; })()}<span className="block text-xs text-muted">{time} JST (UTC+9)</span></> : `${time} JST (UTC+9)`) : "-"}</dd></div>
             <div className="flex justify-between gap-3 border-t border-line pt-2"><dt className="font-semibold">{t("Fee")}</dt><dd className="font-medium">{feeUsd ? <Price usd={feeUsd} /> : t("Not set")}</dd></div>

@@ -46,3 +46,5 @@
 | 12 Nov | `@vercel/analytics` dihapus (Web Analytics tidak dipakai) | Diminta user |
 | 13 Nov | Sistem voucher/diskon dihapus (kode + migration 0023). Kolom `discount_usd`/`voucher_code` di orders tetap sebagai riwayat | Diminta user: tidak ada dalam rencana |
 | 13 Nov | Five-year plan pindah dari Home ke About (di bawah misi & visi), jadi satu section statis: 5 tahun berjajar horizontal (md ke atas), daftar vertikal statis di HP. Timeline scroll lama dipindah ke `_to_delete` | Diminta user |
+| 13 Nov | Parallax Home memakai render statis 6 model part (2 per gelombang, 3 slot dihapus). Business model + capabilities pindah dari About ke Marketplace. Consulting: section "What your consultation covers", FAQ, CTA ke form | Diminta user. FAQ hanya memuat fakta dari alur booking; reschedule/refund diarahkan ke email karena kebijakannya belum ada |
+| 13 Nov | Durasi konsultasi jadi 90 menit (teks saja; slot 09/11/14/16 JST tidak bertabrakan). Hover teal (`.card-hover`) untuk kartu info, kartu produk, dan FAQ | Diminta user |

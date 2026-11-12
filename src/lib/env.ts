@@ -18,7 +18,7 @@ export const fxUsdIdr = () => {
 };
 export const shippingUsd = () => Math.max(0, Number(process.env.SHIPPING_FLAT_USD) || 0);
 
-// Consultation fee (USD) for a 30-minute call, charged in IDR via Midtrans. Must be set explicitly.
+// Consultation fee (USD) for a 90-minute call, charged in IDR via Midtrans. Must be set explicitly.
 export const consultFeeUsd = () => {
   const v = Number(process.env.CONSULT_FEE_USD);
   return Number.isFinite(v) && v > 0 ? v : null;

@@ -226,8 +226,7 @@ body {
 .mp--live .mp__word > span {
   transform: translateY(110%);
 }
-.mp__obj,
-.mp__plane {
+.mp__obj {
   position: absolute;
   left: 0;
   top: 0;
@@ -237,17 +236,6 @@ body {
   user-select: none;
   will-change: transform, opacity;
   opacity: 0;
-}
-.mp__plane {
-  overflow: visible;
-  color: #fff;
-}
-.mp__plane path {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1;
-  opacity: 0.22;
-  vector-effect: non-scaling-stroke;
 }
 @media (max-width: 768px) {
   .mp {
@@ -375,3 +363,19 @@ html[data-intro="seen"] .preloader { display: none; }
 .poster[data-anim="play"] .poster-petals { animation: petal-drift 9s ease-in-out 2.4s infinite alternate; }
 @keyframes petal-drift { from { translate: 0 0; } to { translate: 1.5% 2.5%; } }
 @media (prefers-reduced-motion: reduce) { .poster-petals { animation: none !important; } }
+
+/* Info and product cards turn teal on hover (mouse) or when their link has keyboard focus.
+   Text inside goes white; badges with their own background keep their colours. */
+/* Product cards are the only clickable cards: teal border, slight lift, arrow nudge. Info cards stay static. */
+.product-card { transition: border-color 200ms, box-shadow 200ms, translate 200ms; }
+.product-card__arrow { transition: translate 200ms; }
+@media (hover: hover) {
+  .product-card:hover { border-color: var(--color-teal); box-shadow: 0 8px 24px rgb(0 0 0 / 0.08); translate: 0 -4px; }
+  .product-card:hover .product-card__arrow { translate: 4px 0; }
+}
+.product-card:has(a:focus-visible) { border-color: var(--color-teal); }
+.product-card:has(a:focus-visible) .product-card__arrow { translate: 4px 0; }
+@media (prefers-reduced-motion: reduce) {
+  .product-card, .product-card__arrow { transition: none; }
+  .product-card:hover { translate: none; }
+}

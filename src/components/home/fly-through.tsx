@@ -7,35 +7,19 @@ import { useT } from "@/i18n/client";
 // Z fly-through (skill: motion-parallax). Camera dollies along Z on scroll; objects are projected
 // with perspective so they grow radially from the vanishing point. Two headlines swap mid-way.
 
-type Obj = { name: string; x: number; y: number; z: number; size: number; tilt: number; mobile?: boolean };
+type Obj = { name: string; src: string; w: number; h: number; x: number; y: number; z: number; size: number; tilt: number; mobile?: boolean };
 
-// 3 waves; wave 3 is deep enough that 2 objects remain visible at p = 0.95 (z >= 0.95 * 3700 + 400).
+// Static renders of the part models (public/home/parts, made from the GLBs with a light rim so dark parts
+// read on black). Six models over three waves, two per wave; wave 3 stays deep enough (z >= 0.95 * travel +
+// nearFade) that it is still in view near the end of the scroll.
 const OBJECTS: Obj[] = [
-  { name: "Wheel", x: -0.5, y: -0.45, z: 1700, size: 10, tilt: -12, mobile: true },
-  { name: "Front wing", x: 0.55, y: 0.42, z: 1950, size: 13, tilt: 4, mobile: true },
-  { name: "Damper", x: 0.45, y: -0.5, z: 2200, size: 7, tilt: 14 },
-  { name: "Brake rotor", x: -0.62, y: 0.02, z: 2600, size: 8, tilt: -8, mobile: true },
-  { name: "Steering wheel", x: -0.35, y: 0.55, z: 2850, size: 8, tilt: 10 },
-  { name: "Motor housing", x: 0.6, y: -0.1, z: 3100, size: 9, tilt: -3, mobile: true },
-  { name: "Radiator", x: -0.4, y: -0.5, z: 3450, size: 8, tilt: 6, mobile: true },
-  { name: "Nose cone", x: 0.3, y: 0.5, z: 3950, size: 9, tilt: -15, mobile: true },
-  { name: "Upright", x: 0.15, y: -0.55, z: 4100, size: 6, tilt: 9 },
+  { name: "Wheel hub", src: "wheel-hub", w: 491, h: 540, x: -0.5, y: -0.45, z: 1700, size: 10, tilt: -10, mobile: true },
+  { name: "Front wing", src: "front-wing", w: 674, h: 456, x: 0.55, y: 0.42, z: 1950, size: 13, tilt: 4, mobile: true },
+  { name: "VCU & BMS", src: "vcu-bms", w: 466, h: 319, x: -0.62, y: 0.02, z: 2600, size: 9, tilt: -8, mobile: true },
+  { name: "Pedal box", src: "pedal-box", w: 567, h: 532, x: 0.6, y: -0.1, z: 3100, size: 10, tilt: -3, mobile: true },
+  { name: "Diffuser", src: "diffuser", w: 825, h: 380, x: -0.4, y: -0.5, z: 3950, size: 13, tilt: 6, mobile: true },
+  { name: "Rear wing", src: "rear-wing", w: 791, h: 466, x: 0.3, y: 0.5, z: 4100, size: 12, tilt: -6, mobile: true },
 ];
-
-// Anargya double-strand mark, drawn algorithmically (decorative line-art, not the logo file).
-function markPath() {
-  const A = 56, L = 196, cy = 80;
-  const a: string[] = [], b: string[] = [];
-  for (let i = 0; i <= 120; i++) {
-    const t = -1.4 + (2.8 * i) / 120;
-    const tc = Math.max(-1, Math.min(1, t));
-    const x = (200 + (t / 1.4) * L).toFixed(1);
-    a.push(`${x} ${(cy - A * Math.cos(Math.PI * tc)).toFixed(1)}`);
-    b.push(`${x} ${(cy + A * Math.cos(Math.PI * tc)).toFixed(1)}`);
-  }
-  return `M${a.join(" L")} M${b.join(" L")}`;
-}
-const MARK = markPath();
 
 const CFG = { focal: 1000, travel: 3700, fogFar: 3200, fogNear: 2600, nearFade: 400, nearClip: 260, scrub: 0.6, mouse: 0.08, mouseEase: 0.15 };
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -53,10 +37,10 @@ export function FlyThrough() {
     if (!section) return;
     gsap.registerPlugin(ScrollTrigger);
     const stage = section.querySelector<HTMLElement>(".mp__stage")!;
-    const items = [...section.querySelectorAll<HTMLElement>(".mp__obj, .mp__plane")].map((el) => ({
+    const items = [...section.querySelectorAll<HTMLElement>(".mp__obj")].map((el) => ({
       el,
       x: +el.dataset.x!, y: +el.dataset.y!, z: +el.dataset.z!, size: +el.dataset.size!,
-      plane: el.classList.contains("mp__plane"), tilt: +(el.dataset.tilt ?? 0), hidden: false,
+      tilt: +(el.dataset.tilt ?? 0), hidden: false,
     }));
     const state = { p: 0, fade: 0, mx: 0, my: 0 };
     let W = 0, H = 0;
@@ -82,7 +66,7 @@ export function FlyThrough() {
         const px = (it.x - state.mx * CFG.mouse) * (W / 2) * s;
         const py = (it.y - state.my * CFG.mouse) * (H / 2) * s;
         it.el.style.transform = `translate(${W / 2 + px}px, ${H / 2 + py}px) rotate(${it.tilt}deg) scale(${s})`;
-        it.el.style.zIndex = it.plane ? "1" : String(Math.round(s * 100));
+        it.el.style.zIndex = String(Math.round(s * 100));
       }
     };
 
@@ -153,10 +137,6 @@ export function FlyThrough() {
   return (
     <section ref={ref} className="mp" aria-label={label}>
       <div className="mp__stage">
-        <svg className="mp__plane" data-x="0" data-y="0.04" data-z="2300" data-size="46" viewBox="0 0 400 160" aria-hidden>
-          <path d={MARK} />
-        </svg>
-
         <h2 className="mp__title" aria-label={label}>
           <span className="mp__line mp__line--a" aria-hidden>
             {lineA.map((w, i) => (
@@ -171,18 +151,19 @@ export function FlyThrough() {
         </h2>
 
         {OBJECTS.map((o) => (
-          // placeholder cutouts until the 3D part renders are delivered
-          <div
+          // eslint-disable-next-line @next/next/no-img-element -- projected every frame by render(); a plain img keeps the transform cheap
+          <img
             key={o.name}
+            src={`/home/parts/${o.src}.webp`}
+            alt=""
+            width={o.w}
+            height={o.h}
+            decoding="async"
             className="mp__obj"
             data-x={o.x} data-y={o.y} data-z={o.z} data-size={o.size} data-tilt={o.tilt}
             data-mobile={o.mobile ? undefined : "hide"}
             aria-hidden
-          >
-            <div className="grid aspect-[4/3] w-full place-items-center rounded-lg border border-dashed border-neutral-700 bg-[#1a1a1a] font-mono text-[10px] uppercase tracking-wider text-neutral-500">
-              {o.name}
-            </div>
-          </div>
+          />
         ))}
       </div>
     </section>
