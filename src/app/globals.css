@@ -219,7 +219,7 @@ body {
 .mp__word > span {
   display: inline-block;
 }
-/* without JS (or reduced motion) only the closing line is shown, statically */
+/* without JS only the closing line is shown, statically */
 .mp:not(.mp--live) .mp__line--a {
   display: none;
 }
@@ -255,11 +255,6 @@ body {
   }
   .mp__obj[data-mobile="hide"] {
     display: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mp--live {
-    height: 100vh;
   }
 }
 

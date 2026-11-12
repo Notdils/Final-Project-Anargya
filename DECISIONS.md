@@ -39,3 +39,4 @@
 | 11 Nov | Status kirim (To pack, Shipped, Delivered) + kurir + resi diisi ops, tampil di receipt | Desain Admin Orders |
 | 12 Nov | Chatbot dan visualisasi globe dibatalkan; page loader dibuat (bar progres teal di atas) | Diminta user |
 | 12 Nov | Funnel buatan sendiri dan tabel `events` dihapus; kunjungan pakai Vercel Analytics | Diminta user (0019) |
+| 12 Nov | Fly-through parallax tetap jalan penuh walau `prefers-reduced-motion` aktif | Diminta user, setelah diberi opsi versi lembut (fade tanpa zoom). Risiko: pengguna sensitif gerakan |

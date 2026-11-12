@@ -37,7 +37,7 @@ function markPath() {
 }
 const MARK = markPath();
 
-const CFG = { focal: 1000, travel: 3700, fogFar: 3200, fogNear: 2600, nearFade: 400, nearClip: 260, scrub: 0.6, staticP: 0.65, mouse: 0.08, mouseEase: 0.15 };
+const CFG = { focal: 1000, travel: 3700, fogFar: 3200, fogNear: 2600, nearFade: 400, nearClip: 260, scrub: 0.6, mouse: 0.08, mouseEase: 0.15 };
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
 
@@ -52,7 +52,6 @@ export function FlyThrough() {
     const section = ref.current;
     if (!section) return;
     gsap.registerPlugin(ScrollTrigger);
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const stage = section.querySelector<HTMLElement>(".mp__stage")!;
     const items = [...section.querySelectorAll<HTMLElement>(".mp__obj, .mp__plane")].map((el) => ({
       el,
@@ -91,10 +90,7 @@ export function FlyThrough() {
     addEventListener("resize", onResize);
     layout();
 
-    if (reduce) {
-      state.p = CFG.staticP; state.fade = 1; render();
-      return () => removeEventListener("resize", onResize);
-    }
+    // Full fly-through for everyone, including prefers-reduced-motion (product decision, 12 Nov).
 
     section.classList.add("mp--live");
     layout();
