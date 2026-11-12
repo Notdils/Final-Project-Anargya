@@ -5,7 +5,6 @@ import { Hero } from "@/components/home/hero";
 import { Preloader } from "@/components/home/preloader";
 import { PRELOADER_BOOT } from "@/components/home/preloader-boot";
 import { FlyThrough } from "@/components/home/fly-through";
-import { Roadmap } from "@/components/home/roadmap";
 import { Coverflow } from "@/components/coverflow";
 import { listProducts } from "@/lib/catalog";
 import { GuestOnly } from "@/components/auth-state";
@@ -30,20 +29,6 @@ export default async function HomeView({ locale }: { locale: Locale }) {
       <main id="main">
         <Hero />
         <FlyThrough />
-
-        <section aria-labelledby="how-title" className="pt-12 md:pt-24">
-          <div className="container-x mx-auto flex max-w-[640px] flex-col items-center gap-2 text-center">
-            <p className="eyebrow text-muted">{t("Our five-year plan")}</p>
-            <h2 id="how-title" className="text-[28px] font-semibold leading-9 tracking-[-0.02em] md:text-4xl md:leading-[44px]">
-              {t("From four parts to a full car.")}
-            </h2>
-          </div>
-          <Roadmap />
-          <div className="container-x flex flex-col justify-center gap-3 pb-12 sm:flex-row md:pb-24">
-            <Link href={L("/marketplace")} className="btn btn-outline">{t("Explore marketplace")}</Link>
-            <Link href={L("/consulting")} className="btn btn-outline">{t("Book a consultation")}</Link>
-          </div>
-        </section>
 
         <Coverflow products={featured} />
 

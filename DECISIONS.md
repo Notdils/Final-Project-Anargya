@@ -45,3 +45,4 @@
 | 12 Nov | Hero About diganti poster peluncuran beranimasi (ANARGYA naik, mobil mengecil ke posisinya); teks poster ditulis ulang sebagai HTML tanpa ITS/Indonesia. Lapisan dari Graphic Design, diproses `scripts/poster-assets.py` | Diminta user. Menunggu: mobil tanpa tulisan ITS + bendera, ekspor 2x |
 | 12 Nov | `@vercel/analytics` dihapus (Web Analytics tidak dipakai) | Diminta user |
 | 13 Nov | Sistem voucher/diskon dihapus (kode + migration 0023). Kolom `discount_usd`/`voucher_code` di orders tetap sebagai riwayat | Diminta user: tidak ada dalam rencana |
+| 13 Nov | Five-year plan pindah dari Home ke About (di bawah misi & visi), jadi satu section statis: 5 tahun berjajar horizontal (md ke atas), daftar vertikal statis di HP. Timeline scroll lama dipindah ke `_to_delete` | Diminta user |

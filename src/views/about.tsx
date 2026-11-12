@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { CapabilityTabs } from "@/components/capability-tabs";
 import { PosterHero } from "@/components/about/poster-hero";
 import { POSTER_BOOT } from "@/components/about/poster-boot";
+import { Roadmap } from "@/components/about/roadmap";
 import { lp, translator, type Locale } from "@/i18n";
 
 const FLOW = [
@@ -46,6 +47,8 @@ export default function AboutView({ locale }: { locale: Locale }) {
             ))}
           </div>
         </section>
+
+        <Roadmap locale={locale} />
 
         <section aria-labelledby="model-title" className="container-x flex flex-col gap-6 py-12 md:gap-10 md:py-20">
           <div className="flex flex-col gap-3">

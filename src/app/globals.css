@@ -353,9 +353,6 @@ html[data-intro="seen"] .preloader { display: none; }
 @keyframes tap-hint { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-4px); } }
 @media (prefers-reduced-motion: reduce) { .tap-hint { animation: none; } }
 
-/* Five-year plan: halo around the active year's dot (components/home/roadmap.tsx) */
-.roadmap-dot[data-active] { box-shadow: 0 0 0 6px #fff, 0 0 0 8px rgb(0 111 102 / 0.25); }
-@media (min-width: 768px) { .roadmap-dot[data-active] { box-shadow: 0 0 0 14px #fff, 0 0 0 16px rgb(0 111 102 / 0.25); } }
 
 /* About poster hero (components/about/poster-hero.tsx).
    data-anim: idle = final state (no JS / reduced motion), pre = hidden, play = animate in. */
