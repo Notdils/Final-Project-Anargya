@@ -92,7 +92,7 @@ export function CartView({ products }: { products: Product[] }) {
           <div className="flex justify-between"><dt className="text-muted">{t("Shipping")}</dt><dd className="font-mono">{t("Calculated at checkout")}</dd></div>
           <div className="flex justify-between border-t border-line pt-3"><dt className="font-semibold">{t("Total")}</dt><dd className="font-medium"><Price usd={subtotal} /></dd></div>
         </dl>
-        <p className="text-xs text-muted">{t("Prices are in USD (yen shown for reference). You pay the IDR equivalent through Midtrans at checkout.")}</p>
+        <p className="text-xs text-muted">{t("Prices are set in USD; other currencies are shown for reference. You pay the IDR equivalent through Midtrans at checkout.")}</p>
         <Link
           href={L("/checkout")}
           aria-disabled={lines.some((l) => l.qty > l.product.stock)}

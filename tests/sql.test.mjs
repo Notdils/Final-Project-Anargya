@@ -196,6 +196,13 @@ console.log("finish set:", (await run(`select count(*) n from products where fin
 for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migrations/0022_wheel_hub_model.sql", import.meta.url), "utf8"));
 console.log("upright model:", (await run(`select model_url from products where id = 'p-upright-kit'`)).rows[0].model_url);
 
+// 0023: vouchers removed; the order function ignores p_voucher
+for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migrations/0023_remove_vouchers.sql", import.meta.url), "utf8"));
+console.log("voucher tables gone:", (await run(`select to_regclass('public.vouchers') is null and to_regclass('public.voucher_redemptions') is null as gone`)).rows[0].gone);
+const nv = (await run(`select * from create_order_usd_srv($1,$2,$3,0,16300,'XMAS10')`, [U1, JSON.stringify([{ id: "p-vcu-bms", qty: 1 }]), JSON.stringify(c9)])).rows[0];
+console.log("order ignores voucher:", JSON.stringify((await run(`select discount_usd, voucher_code, total_usd = subtotal_usd + shipping_usd as sums from orders where id=$1`, [nv.order_id])).rows[0]));
+await run(`update orders set status='expired' where id=$1`, [nv.order_id]);
+
 // maintenance: reset test data
 await db.exec(`alter table auth.users add column if not exists raw_user_meta_data jsonb default '{}'::jsonb`);
 await run(`update auth.users set raw_user_meta_data = '{"full_name":"A","shipping_address":{"city":"x"}}' where id = $1`, [U1]);
@@ -206,7 +213,7 @@ console.log("first receipt after reset:", fresh.receipt_no);
 
 // maintenance: schema check (all migrations applied above, so nothing should be missing)
 const chk = await db.exec(readFileSync(new URL("../supabase/maintenance/check_schema.sql", import.meta.url), "utf8"));
-console.log("missing after all migrations:", chk.at(-1).rows.length);
+console.log("missing after all migrations:", chk.at(-1).rows.length, JSON.stringify(chk.at(-1).rows));
 
 // 0019: drop events
 for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migrations/0019_drop_events.sql", import.meta.url), "utf8"));

@@ -1,7 +1,7 @@
 # TODO: Anargya Corp (12 Nov 2026)
 
 ## Butuh user (sebelum demo)
-- [ ] Jalankan `supabase/master.sql` sekali di Supabase SQL editor (copy semua, run). Migration yang sudah jalan dilewati otomatis; query terakhir harus 0 baris. **Wajib sebelum deploy versi ini** (checkout memakai fungsi voucher dari 0016).
+- [ ] Jalankan `supabase/master.sql` sekali di Supabase SQL editor (copy semua, run). Migration yang sudah jalan dilewati otomatis; query terakhir harus 0 baris. Termasuk 0023 (hapus voucher). Urutan deploy dan run SQL bebas: kode baru jalan dengan database sebelum maupun sesudah 0023.
 - [ ] (Ditahan, menunggu divisi) Pajak: JP consumption tax 10% untuk tujuan Jepang, ekspor 0%; siapa bayar bea masuk negara lain (DAP/DDP).
 - [ ] (Ditahan, menunggu divisi) Kebijakan retur dan garansi.
 - [ ] (Ditahan sampai akhir) RBAC: uji semua role.

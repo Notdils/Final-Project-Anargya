@@ -45,7 +45,7 @@ export function DetailTabs({ specs, overview }: { specs: [string, string][]; ove
         {tab === "Shipping" && (
           <div className="flex flex-col gap-3 text-[#404040]">
             <p>{tr("[PLACEHOLDER] Shipping regions, carriers, and lead times from Procurement & Logistics.")}</p>
-            <p>{tr("Prices are set in USD, with yen shown for reference. Payment is charged in IDR through Midtrans at the rate shown at checkout.")}</p>
+            <p>{tr("Prices are set in USD; other currencies are shown for reference. Payment is charged in IDR through Midtrans at the rate shown at checkout.")}</p>
           </div>
         )}
       </div>

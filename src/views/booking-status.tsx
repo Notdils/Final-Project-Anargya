@@ -17,7 +17,7 @@ type Row = {
   snap_redirect_url: string | null; pay_expires_at: string | null; paid_at: string | null; pay_method: string | null;
 };
 
-export default async function BookingStatusView({ id, locale }: { id: string; locale: Locale }) {
+export default async function BookingStatusView({ id, locale, justPaid = false }: { id: string; locale: Locale; justPaid?: boolean }) {
   const t = translator(locale);
   const L = (p: string) => lp(p, locale);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -30,13 +30,15 @@ export default async function BookingStatusView({ id, locale }: { id: string; lo
     await reconcileBooking(b.id);
     b = (await load()) ?? b;
   }
-  const open = b.pay_status === "pending" && Boolean(b.snap_redirect_url) && (!b.pay_expires_at || new Date(b.pay_expires_at).getTime() > Date.now());
+  // Snap already reported success: don't offer "Continue payment" while Midtrans' notification is on its way.
+  const confirming = b.pay_status === "pending" && justPaid;
+  const open = !confirming && b.pay_status === "pending" && Boolean(b.snap_redirect_url) && (!b.pay_expires_at || new Date(b.pay_expires_at).getTime() > Date.now());
   const when = `${dateLabel(b.slot_date, locale === "ja" ? "ja-JP" : "en-GB")} · ${b.slot_time} JST`;
   const banner =
     b.pay_status === "paid"
       ? { cls: "bg-teal-tint", tcls: "text-teal", icon: <CalendarCheck size={20} className="text-teal" aria-hidden />, title: t("Booking confirmed"), body: t("We will email the video call link to {email} before the session.", { email: b.email }) }
       : b.pay_status === "pending"
-        ? { cls: "bg-ochre-tint", tcls: "text-ink", icon: <Clock size={20} className="text-ochre" aria-hidden />, title: t("Waiting for payment"), body: open ? t("Your slot is held until {time}. If you already paid, this page updates by itself in a few seconds.", { time: jst(b.pay_expires_at!) }) : t("We are confirming your payment, please wait a moment.") }
+        ? { cls: "bg-ochre-tint", tcls: "text-ink", icon: <Clock size={20} className="text-ochre" aria-hidden />, title: t(confirming ? "Confirming your payment" : "Waiting for payment"), body: open ? t("Your slot is held until {time}. If you already paid, this page updates by itself in a few seconds.", { time: jst(b.pay_expires_at!) }) : t("We are confirming your payment, please wait a moment.") }
         : { cls: "bg-surface-2", tcls: "text-ink", icon: <AlertCircle size={20} className="text-muted" aria-hidden />, title: t("Booking not completed"), body: t("No money was taken and the slot was released. You can book another time.") };
 
   return (

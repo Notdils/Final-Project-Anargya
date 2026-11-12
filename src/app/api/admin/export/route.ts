@@ -7,7 +7,7 @@ import { parseDays, parseStatus, receiptsForExport } from "@/lib/admin";
 // Draft column set until Finance (FAB) confirms the fields.
 const COLS = [
   ["receipt_no", "Receipt no"], ["created_at", "Created (UTC)"], ["paid_at", "Paid at (UTC)"], ["buyer_name", "Buyer"], ["email", "Email"], ["destination", "Destination"], ["shipping_zone", "Shipping zone"], ["address_note", "Address details"],
-  ["items", "Items"], ["qty", "Qty"], ["subtotal_usd", "Subtotal USD"], ["voucher_code", "Voucher"], ["discount_usd", "Discount USD"], ["shipping_usd", "Shipping USD"], ["total_usd", "Total USD"],
+  ["items", "Items"], ["qty", "Qty"], ["subtotal_usd", "Subtotal USD"], ["shipping_usd", "Shipping USD"], ["total_usd", "Total USD"],
   ["charged_idr", "Charged IDR"], ["fx_usd_idr", "FX IDR/USD"], ["total_jpy", "Total JPY (orders before USD pricing)"], ["method", "Method"], ["midtrans_txn_id", "Midtrans txn"], ["status", "Status"], ["oversold", "Oversold (refund or restock)"], ["needs_review", "Needs review"], ["review_note", "Review note"],
 ] as const;
 
@@ -31,8 +31,6 @@ export async function GET(req: Request) {
     qty: (o.order_items ?? []).reduce((s, i) => s + i.qty, 0),
     // numeric columns arrive as strings from PostgREST: keep them numeric for Excel
     subtotal_usd: o.subtotal_usd == null ? null : Number(o.subtotal_usd),
-    voucher_code: o.voucher_code ?? null,
-    discount_usd: Number(o.discount_usd ?? 0),
     shipping_usd: o.shipping_usd == null ? null : Number(o.shipping_usd),
     total_usd: o.total_usd == null ? null : Number(o.total_usd),
     fx_usd_idr: o.fx_usd_idr == null ? null : Number(o.fx_usd_idr),
@@ -58,7 +56,7 @@ export async function GET(req: Request) {
     for (const [k] of COLS) row[k] = typeof r[k] === "number" ? r[k] : safe(r[k]);
     ws.addRow(row);
   }
-  for (const k of ["subtotal_usd", "discount_usd", "shipping_usd", "total_usd"]) ws.getColumn(k).numFmt = '"$"#,##0.00';
+  for (const k of ["subtotal_usd", "shipping_usd", "total_usd"]) ws.getColumn(k).numFmt = '"$"#,##0.00';
   ws.getColumn("total_jpy").numFmt = '"¥"#,##0';
   ws.getColumn("charged_idr").numFmt = '"Rp"#,##0';
   const buf = await wb.xlsx.writeBuffer();

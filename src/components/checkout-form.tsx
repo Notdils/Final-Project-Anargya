@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AlertCircle, Lock } from "lucide-react";
 import { useCartLines } from "./cart-view";
 import type { Product } from "@/lib/data";
@@ -60,24 +60,6 @@ export function CheckoutForm({
   const [busy, setBusy] = useState(false);
   const [saveAddress, setSaveAddress] = useState(false); // opt-in, never saved silently
   const idemKey = useRef<string | null>(null);
-  // voucher: previewed by the server, re-checked when the order is created
-  const [vInput, setVInput] = useState("");
-  const [voucher, setVoucher] = useState<{ code: string; discountUsd: number } | null>(null);
-  const [vErr, setVErr] = useState("");
-  const [vBusy, setVBusy] = useState(false);
-  const [vOpen, setVOpen] = useState(false); // progressive disclosure: most buyers have no code
-  const cartKey = lines.map((l) => `${l.id}x${l.qty}`).join(",");
-  useEffect(() => { setVoucher(null); }, [cartKey]); // cart changed: the discount must be checked again
-  async function applyVoucher() {
-    const code = vInput.trim().toUpperCase();
-    if (!code) return;
-    setVBusy(true); setVErr("");
-    const res = await fetch("/api/vouchers/check", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code, items: lines.map((l) => ({ id: l.id, qty: l.qty })) }) }).catch(() => null);
-    const data = await res?.json().catch(() => ({}));
-    setVBusy(false);
-    if (!res?.ok) { setVoucher(null); setVErr(data?.error ?? "This code is not valid."); return; }
-    setVoucher({ code: data.code, discountUsd: data.discountUsd });
-  }
   const codes = destinationCodes(shipping);
   // prefill from the last order: its destination code, else match the stored country name, else Japan
   const savedCode = saved?.ship_country ?? codes.find((c) => countryName(c, "en") === saved?.country || countryName(c, "ja") === saved?.country) ?? "JP";
@@ -85,8 +67,7 @@ export function CheckoutForm({
   const [region, setRegion] = useState(saved?.ship_region ?? "");
   const q = quote(shipping, country, region);
   const shipUsd = q.ok ? q.shippingUsd : null;
-  const discount = voucher?.discountUsd ?? 0;
-  const total = subtotal - discount + (lines.length && shipUsd !== null ? shipUsd : 0);
+  const total = subtotal + (lines.length && shipUsd !== null ? shipUsd : 0);
   const { ccy } = useCurrency();
   const [result, setResult] = useState<{ state: "paid" | "pending"; orderId: string } | null>(null);
   // ask before leaving while there is something in the cart and no payment has started
@@ -120,13 +101,12 @@ export function CheckoutForm({
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "content-type": "application/json", "idempotency-key": idemKey.current },
-        body: JSON.stringify({ items: lines.map((l) => ({ id: l.id, qty: l.qty })), contact, locale, voucher: voucher?.code ?? null, saveAddress }),
+        body: JSON.stringify({ items: lines.map((l) => ({ id: l.id, qty: l.qty })), contact, locale, saveAddress }),
       });
       const data = await res.json();
       idemKey.current = null; // answered: the next press is a new attempt
       if (!res.ok) {
         setFormError(t(data.error ?? "Something went wrong."));
-        if (data.fields?.voucher) { setVoucher(null); setVErr(data.fields.voucher[0]); setVOpen(true); }
         if (data.fields) setErrors(Object.fromEntries(Object.entries(data.fields).map(([k, v]) => [k, (v as string[])[0]])));
         return;
       }
@@ -142,7 +122,7 @@ export function CheckoutForm({
     }
   }
 
-  if (result) return <PaymentResult state={result.state} onView={() => router.push(L(`/receipt/${result.orderId}`))} />;
+  if (result) return <PaymentResult state={result.state} onView={() => router.push(L(`/receipt/${result.orderId}${result.state === "paid" ? "?paid=1" : ""}`))} />;
 
   if (cart.ready && lines.length === 0)
     return (
@@ -173,7 +153,7 @@ export function CheckoutForm({
           </fieldset>
           <fieldset className="flex flex-col gap-4">
             <legend className="mb-4 text-lg font-semibold">{t("Shipping address")}</legend>
-            {saved && <p className="-mt-2 text-[13px] text-muted">{t("Filled in from your last order. Change anything that is different.")}</p>}
+            {saved && <p className="-mt-2 text-[13px] text-muted">{t("Filled in from your saved shipping address. Change anything that is different.")}</p>}
             <div className="grid gap-4 md:grid-cols-2">
               <Field id="name" label={t("Full name")} autoComplete="name" defaultValue={saved?.buyer_name} error={errors.name} />
               <Field id="phone" label={t("Phone")} type="tel" autoComplete="tel" placeholder="+81" defaultValue={saved?.phone} error={errors.phone} />
@@ -252,31 +232,13 @@ export function CheckoutForm({
           </ul>
           <dl className="flex flex-col gap-3 border-t border-line pt-4 text-sm">
             <div className="flex justify-between"><dt className="text-muted">{t("Subtotal")}</dt><dd><Price usd={subtotal} /></dd></div>
-            {voucher && (
-              <div className="flex justify-between gap-3"><dt className="text-muted">{t("Voucher")} <span className="font-mono text-teal">{voucher.code}</span> <button type="button" className="text-xs underline" onClick={() => setVoucher(null)}>{t("Remove")}</button></dt><dd className="text-teal">−<Price usd={voucher.discountUsd} /></dd></div>
-            )}
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Shipping")}{q.ok && <span className="block text-xs">{countryName(q.country, locale)}{q.region ? ` · ${regionName(q.region, locale)}` : ""}</span>}</dt>
               <dd className="text-right font-mono">{shipUsd === null ? <span className="font-sans text-muted">{t(country === "JP" ? "Choose East or West" : "Choose a country")}</span> : shipUsd ? <Price usd={shipUsd} /> : t("Included")}
                 {q.ok && q.zone.minDays !== null && q.zone.maxDays !== null && <span className="block font-sans text-xs text-muted">{t("{min}–{max} days", { min: q.zone.minDays, max: q.zone.maxDays })}</span>}</dd></div>
             <div className="flex justify-between border-t border-line pt-3"><dt className="font-semibold">{t("Total")}</dt><dd className="text-right font-medium"><Price usd={total} />{ccy !== "USD" && <span className="block font-mono text-xs font-normal text-muted">{usd(total)} USD</span>}</dd></div>
             <div className="flex justify-between"><dt className="text-muted">{t("Charged in IDR")}</dt><dd className="font-mono">{fx ? `≈ ${rupiah(Math.ceil(total * fx))}` : t("Rate not set")}</dd></div>
           </dl>
-          {!voucher && !vOpen && (
-            <button type="button" className="w-fit text-sm font-medium text-teal hover:underline" aria-expanded={false} aria-controls="voucher-box" onClick={() => setVOpen(true)}>{t("Have a voucher code?")}</button>
-          )}
-          {!voucher && vOpen && (
-            <div id="voucher-box" className="flex flex-col gap-1.5">
-              <label htmlFor="voucher" className="text-sm font-medium">{t("Voucher code")}</label>
-              <div className="flex gap-2">
-                <input id="voucher" autoFocus className="input font-mono uppercase" maxLength={24} value={vInput} autoComplete="off" aria-invalid={Boolean(vErr)} aria-describedby={vErr ? "voucher-err" : undefined}
-                  onChange={(e) => { setVInput(e.target.value.replace(/[^A-Za-z0-9-]/g, "")); setVErr(""); }}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyVoucher(); } }} />
-                <button type="button" className="btn btn-outline shrink-0" disabled={!vInput.trim() || vBusy} onClick={applyVoucher}>{t(vBusy ? "Checking…" : "Apply")}</button>
-              </div>
-              {vErr && <p id="voucher-err" className="flex items-center gap-1.5 text-[13px] text-oxide"><AlertCircle size={14} aria-hidden /> {t(vErr)}</p>}
-            </div>
-          )}
-          <p className="text-xs text-muted">{t("Prices are set in USD. Midtrans charges in rupiah (IDR) only.")} {fx ? t("Rate {rate} IDR per USD, locked when you press Pay.", { rate: fx.toLocaleString("id-ID") }) : t("The USD/IDR rate is configured by Finance.")}</p>
+          <p className="text-xs text-muted">{t("Prices are set in USD. Midtrans charges in rupiah (IDR) only.")} {fx ? t("Rate {rate} IDR per USD, locked when you press Pay.", { rate: fx.toLocaleString(locale === "ja" ? "ja-JP" : "en-US") }) : t("The USD/IDR rate is configured by Finance.")}</p>
           {formError && <p role="alert" className="flex items-start gap-2 rounded-lg bg-oxide-tint p-3 text-sm text-oxide"><AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden />{formError}</p>}
           <button type="submit" className="btn btn-pay btn-lg w-full" disabled={!ready || busy || lines.length === 0}>
             {t(busy ? "Opening Midtrans…" : "Pay with Midtrans")}

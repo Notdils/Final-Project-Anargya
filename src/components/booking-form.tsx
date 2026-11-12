@@ -7,7 +7,7 @@ import { AlertCircle, CalendarDays, Clock, Lock } from "lucide-react";
 import { Req, useReady } from "./auth-forms";
 import { useAuth } from "./auth-state";
 import { Price } from "./price";
-import { JST_TZ, SLOTS, TOPICS, ZONES, bookableDates, dateLabel, slotInZone, utcOffset, zoneCity } from "@/lib/booking";
+import { JST_TZ, SLOTS, TOPICS, ZONES, bookableDates, dateLabel, isBookableDate, slotInZone, utcOffset, zoneCity } from "@/lib/booking";
 import { rupiah } from "@/lib/format";
 import { useLocale, useLp, useT } from "@/i18n/client";
 import { PaymentResult } from "@/components/payment-result";
@@ -38,7 +38,10 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
   const dl = (d: string, opts?: Intl.DateTimeFormatOptions) =>
     opts ? new Intl.DateTimeFormat(locale === "ja" ? "ja-JP" : "en-GB", { ...opts, timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`)) : dateLabel(d, locale === "ja" ? "ja-JP" : "en-GB");
 
-  const dates = useMemo(() => bookableDates(), []);
+  // Computed in the browser only: the page is prerendered at build time, so a server-side list would
+  // show the build day's dates and mismatch on hydration once the day changes.
+  const [dates, setDates] = useState<string[]>([]);
+  useEffect(() => setDates(bookableDates()), []);
   const [result, setResult] = useState<{ state: "paid" | "pending"; go: () => void } | null>(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -99,14 +102,27 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
     if (!authReady || !signedIn || !ref.current) return;
     let d: Record<string, string> | null = null;
     try { d = JSON.parse(sessionStorage.getItem(DRAFT) ?? "null"); sessionStorage.removeItem(DRAFT); } catch {}
-    if (!d) return;
-    for (const k of ["name", "email", "phone", "organisation", "topic", "message"]) {
-      const el = ref.current.elements.namedItem(k) as HTMLInputElement | null;
-      if (el && d[k]) el.value = d[k];
+    const form = ref.current;
+    const fill = (k: string, v: unknown) => {
+      const el = form.elements.namedItem(k) as HTMLInputElement | null;
+      if (el && !el.value && typeof v === "string" && v) el.value = v;
+    };
+    if (d) {
+      for (const k of ["name", "email", "phone", "organisation", "topic", "message"]) fill(k, d[k]);
+      if (d.date && isBookableDate(d.date)) setDate(d.date);
+      if (d.time) setTime(d.time);
+      setRestored(true);
     }
-    if (d.date && dates.includes(d.date)) setDate(d.date);
-    if (d.time) setTime(d.time);
-    setRestored(true);
+    // Signed-in visitors: fill the remaining contact fields from their profile and saved address.
+    import("@/lib/supabase/client").then(async ({ supabaseBrowser }) => {
+      const { data } = (await supabaseBrowser()?.auth.getSession()) ?? { data: { session: null } };
+      const u = data.session?.user;
+      if (!u) return;
+      const m = (u.user_metadata ?? {}) as { full_name?: string; phone?: string; shipping_address?: { buyer_name?: string; phone?: string } };
+      fill("name", m.full_name || m.shipping_address?.buyer_name);
+      fill("email", u.email);
+      fill("phone", m.phone || m.shipping_address?.phone);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authReady, signedIn]);
 
@@ -127,7 +143,8 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
         return;
       }
       const go = () => router.push(L(`/consulting/booking/${data.id}`));
-      if (window.snap) window.snap.pay(data.token, { onSuccess: () => setResult({ state: "paid", go }), onPending: () => setResult({ state: "pending", go }), onClose: go, onError: () => setErr(t("Payment failed. You can try again.")) });
+      const goPaid = () => router.push(L(`/consulting/booking/${data.id}?paid=1`));
+      if (window.snap) window.snap.pay(data.token, { onSuccess: () => setResult({ state: "paid", go: goPaid }), onPending: () => setResult({ state: "pending", go }), onClose: go, onError: () => setErr(t("Payment failed. You can try again.")) });
       else window.location.href = data.redirectUrl;
     } catch {
       setErr(t("Network error. Try again."));

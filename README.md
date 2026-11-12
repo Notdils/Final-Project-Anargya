@@ -155,7 +155,7 @@ The role is stored in `app_metadata.role` (only the server can write it). Access
 
 Shipping: checkout asks for the destination country (Asia list in `shipping_zones`) and, for Japan, East or West (`JP-EAST`, `JP-WEST`). The order API looks up the zone rate on the server; a zone without a rate uses `SHIPPING_FLAT_USD`. Ops and Finance edit rates, days and on/off in Admin → Shipping (`0013`).
 
-Vouchers (`0016`): Admin → Vouchers (catalog and admin). Percent or fixed USD off the parts subtotal (not shipping), optional minimum, cap, validity window (JST), total and per-customer limits, and which parts. Rules live in one SQL function, `voucher_discount()`, used by the checkout preview and again inside order creation with the voucher row locked. A use counts while its order is pending or paid.
+Vouchers were removed on 13 Nov (`0023`): the tables and `voucher_discount()` are dropped; `orders.voucher_code` and `orders.discount_usd` stay so older receipts keep their numbers.
 
 Currency: prices are stored in USD. The header switch shows USD, JPY or IDR (only the ones with a rate set: `NEXT_PUBLIC_FX_USD_JPY`, `FX_USD_IDR`). Midtrans charges IDR only; receipts always show the order's USD amounts and the IDR charged.
 

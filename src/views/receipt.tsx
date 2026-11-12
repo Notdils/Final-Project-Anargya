@@ -23,7 +23,7 @@ const BANNER = {
   expired: { cls: "bg-surface-2", icon: <AlertCircle size={20} className="text-muted" aria-hidden />, title: "Payment expired", tcls: "text-ink" },
 } as const;
 
-export default async function ReceiptView({ id, locale }: { id: string; locale: Locale }) {
+export default async function ReceiptView({ id, locale, justPaid = false }: { id: string; locale: Locale; justPaid?: boolean }) {
   const t = translator(locale);
   const L = (p: string) => lp(p, locale);
   let o = await getOrder(id);
@@ -32,8 +32,10 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
     await reconcileOrder(o.id);
     o = (await getOrder(id)) ?? o;
   }
-  const open = o.status === "pending" && Boolean(o.snap_redirect_url) && (!o.pay_expires_at || new Date(o.pay_expires_at).getTime() > Date.now());
-  const b = BANNER[o.status];
+  // Snap already reported success: don't offer "Continue payment" while Midtrans' notification is on its way.
+  const confirming = o.status === "pending" && justPaid;
+  const open = !confirming && o.status === "pending" && Boolean(o.snap_redirect_url) && (!o.pay_expires_at || new Date(o.pay_expires_at).getTime() > Date.now());
+  const b = confirming ? { ...BANNER.pending, title: "Confirming your payment" } : BANNER[o.status];
   return (
     <>
       <div className="print:hidden"><SiteHeader /></div>
@@ -133,7 +135,7 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
                     <div className="flex justify-between"><dt className="text-muted">{t("Shipping")}</dt><dd className="font-mono">{Number(o.shipping_usd) ? usd(Number(o.shipping_usd)) : t("Included")}</dd></div>
                     <div className="flex justify-between"><dt className="font-semibold">{t("Total (USD)")}</dt><dd className="font-mono font-medium">{usd(Number(o.total_usd))}</dd></div>
                     <div className="flex justify-between"><dt className="text-muted">{t("Charged (IDR)")}</dt><dd className="font-mono">{rupiah(o.charged_idr)}</dd></div>
-                    <div className="flex justify-between"><dt className="text-muted">{t("Rate")}</dt><dd className="font-mono">{Number(o.fx_usd_idr).toLocaleString("id-ID")} IDR/USD</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted">{t("Rate")}</dt><dd className="font-mono">{Number(o.fx_usd_idr).toLocaleString(locale === "ja" ? "ja-JP" : "en-US")} IDR/USD</dd></div>
                   </>
                 ) : (
                   <>

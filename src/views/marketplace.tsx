@@ -16,7 +16,7 @@ export default async function MarketplaceView({ locale }: { locale: Locale }) {
         <Coverflow products={products.filter((p) => p.featured)} />
         <section aria-labelledby="all-title" className="container-x py-8 md:py-12">
           <h1 id="all-title" className="text-[32px] font-semibold leading-10 tracking-[-0.03em] md:text-5xl md:leading-[56px]">{t("All parts")}</h1>
-          <p className="mt-3 text-muted">{t("[PLACEHOLDER] One line on what is sold here and who builds it.")}</p>
+          <p className="mt-3 text-muted">{t("Formula EV components we design in-house and build with certified manufacturing partners.")}</p>
           <MarketplaceGrid products={products} />
         </section>
       </main>

@@ -15,7 +15,6 @@ with expected(tbl, col, migration) as (values
   ('orders', 'ship_region', '0013_shipping.sql (latest version)'),
   ('orders', 'address_note', '0013_shipping.sql (latest version)'),
   ('products', 'overview', '0015_product_overview.sql'),
-  ('vouchers', 'code', '0016_vouchers.sql'),
   ('orders', 'discount_usd', '0016_vouchers.sql'),
   ('orders', 'idempotency_key', '0020_order_idempotency.sql')
 )

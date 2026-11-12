@@ -23,7 +23,6 @@ const Body = z.object({
       .refine((s) => !/http:\/\//i.test(s), "Use a link that starts with https://.").optional().nullable(),
   }),
   locale: z.enum(["en", "ja"]).optional(),
-  voucher: z.string().trim().max(24).regex(/^[A-Za-z0-9-]*$/).optional().nullable(),
   saveAddress: z.boolean().optional(),
 });
 
@@ -71,10 +70,8 @@ export async function POST(req: Request) {
   };
   const first = await replay();
   if (first) return first;
-  const { data, error } = await sb.rpc("create_order_usd_srv", { p_user: user.id, p_items: merged, p_contact: contact, p_shipping_usd: q.shippingUsd, p_fx_usd_idr: fx, p_voucher: parsed.data.voucher || null });
+  const { data, error } = await sb.rpc("create_order_usd_srv", { p_user: user.id, p_items: merged, p_contact: contact, p_shipping_usd: q.shippingUsd, p_fx_usd_idr: fx, p_voucher: null }); // vouchers removed (0023); the SQL function keeps the argument
   if (error || !data?.[0]) {
-    const v = /^voucher: (.*)$/.exec(error?.message ?? "");
-    if (v) return NextResponse.json({ error: v[1], fields: { voucher: [v[1]] } }, { status: 409 }); // e.g. used up between preview and pay
     const msg = /insufficient stock/i.test(error?.message ?? "") ? "One of the parts just went out of stock. Update your cart." : "Could not create the order.";
     return NextResponse.json({ error: msg }, { status: 409 });
   }
@@ -82,7 +79,7 @@ export async function POST(req: Request) {
   if (idemKey) {
     const { error: dup } = await sb.from("orders").update({ idempotency_key: idemKey }).eq("id", order.order_id);
     if (dup?.code === "23505") {
-      // a parallel request with the same key won: drop ours (frees stock hold and voucher use) and return theirs
+      // a parallel request with the same key won: drop ours (frees its stock hold) and return theirs
       await sb.rpc("mark_order_status", { p_order: order.order_id, p_status: "expired", p_txn: null });
       return (await replay()) ?? NextResponse.json({ error: "This order was already submitted." }, { status: 409 });
     }

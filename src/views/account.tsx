@@ -55,7 +55,7 @@ export default async function AccountView({ locale }: { locale: Locale }) {
             <form action="/api/auth/logout" method="post"><button className="btn btn-outline">{t("Log out")}</button></form>
           </div>
 
-          <div className="grid gap-8 xl:grid-cols-[1fr_360px] xl:gap-12">
+          <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-12">
             <section aria-labelledby="orders-title" className="flex flex-col gap-3">
               <h2 id="orders-title" className="flex items-center gap-2 text-lg font-semibold"><Package size={18} className="text-teal" aria-hidden />{t("Orders")}</h2>
               {orders.length === 0 ? (
