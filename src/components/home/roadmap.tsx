@@ -3,8 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { useT } from "@/i18n/client";
 
 // Five-year plan as a vertical timeline, one year per screen (Figma: "V3 · Home / Five-year plan
-// (vertical, one year per screen)"). Normal scroll, no pinning: the year crossing the middle of the
-// viewport is active, its dot grows from 24 to 96 px and its text comes to full strength.
+// (vertical, one year per screen)"). Normal scroll, no pinning: a teal line fills down to the middle
+// of the viewport; when it reaches a dot, that year becomes active, its dot grows from 24 to 96 px
+// and its text comes to full strength.
 const STEPS = [
   ["Establishment", "Research and development of four EV modules (VCU/BMS, aero, uprights, pedal box), validated through field testing."],
   ["Market entry", "Component packages launch in Japan, with demos for Formula Student teams and our consulting service."],
@@ -15,19 +16,42 @@ const STEPS = [
 
 export function Roadmap() {
   const t = useT();
-  const [active, setActive] = useState(0);
+  // -1 until the teal line reaches the first dot.
+  const [active, setActive] = useState(-1);
   const items = useRef<(HTMLLIElement | null)[]>([]);
 
   useEffect(() => {
-    // A zero-height band across the middle of the viewport: whichever year crosses it is active.
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.i));
-      },
-      { rootMargin: "-50% 0px -50% 0px" },
-    );
-    items.current.forEach((el) => el && io.observe(el));
-    return () => io.disconnect();
+    // The teal fill follows the middle of the viewport. Each year's line is two halves (above and
+    // below its dot); their fill is written as CSS variables so scrolling never re-renders React.
+    // A dot counts as reached once the middle of the viewport passes its centre; the last reached
+    // dot is the active year.
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const mid = innerHeight / 2;
+      let reached = -1;
+      items.current.forEach((el, i) => {
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        const half = r.height / 2;
+        const dot = r.top + half;
+        el.style.setProperty("--above", String(Math.min(1, Math.max(0, (mid - r.top) / half))));
+        el.style.setProperty("--below", String(Math.min(1, Math.max(0, (mid - dot) / half))));
+        if (mid >= dot) reached = i;
+      });
+      setActive(reached);
+    };
+    const queue = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    addEventListener("scroll", queue, { passive: true });
+    addEventListener("resize", queue);
+    return () => {
+      cancelAnimationFrame(raf);
+      removeEventListener("scroll", queue);
+      removeEventListener("resize", queue);
+    };
   }, []);
 
   return (
@@ -45,11 +69,15 @@ export function Roadmap() {
             aria-current={on ? "step" : undefined}
             className="grid min-h-svh grid-cols-[64px_minmax(0,1fr)] items-center gap-4 md:grid-cols-[minmax(0,5fr)_96px_minmax(0,7fr)] md:gap-8"
           >
-            {/* timeline column: line above (teal once reached), dot, line below (teal once passed).
-                Year 1 and Year 5 keep their outer line too, so the timeline has a lead-in and a lead-out. */}
+            {/* timeline column: grey line with a teal fill that tracks the middle of the viewport,
+                above and below the dot. Year 1 and Year 5 keep their outer halves as lead-in and lead-out. */}
             <div className="relative flex h-full items-center justify-center self-stretch md:col-start-2" aria-hidden>
-              <span className={`absolute left-1/2 top-0 h-1/2 w-0.5 -translate-x-1/2 transition-colors duration-500 ${state === "upcoming" ? "bg-neutral-200" : "bg-teal"}`} />
-              <span className={`absolute bottom-0 left-1/2 h-1/2 w-0.5 -translate-x-1/2 transition-colors duration-500 ${state === "done" ? "bg-teal" : "bg-neutral-200"}`} />
+              <span className="absolute left-1/2 top-0 h-1/2 w-0.5 -translate-x-1/2 bg-neutral-200">
+                <span className="absolute inset-0 origin-top scale-y-[var(--above,0)] bg-teal" />
+              </span>
+              <span className="absolute bottom-0 left-1/2 h-1/2 w-0.5 -translate-x-1/2 bg-neutral-200">
+                <span className="absolute inset-0 origin-top scale-y-[var(--below,0)] bg-teal" />
+              </span>
               <span
                 className={`roadmap-dot relative grid place-items-center rounded-full font-mono text-white transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
                   on ? "size-12 bg-teal text-sm md:size-24 md:text-xl" : state === "done" ? "size-6 bg-teal text-[0px]" : "size-6 border-2 border-black bg-white text-[0px]"
