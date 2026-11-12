@@ -37,7 +37,7 @@ Dokumen untuk sesi Claude berikutnya. Baca bersama `DECISIONS.md` dan `TODO.md`.
 - Env: `FX_USD_IDR`, `NEXT_PUBLIC_FX_USD_JPY` (dibaca saat build, perlu redeploy), `SHIPPING_FLAT_USD`, `CONSULT_FEE_USD`, kunci Supabase dan Midtrans. Rahasia hanya di Vercel env.
 
 ## Ditahan (jangan dikerjakan sampai user minta)
-- PWA/APK, page loader, chatbot (rencana ada di `chatbot-plan.md` yang dikirim ke user), visualisasi globe 3D (#5, diganti field form; lihat di bawah).
+- Ditahan: PWA/APK, tes RBAC (di akhir). Dibatalkan: chatbot, visualisasi globe. Page loader sudah ada (`route-progress.tsx`).
 - Ongkir per tujuan (0013): checkout punya select negara (Asia) dan, untuk Jepang, pilihan Timur/Barat (JP-EAST, JP-WEST; [PLACEHOLDER] Timur = Hokkaido, Tohoku, Kanto, Chubu). Server menghitung ongkir dari `shipping_zones`; zona tanpa tarif memakai `SHIPPING_FLAT_USD`. Admin → Shipping (perm `shipping.manage`: ops, finance, admin). Nama negara dari tabel tetap di `src/lib/shipping.ts` (bukan Intl, supaya tidak hydration mismatch).
 
 ## Cara kerja dengan user

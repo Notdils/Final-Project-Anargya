@@ -205,3 +205,10 @@ for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migr
 console.log("events table gone:", (await run(`select to_regclass('public.events') r`)).rows[0].r === null);
 const reset2 = await db.exec(readFileSync(new URL("../supabase/maintenance/reset_test_data.sql", import.meta.url), "utf8"));
 console.log("reset still works:", reset2.at(-1).rows[0]);
+
+// 0020: idempotency key
+for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migrations/0020_order_idempotency.sql", import.meta.url), "utf8"));
+const ik1 = (await run(`select * from create_order_usd_srv($1,$2,$3,0,16300,null)`, [U1, JSON.stringify([{ id: "p-vcu-bms", qty: 1 }]), JSON.stringify(c9)])).rows[0];
+await run(`update orders set idempotency_key = 'k1' where id = $1`, [ik1.order_id]);
+const o2 = (await run(`select * from create_order_usd_srv($1,$2,$3,0,16300,null)`, [U1, JSON.stringify([{ id: "p-vcu-bms", qty: 1 }]), JSON.stringify(c9)])).rows[0];
+try { await run(`update orders set idempotency_key = 'k1' where id = $1`, [o2.order_id]); console.log("FAIL: duplicate key"); } catch (e) { console.log("duplicate key blocked:", e.code); }

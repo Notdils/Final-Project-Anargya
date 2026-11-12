@@ -37,3 +37,5 @@
 | 11 Nov | RBAC dengan 4 role staf (admin, catalog, ops, finance), dicek di middleware, route, dan RLS | Diminta user: role based access. Peta izin di `src/lib/rbac.ts` = `has_perm()` |
 | 11 Nov | Media produk diunggah ke Supabase Storage `part-media` lewat server (cek role + isi file) | Diminta user: products pakai upload storage |
 | 11 Nov | Status kirim (To pack, Shipped, Delivered) + kurir + resi diisi ops, tampil di receipt | Desain Admin Orders |
+| 12 Nov | Chatbot dan visualisasi globe dibatalkan; page loader dibuat (bar progres teal di atas) | Diminta user |
+| 12 Nov | Funnel buatan sendiri dan tabel `events` dihapus; kunjungan pakai Vercel Analytics | Diminta user (0019) |

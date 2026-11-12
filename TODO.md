@@ -1,7 +1,7 @@
 # TODO: Anargya Corp (11 Nov 2026)
 
 ## Butuh user (sebelum demo)
-- [ ] Jalankan SQL `0015_product_overview.sql`, `0016_vouchers.sql`, `0017_spd_prices_topics.sql` (harga SPD + topik konsultasi baru), `0018_product_dimensions.sql`, lalu `0019_drop_events.sql` (hapus tabel events). **0016 wajib sebelum deploy versi ini**: checkout memanggil `create_order_usd_srv` versi baru (dengan voucher).
+- [ ] Jalankan SQL `0015_product_overview.sql`, `0016_vouchers.sql`, `0017_spd_prices_topics.sql` (harga SPD + topik konsultasi baru), `0018_product_dimensions.sql`, `0019_drop_events.sql` (hapus tabel events), lalu `0020_order_idempotency.sql`. **0016 wajib sebelum deploy versi ini**: checkout memanggil `create_order_usd_srv` versi baru (dengan voucher).
 - [ ] (Ditahan, menunggu divisi) Pajak: JP consumption tax 10% untuk tujuan Jepang, ekspor 0%; siapa bayar bea masuk negara lain (DAP/DDP).
 - [ ] (Ditahan, menunggu divisi) Kebijakan retur dan garansi.
 - [ ] (Ditahan sampai akhir) RBAC: uji semua role.
@@ -29,9 +29,9 @@
 
 ## Ditahan (jangan dikerjakan sampai user minta)
 - [ ] PWA/APK (TWA, `assetlinks.json`).
-- [ ] Loader transisi antar halaman.
-- [ ] Chatbot (lihat `chatbot-plan.md`; butuh keputusan scope, provider, budget).
-- [ ] (Hold #5, opsional) Visualisasi globe 3D di atas data `shipping_zones`. Versi field form sudah jalan. Dulu: (Asia saja; negara di luar Asia tampil abu-abu dan tidak bisa dipilih). Negara selain Jepang: card nama negara + estimasi ongkir USD/¥. Jepang: dibagi per wilayah (belum ditentukan). Menunggu tarif dari PLSS dan keputusan wilayah Jepang. Pakai juga untuk ongkir di checkout (dihitung server).
+- [x] Loader transisi antar halaman (bar teal tipis di atas, `src/components/route-progress.tsx`).
+- [x] ~~Chatbot~~ dibatalkan (12 Nov).
+- [x] ~~Visualisasi globe 3D~~ dibatalkan (12 Nov). Ongkir lewat field form + Admin → Shipping Cost.
 
 ## Belum dibuat (perlu Figma dulu, tanya user)
 - [ ] Tampilan audit log di admin (data sudah dicatat di `admin_audit`).

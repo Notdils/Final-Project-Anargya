@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONTACT } from "@/lib/contact";
 import { notFound } from "next/navigation";
 import { AlertCircle, Box, CheckCircle2, Clock, Truck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -87,7 +88,7 @@ export default async function ReceiptView({ id, locale }: { id: string; locale: 
               <header className="flex flex-col justify-between gap-3 md:flex-row">
                 <div>
                   <p className="text-sm font-semibold tracking-[0.12em]">ANARGYA CORP.</p>
-                  <p className="text-xs text-muted">{t("[PLACEHOLDER] Company address, Japan")}</p>
+                  <p className="text-xs text-muted">{t(CONTACT.address)} · {CONTACT.email}</p>
                 </div>
                 <div className="flex flex-col gap-1 md:items-end">
                   <p className="eyebrow">{t("Receipt")}</p>

@@ -357,7 +357,7 @@ export const JA: Record<string, string> = {
   "Please log in.": "ログインしてください。",
   "Your payment went through, but the last unit of a part was sold moments earlier. Our team will contact you about a refund or a restock date.":
     "お支払いは完了しましたが、パーツの最後の1点が直前に販売されていました。返金または再入荷日について担当者からご連絡します。",
-  "[PLACEHOLDER] Company address, Japan": "[PLACEHOLDER] 会社所在地（日本）",
+  "Nagoya, Aichi, Japan": "日本・愛知県名古屋市",
   Issued: "発行日",
   "Billed to": "請求先",
   awaiting: "確認待ち",
@@ -611,4 +611,9 @@ export const JA: Record<string, string> = {
   "Front wing 1,380 × 480 × 320 mm\nRear wing 1,150 × 420 × 450 mm\nDiffuser 1,200 × 650 × 180 mm": "フロントウイング 1,380 × 480 × 320 mm\nリアウイング 1,150 × 420 × 450 mm\nディフューザー 1,200 × 650 × 180 mm",
   "Your order is held until {time}. If you already paid, this page updates by itself in a few seconds.": "ご注文は{time}まで確保されています。お支払い済みの場合、このページは数秒で自動更新されます。",
   "Your slot is held until {time}. If you already paid, this page updates by itself in a few seconds.": "枠は{time}まで確保されています。お支払い済みの場合、このページは数秒で自動更新されます。",
+  "Have a voucher code?": "クーポンコードをお持ちですか？",
+  "Removed {name}.": "{name}を削除しました。",
+  "Undo": "元に戻す",
+  "This order was already submitted.": "このご注文はすでに送信されています。",
+  "Add parts from the marketplace, then come back here to pay.": "マーケットプレイスでパーツを追加してから、ここでお支払いください。",
 };

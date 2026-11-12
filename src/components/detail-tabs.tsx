@@ -41,7 +41,7 @@ export function DetailTabs({ specs, overview }: { specs: [string, string][]; ove
             ))}
           </dl>
         )}
-        {tab === "Overview" && <p className="text-[#404040]">{tr(overview)}</p>}
+        {tab === "Overview" && <p className="max-w-[70ch] text-[#404040]">{tr(overview)}</p>}
         {tab === "Shipping" && (
           <div className="flex flex-col gap-3 text-[#404040]">
             <p>{tr("[PLACEHOLDER] Shipping regions, carriers, and lead times from Procurement & Logistics.")}</p>

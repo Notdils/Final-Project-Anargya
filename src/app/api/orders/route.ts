@@ -58,6 +58,19 @@ export async function POST(req: Request) {
   // Server-only RPC (0009): rate and shipping are decided here, never by the client.
   const sb = supabaseService();
   if (!sb) return NextResponse.json({ error: "Payments are not configured yet." }, { status: 503 });
+
+  // Idempotency (0020): the same Pay press sent twice (double submit, retry after a dropped connection)
+  // returns the first order instead of creating a second one.
+  const idemKey = /^[0-9a-f-]{36}$/i.test(req.headers.get("idempotency-key") ?? "") ? req.headers.get("idempotency-key")!.toLowerCase() : null;
+  const replay = async () => {
+    if (!idemKey) return null;
+    const { data: prev } = await sb.from("orders").select("id, status, snap_token, snap_redirect_url").eq("user_id", user.id).eq("idempotency_key", idemKey).maybeSingle();
+    if (!prev) return null;
+    if (prev.status === "pending" && prev.snap_token) return NextResponse.json({ orderId: prev.id, token: prev.snap_token, redirectUrl: prev.snap_redirect_url, replayed: true });
+    return NextResponse.json({ error: "This order was already submitted.", orderId: prev.id }, { status: 409 });
+  };
+  const first = await replay();
+  if (first) return first;
   const { data, error } = await sb.rpc("create_order_usd_srv", { p_user: user.id, p_items: merged, p_contact: contact, p_shipping_usd: q.shippingUsd, p_fx_usd_idr: fx, p_voucher: parsed.data.voucher || null });
   if (error || !data?.[0]) {
     const v = /^voucher: (.*)$/.exec(error?.message ?? "");
@@ -66,6 +79,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: msg }, { status: 409 });
   }
   const order = data[0] as { order_id: string; receipt_no: string; total_usd: number; charged_idr: number };
+  if (idemKey) {
+    const { error: dup } = await sb.from("orders").update({ idempotency_key: idemKey }).eq("id", order.order_id);
+    if (dup?.code === "23505") {
+      // a parallel request with the same key won: drop ours (frees stock hold and voucher use) and return theirs
+      await sb.rpc("mark_order_status", { p_order: order.order_id, p_status: "expired", p_txn: null });
+      return (await replay()) ?? NextResponse.json({ error: "This order was already submitted." }, { status: 409 });
+    }
+  }
   await sb.from("orders").update({ ship_country: q.country, ship_region: q.region, shipping_zone: q.zone.code, address_note: c.note || null }).eq("id", order.order_id);
   // Only when the buyer ticked "Save this as your shipping address" (stored in their own profile).
   if (parsed.data.saveAddress) {

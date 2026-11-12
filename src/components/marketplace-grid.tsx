@@ -125,8 +125,8 @@ export function MarketplaceGrid({ products }: { products: Product[] }) {
         <div className="flex flex-1 flex-col gap-6">
           <p className="text-sm text-muted" aria-live="polite">{t("{n} parts", { n: filtered.length })}</p>
           {shown.length ? (
-            <ul className="grid gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
-              {shown.map((p) => <li key={p.id}><ProductCard product={p} /></li>)}
+            <ul className="stagger grid gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
+              {shown.map((p, i) => <li key={p.id} style={{ "--i": i } as React.CSSProperties}><ProductCard product={p} /></li>)}
             </ul>
           ) : (
             <div className="rounded-xl border border-dashed border-line p-10 text-center">

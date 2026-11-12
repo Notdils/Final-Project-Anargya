@@ -34,6 +34,7 @@ export function useLeaveGuard(enabled: boolean) {
       if (url.origin !== location.origin || url.pathname === location.pathname) return;
       e.preventDefault();
       e.stopPropagation(); // capture phase: runs before Next's <Link> handler
+      (e as MouseEvent & { leaveGuarded?: boolean }).leaveGuarded = true; // tells the page loader not to start
       setLeave(() => () => { on.current = false; router.push(url.pathname + url.search + url.hash); });
     };
     window.addEventListener("beforeunload", onUnload);

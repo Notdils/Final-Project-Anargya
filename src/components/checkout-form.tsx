@@ -1,7 +1,8 @@
 "use client";
+import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, Lock } from "lucide-react";
 import { useCartLines } from "./cart-view";
 import type { Product } from "@/lib/data";
@@ -58,11 +59,13 @@ export function CheckoutForm({
   const [formError, setFormError] = useState("");
   const [busy, setBusy] = useState(false);
   const [saveAddress, setSaveAddress] = useState(false); // opt-in, never saved silently
+  const idemKey = useRef<string | null>(null);
   // voucher: previewed by the server, re-checked when the order is created
   const [vInput, setVInput] = useState("");
   const [voucher, setVoucher] = useState<{ code: string; discountUsd: number } | null>(null);
   const [vErr, setVErr] = useState("");
   const [vBusy, setVBusy] = useState(false);
+  const [vOpen, setVOpen] = useState(false); // progressive disclosure: most buyers have no code
   const cartKey = lines.map((l) => `${l.id}x${l.qty}`).join(",");
   useEffect(() => { setVoucher(null); }, [cartKey]); // cart changed: the discount must be checked again
   async function applyVoucher() {
@@ -112,15 +115,18 @@ export function CheckoutForm({
     }
     setBusy(true);
     try {
+      // one key per Pay press; reused only if that request never got an answer (so a retry cannot double-order)
+      idemKey.current ??= crypto.randomUUID();
       const res = await fetch("/api/orders", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "idempotency-key": idemKey.current },
         body: JSON.stringify({ items: lines.map((l) => ({ id: l.id, qty: l.qty })), contact, locale, voucher: voucher?.code ?? null, saveAddress }),
       });
       const data = await res.json();
+      idemKey.current = null; // answered: the next press is a new attempt
       if (!res.ok) {
         setFormError(t(data.error ?? "Something went wrong."));
-        if (data.fields?.voucher) { setVoucher(null); setVErr(data.fields.voucher[0]); }
+        if (data.fields?.voucher) { setVoucher(null); setVErr(data.fields.voucher[0]); setVOpen(true); }
         if (data.fields) setErrors(Object.fromEntries(Object.entries(data.fields).map(([k, v]) => [k, (v as string[])[0]])));
         return;
       }
@@ -139,7 +145,15 @@ export function CheckoutForm({
   if (result) return <PaymentResult state={result.state} onView={() => router.push(L(`/receipt/${result.orderId}`))} />;
 
   if (cart.ready && lines.length === 0)
-    return <div className="container-x pb-20 text-muted">{t("Your cart is empty.")}</div>;
+    return (
+      <div className="container-x pb-20">
+        <div className="rounded-xl border border-dashed border-line p-10 text-center">
+          <p className="font-medium">{t("Your cart is empty.")}</p>
+          <p className="mt-1 text-sm text-muted">{t("Add parts from the marketplace, then come back here to pay.")}</p>
+          <Link href={L("/marketplace")} className="btn btn-teal mt-4">{t("Browse marketplace")}</Link>
+        </div>
+      </div>
+    );
 
   return (
     <>
@@ -247,11 +261,14 @@ export function CheckoutForm({
             <div className="flex justify-between border-t border-line pt-3"><dt className="font-semibold">{t("Total")}</dt><dd className="text-right font-medium"><Price usd={total} />{ccy !== "USD" && <span className="block font-mono text-xs font-normal text-muted">{usd(total)} USD</span>}</dd></div>
             <div className="flex justify-between"><dt className="text-muted">{t("Charged in IDR")}</dt><dd className="font-mono">{fx ? `≈ ${rupiah(Math.ceil(total * fx))}` : t("Rate not set")}</dd></div>
           </dl>
-          {!voucher && (
-            <div className="flex flex-col gap-1.5">
+          {!voucher && !vOpen && (
+            <button type="button" className="w-fit text-sm font-medium text-teal hover:underline" aria-expanded={false} aria-controls="voucher-box" onClick={() => setVOpen(true)}>{t("Have a voucher code?")}</button>
+          )}
+          {!voucher && vOpen && (
+            <div id="voucher-box" className="flex flex-col gap-1.5">
               <label htmlFor="voucher" className="text-sm font-medium">{t("Voucher code")}</label>
               <div className="flex gap-2">
-                <input id="voucher" className="input font-mono uppercase" maxLength={24} value={vInput} autoComplete="off" aria-invalid={Boolean(vErr)} aria-describedby={vErr ? "voucher-err" : undefined}
+                <input id="voucher" autoFocus className="input font-mono uppercase" maxLength={24} value={vInput} autoComplete="off" aria-invalid={Boolean(vErr)} aria-describedby={vErr ? "voucher-err" : undefined}
                   onChange={(e) => { setVInput(e.target.value.replace(/[^A-Za-z0-9-]/g, "")); setVErr(""); }}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyVoucher(); } }} />
                 <button type="button" className="btn btn-outline shrink-0" disabled={!vInput.trim() || vBusy} onClick={applyVoucher}>{t(vBusy ? "Checking…" : "Apply")}</button>

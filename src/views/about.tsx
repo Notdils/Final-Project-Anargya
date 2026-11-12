@@ -46,7 +46,7 @@ export default function AboutView({ locale }: { locale: Locale }) {
             <p className="eyebrow text-teal">{t("Our story")}</p>
             <h2 id="story-title" className="text-[28px] font-semibold leading-9 tracking-[-0.02em] md:text-4xl md:leading-[44px]">{t("Why we exist")}</h2>
           </div>
-          <div className="flex flex-col gap-6 text-[#404040] md:text-lg">
+          <div className="flex max-w-[68ch] flex-col gap-6 text-[#404040] md:text-lg">
             <p>{t("Electric teams in Formula Student Japan almost doubled in four years, from 12 in 2022 to 23 in 2026. The cars keep getting harder to build: battery management, vehicle control, drivetrain and safety systems all have to work together, and many teams struggle with technical inspection, PCB design and documentation.")}</p>
             <p>{t("We design our components in-house and produce them with manufacturing partners. That lets us focus on engineering and quality, and sell four proven packages: uprights and wheel hubs, an aero package, a VCU and BMS unit, and a brake pedal box. Each comes with engineering consultation when a team needs it.")}</p>
             <p>{t("We start with Formula Student teams, then work with entry-level single-seater racing such as Japanese F4 and Formula Regional. In our fourth year we build a complete formula car prototype to show what we can do.")}</p>
