@@ -30,7 +30,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="min-h-screen bg-white text-ink">
-        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[2000] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2">
+        {/* keyboard users only: appears on the first Tab, just below the header so it covers nothing */}
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-[72px] focus:z-[2000] focus:inline-flex focus:h-10 focus:items-center focus:rounded-lg focus:border focus:border-line focus:bg-white focus:px-4 focus:text-sm focus:font-medium focus:text-ink focus:shadow-md focus:outline-offset-0">
           Skip to content
         </a>
         {/* useSearchParams needs a Suspense boundary so static pages stay static */}

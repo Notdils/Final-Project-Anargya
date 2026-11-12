@@ -306,6 +306,10 @@ body > main, body > #main { flex: 1 0 auto; }
 
 /* ---- UX checklist (12 Nov) ---- */
 @layer base {
+  /* focus ring follows a soft corner on plain links and focusable text (buttons and inputs keep their own radius,
+     because components and utilities come after this layer) */
+  a:focus-visible, summary:focus-visible, [tabindex]:focus-visible { border-radius: 6px; }
+
   /* headings break evenly, body text avoids one-word last lines */
   h1, h2, h3 { text-wrap: balance; }
   p, li, dd, blockquote { text-wrap: pretty; }
