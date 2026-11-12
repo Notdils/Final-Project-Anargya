@@ -45,10 +45,11 @@ export function Roadmap() {
             aria-current={on ? "step" : undefined}
             className="grid min-h-svh grid-cols-[64px_minmax(0,1fr)] items-center gap-4 md:grid-cols-[minmax(0,5fr)_96px_minmax(0,7fr)] md:gap-8"
           >
-            {/* timeline column: line above (teal once reached), dot, line below (teal once passed) */}
+            {/* timeline column: line above (teal once reached), dot, line below (teal once passed).
+                Year 1 and Year 5 keep their outer line too, so the timeline has a lead-in and a lead-out. */}
             <div className="relative flex h-full items-center justify-center self-stretch md:col-start-2" aria-hidden>
-              {i > 0 && <span className={`absolute left-1/2 top-0 h-1/2 w-0.5 -translate-x-1/2 transition-colors duration-500 ${state === "upcoming" ? "bg-neutral-200" : "bg-teal"}`} />}
-              {i < STEPS.length - 1 && <span className={`absolute bottom-0 left-1/2 h-1/2 w-0.5 -translate-x-1/2 transition-colors duration-500 ${state === "done" ? "bg-teal" : "bg-neutral-200"}`} />}
+              <span className={`absolute left-1/2 top-0 h-1/2 w-0.5 -translate-x-1/2 transition-colors duration-500 ${state === "upcoming" ? "bg-neutral-200" : "bg-teal"}`} />
+              <span className={`absolute bottom-0 left-1/2 h-1/2 w-0.5 -translate-x-1/2 transition-colors duration-500 ${state === "done" ? "bg-teal" : "bg-neutral-200"}`} />
               <span
                 className={`roadmap-dot relative grid place-items-center rounded-full font-mono text-white transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
                   on ? "size-12 bg-teal text-sm md:size-24 md:text-xl" : state === "done" ? "size-6 bg-teal text-[0px]" : "size-6 border-2 border-black bg-white text-[0px]"
