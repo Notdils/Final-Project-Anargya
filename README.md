@@ -89,7 +89,7 @@ Without Supabase env vars the site still renders with the placeholder catalog (a
 ## Supabase setup
 
 1. Create a new Supabase project.
-2. SQL editor: run the files in `supabase/migrations/` in order (`0001` to `0022`).
+2. SQL editor: paste all of `supabase/master.sql` and run it once. It holds every migration in order and skips the ones already applied (ledger table `schema_migrations`). The last query should return 0 rows. After adding a migration to `supabase/migrations/`, run `npm run sql:master` and paste the file again; `npm run test:master` checks it on a fresh and an existing database.
 3. Auth → URL configuration: set Site URL to the deployed domain and add `https://<domain>/auth/callback` to Redirect URLs (password reset and email confirmation links land there).
 4. Register an account on the site, then make it admin (SQL editor):
    ```sql
@@ -111,15 +111,11 @@ Security notes:
 
 1. Supabase → Authentication → Sign In / Providers → Email: turn **Confirm email** off (the built-in mailer only sends a few emails per hour).
 2. Register `juri.admin@example.com` and `juri.customer@example.com` on the site with passwords you choose.
-3. SQL editor: run `supabase/demo/demo_seed.sql`. It makes the first account admin and adds labeled demo orders (`[DEMO]`, txn `DEMO-…`) (page views now come from Vercel Analytics), without touching stock or Midtrans.
+3. SQL editor: run `supabase/demo/demo_seed.sql`. It makes the first account admin and adds labeled demo orders (`[DEMO]`, txn `DEMO-…`), without touching stock or Midtrans.
 4. `supabase/demo/demo_cleanup.sql` removes all of it.
 5. Test payment (Midtrans sandbox, no real money): card `4811 1111 1111 1114`, any future expiry, CVV `123`, OTP `112233`.
 
 Passwords are shared with the judges outside the repo.
-
-## Analytics
-
-Page views and visitors: Vercel → project → **Analytics** (enable Web Analytics once in that tab; the site loads `@vercel/analytics`). The admin Overview shows business numbers only (revenue, orders, units, customers, consultations).
 
 ## Midtrans setup
 

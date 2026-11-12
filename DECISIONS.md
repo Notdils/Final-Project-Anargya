@@ -43,3 +43,4 @@
 | 12 Nov | Five-year plan jadi timeline vertikal, satu tahun per layar (100vh), bulatan aktif membesar di tengah layar; slot poster dihapus. Judul hero jadi "Parts & Consultation" satu baris | Diminta user, desain di Figma section "V3 · Home / Five-year plan (vertical, one year per screen)" |
 | 12 Nov | Section "What we stand for" di Home dihapus | Diminta user |
 | 12 Nov | Hero About diganti poster peluncuran beranimasi (ANARGYA naik, mobil mengecil ke posisinya); teks poster ditulis ulang sebagai HTML tanpa ITS/Indonesia. Lapisan dari Graphic Design, diproses `scripts/poster-assets.py` | Diminta user. Menunggu: mobil tanpa tulisan ITS + bendera, ekspor 2x |
+| 12 Nov | `@vercel/analytics` dihapus (Web Analytics tidak dipakai) | Diminta user |

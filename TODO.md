@@ -1,16 +1,15 @@
-# TODO: Anargya Corp (11 Nov 2026)
+# TODO: Anargya Corp (12 Nov 2026)
 
 ## Butuh user (sebelum demo)
-- [ ] Jalankan SQL `0015_product_overview.sql`, `0016_vouchers.sql`, `0017_spd_prices_topics.sql` (harga SPD + topik konsultasi baru), `0018_product_dimensions.sql`, `0019_drop_events.sql` (hapus tabel events), `0020_order_idempotency.sql`, `0021_product_finish.sql` (finish produk), lalu `0022_wheel_hub_model.sql` (model 3D wheel hub). **0016 wajib sebelum deploy versi ini**: checkout memanggil `create_order_usd_srv` versi baru (dengan voucher).
+- [ ] Jalankan `supabase/master.sql` sekali di Supabase SQL editor (copy semua, run). Migration yang sudah jalan dilewati otomatis; query terakhir harus 0 baris. **Wajib sebelum deploy versi ini** (checkout memakai fungsi voucher dari 0016).
 - [ ] (Ditahan, menunggu divisi) Pajak: JP consumption tax 10% untuk tujuan Jepang, ekspor 0%; siapa bayar bea masuk negara lain (DAP/DDP).
 - [ ] (Ditahan, menunggu divisi) Kebijakan retur dan garansi.
 - [ ] (Ditahan sampai akhir) RBAC: uji semua role.
-- [ ] Isi kontak asli di `src/lib/contact.ts` dan logo di `src/components/brand-mark.tsx`.
-- [ ] Jalankan SQL `0014_part_models_fix.sql` (model 3D aero = sayap depan + belakang + diffuser; upright tanpa model).
-- [ ] Kirim file GLB wheel hub / upright.
-- [ ] Jalankan SQL `0013_shipping.sql` (ongkir per tujuan). Wajib sebelum deploy versi ini supaya kolom `ship_country/ship_prefecture/shipping_zone` ada.
+- [ ] Isi kontak asli (telepon, email, sosial media) di `src/lib/contact.ts`.
+- [x] Logo A di navbar, footer, splash (`public/brand/logo.webp`, 12 Nov).
+- [x] GLB wheel hub + rotor (hub hitam anodize), 12 Nov. Upright terpisah belum ada.
+- [x] `_assets/` masuk `.gitignore` (12 Nov).
 - [ ] Isi tarif dan estimasi hari per zona di Admin → Shipping setelah data PLSS datang. Putuskan daftar negara dan batas Jepang Timur/Barat (sekarang [PLACEHOLDER]: Timur = Hokkaido, Tohoku, Kanto, Chubu). Indonesia dan Myanmar nonaktif.
-- [ ] Jalankan SQL `0007` sampai `0011` berurutan. `0009` dan `0011` harus jalan bersamaan dengan deploy (checkout memakai `create_order_usd_srv`, admin memakai `has_perm`).
 - [ ] Vercel env: `CONSULT_FEE_USD` (dari Finance), cek `FX_USD_IDR`, `NEXT_PUBLIC_FX_USD_JPY`, `SHIPPING_FLAT_USD`. Redeploy setelah mengubah env.
 - [ ] `npm install` di laptop (React 19.1.10, override `uuid`), lalu commit dan push.
 - [ ] Tes di production: checkout, booking konsultasi sampai `confirmed`, login EN dan JA, viewer 3D.
@@ -21,10 +20,11 @@
 - [ ] Tanya sumber dan lisensi model pedal box (nama objek di dalam file merujuk merek Hoonigan).
 
 ## Konten (menunggu tim lain)
-- [ ] GLB upright/wheel hub. Setelah ada, Aero Package bisa memakai gabungan sayap depan, sayap belakang, diffuser.
+- [x] GLB wheel hub (12 Nov).
 - [ ] Biaya konsultasi (`CONSULT_FEE_USD`).
 - [ ] Spesifikasi, lead time, stok asli 4 part.
-- [ ] Poster launch (Graphic Design), story, mission, vision, values, isi business model, alamat dan `[CITY]`, ongkir, teks consulting, field receipt dan kolom export final.
+- [ ] Poster (Graphic Design): ekspor ulang 2x (2160 × 2700) dengan nama sama, dan mobil tanpa tulisan "Institut Teknologi Sepuluh Nopember" + bendera. Taruh di `_assets/poster/`, lalu jalankan `scripts/poster-assets.py`.
+- [ ] Story, mission, vision, isi business model, alamat, ongkir, teks consulting, field receipt dan kolom export final.
 - [ ] Review terjemahan Jepang oleh penutur Jepang.
 
 ## Ditahan (jangan dikerjakan sampai user minta)
@@ -32,6 +32,12 @@
 - [x] Loader transisi antar halaman (bar teal tipis di atas, `src/components/route-progress.tsx`).
 - [x] ~~Chatbot~~ dibatalkan (12 Nov).
 - [x] ~~Visualisasi globe 3D~~ dibatalkan (12 Nov). Ongkir lewat field form + Admin → Shipping Cost.
+
+## Figma
+- [ ] Samakan Figma dengan web: hero About (poster), five-year plan (garis sebelum tahun 1/sesudah tahun 5, counter di bawah teks), immersive 3D, splash, judul hero "Parts & Consultation", section values dihapus, navbar penuh mulai 1120 px.
+
+## Fitur menunggu aset
+- [ ] Immersive 3D: glow untuk part yang dijual + bagian lain transparan. Butuh model mobil dengan part terpisah dan bernama.
 
 ## Belum dibuat (perlu Figma dulu, tanya user)
 - [ ] Tampilan audit log di admin (data sudah dicatat di `admin_audit`).

@@ -3,7 +3,6 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { CartProvider } from "@/components/cart";
-import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import { RouteProgress } from "@/components/route-progress";
 import { SwRegister } from "@/components/sw-register";
@@ -37,7 +36,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {/* useSearchParams needs a Suspense boundary so static pages stay static */}
         <Suspense fallback={null}><RouteProgress /></Suspense>
         <LocaleProvider><CurrencyProvider rates={{ JPY: FX_USD_JPY, IDR: fxUsdIdr() }}><CartProvider>{children}</CartProvider></CurrencyProvider></LocaleProvider>
-        <Analytics /> {/* page views and visitors: Vercel → project → Analytics */}
         <SwRegister />
       </body>
     </html>

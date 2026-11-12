@@ -46,7 +46,7 @@ const pct = (cur: number, prev: number) => (prev ? ((cur - prev) / prev) * 100 :
 
 /**
  * Everything the Overview page shows, from 4 reads run in parallel: orders (current + previous period, with items),
- * paid consultations, new accounts, and the action counts. Page views live in Vercel Analytics.
+ * paid consultations, new accounts, and the action counts.
  */
 export async function overviewStats(range: (typeof RANGES)[number]) {
   const sb = await supabaseServer();
