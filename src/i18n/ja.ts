@@ -407,7 +407,7 @@ export const JA: Record<string, string> = {
   "Registration is not configured yet.": "登録機能はまだ設定されていません。",
   "Password reset is not configured yet.": "パスワード再設定はまだ設定されていません。",
   "Not configured.": "未設定です。",
-  "Anyone can register to buy parts. Admin access is granted by the team.": "パーツの購入はどなたでも登録できます。管理者権限はチームが付与します。",
+  "Anyone can register to buy parts.": "パーツの購入はどなたでも登録できます。",
   "Confirm password": "パスワード（確認）",
   "At least 8 characters.": "8文字以上。",
   "Passwords do not match.": "パスワードが一致しません。",

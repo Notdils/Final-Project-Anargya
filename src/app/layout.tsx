@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   applicationName: "Anargya Corp",
   appleWebApp: { capable: true, title: "Anargya", statusBarStyle: "black-translucent" },
   icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
+  manifest: "/manifest.webmanifest", // customer app; the admin layout swaps in /staff.webmanifest
 };
 
 export const viewport: Viewport = {

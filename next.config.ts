@@ -22,6 +22,9 @@ const supabaseHost = (() => { try { return new URL(supabase).hostname; } catch {
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Put metadata in <head> for every browser, not streamed into <body> on dynamic pages: Chrome only
+  // reads <link rel="manifest"> from <head>, so admin and account pages were not installable.
+  htmlLimitedBots: /.*/,
   // product renders uploaded from the admin live in the Supabase Storage bucket "part-media"
   images: supabaseHost ? { remotePatterns: [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/part-media/**" }] } : undefined,
   async headers() {

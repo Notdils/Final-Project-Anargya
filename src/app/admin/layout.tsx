@@ -3,7 +3,7 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { currentUser } from "@/lib/supabase/server";
 import { hasSupabase } from "@/lib/env";
 
-export const metadata: Metadata = { title: { default: "Admin", template: "%s · Admin · Anargya" }, robots: { index: false } };
+export const metadata: Metadata = { title: { default: "Admin", template: "%s · Admin · Anargya" }, robots: { index: false }, manifest: "/staff.webmanifest" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

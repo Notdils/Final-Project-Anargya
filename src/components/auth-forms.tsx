@@ -151,7 +151,7 @@ export function RegisterForm() {
     <form ref={ref} onSubmit={submit} onInput={check} onChange={check} onFocus={check} className="flex flex-col gap-6" noValidate>
       <div className="flex flex-col gap-2">
         <h1 className="text-[32px] font-semibold leading-10 tracking-[-0.02em]">{t("Create an account")}</h1>
-        <p className="text-sm text-muted">{t("Anyone can register to buy parts. Admin access is granted by the team.")}</p>
+        <p className="text-sm text-muted">{t("Anyone can register to buy parts.")}</p>
       </div>
       {err && <Alert>{err}</Alert>}
       <div className="flex flex-col gap-4">
