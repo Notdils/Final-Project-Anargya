@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test:sql": "node tests/sql.test.mjs",
     "sql:master": "node scripts/build-master-sql.mjs",
-    "test:master": "node tests/master-sql.test.mjs"
+    "test:master": "node tests/master-sql.test.mjs",
+    "test:rbac": "node --no-warnings tests/rbac.test.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

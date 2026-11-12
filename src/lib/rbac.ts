@@ -12,14 +12,14 @@ export type Perm =
 const PERMS: Record<StaffRole, Perm[] | "all"> = {
   admin: "all",
   catalog: ["products.read", "products.write"],
-  ops: ["orders.read", "orders.fulfil", "bookings.read", "bookings.manage", "shipping.manage"],
+  ops: ["products.read", "orders.read", "orders.fulfil", "bookings.read", "bookings.manage", "shipping.manage"],
   finance: ["overview.read", "receipts.read", "orders.read", "shipping.manage"],
 };
 
 export const ROLE_INFO: Record<Role, { label: string; desc: string }> = {
   admin: { label: "Admin", desc: "Everything, including users and roles." },
   catalog: { label: "Catalog", desc: "Products: prices, stock, images and 3D models." },
-  ops: { label: "Operations", desc: "Orders, shipping rates, consultation bookings." },
+  ops: { label: "Operations", desc: "Orders, shipping rates, consultation bookings. Products read-only." },
   finance: { label: "Finance", desc: "Overview, receipts, exports, shipping rates. Orders read-only." },
   customer: { label: "Customer", desc: "No admin access." },
 };
@@ -45,6 +45,7 @@ export const ADMIN_SECTIONS = [
 
 const API_PERMS: [RegExp, Perm][] = [
   [/^\/api\/admin\/export/, "receipts.read"],
+  [/^\/api\/admin\/orders\/[^/]+\/midtrans$/, "orders.read"], // "Check Midtrans" button on pending orders; same rules as the webhook, so read access is enough
   [/^\/api\/admin\/orders/, "orders.fulfil"],
   [/^\/api\/admin\/bookings/, "bookings.manage"],
   [/^\/api\/admin\/products/, "products.write"],

@@ -4,7 +4,7 @@
 - [ ] Jalankan `supabase/master.sql` sekali di Supabase SQL editor (copy semua, run). Migration yang sudah jalan dilewati otomatis; query terakhir harus 0 baris. Termasuk 0023 (hapus voucher). Urutan deploy dan run SQL bebas: kode baru jalan dengan database sebelum maupun sesudah 0023.
 - [ ] (Ditahan, menunggu divisi) Pajak: JP consumption tax 10% untuk tujuan Jepang, ekspor 0%; siapa bayar bea masuk negara lain (DAP/DDP).
 - [ ] (Ditahan, menunggu divisi) Kebijakan retur dan garansi.
-- [ ] (Ditahan sampai akhir) RBAC: uji semua role.
+- [ ] RBAC: jalankan `supabase/maintenance/demo_accounts.sql` di SQL editor (akun demo, daftar di README), lalu `node scripts/rbac-check.mjs` setelah deploy + master.sql (0024). `npm run test:rbac` sudah lolos.
 - [ ] Isi kontak asli (telepon, email, sosial media) di `src/lib/contact.ts`.
 - [x] Logo A di navbar, footer, splash (`public/brand/logo.webp`, 12 Nov).
 - [x] GLB wheel hub + rotor (hub hitam anodize), 12 Nov. Upright terpisah belum ada.

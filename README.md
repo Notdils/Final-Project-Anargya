@@ -149,9 +149,31 @@ The role is stored in `app_metadata.role` (only the server can write it). Access
 |---|---|
 | `admin` | Everything, including Users and roles |
 | `catalog` | Products: prices, stock, active/featured, render image and 3D model upload |
-| `ops` | Orders and fulfilment (carrier, tracking), Bookings |
-| `finance` | Overview, Receipts and exports, Orders read-only |
+| `ops` | Orders and fulfilment (carrier, tracking), Bookings, Shipping, Products read-only |
+| `finance` | Overview, Receipts and exports, Shipping, Orders read-only (plus "Check Midtrans" on pending orders) |
 | none | Customer |
+
+Admins cannot change their own role, so the last admin cannot lock themselves out.
+
+Testing:
+- `npm run test:rbac`: no accounts needed. Checks that `rbac.ts` and the SQL `has_perm()` agree for every role and permission, the page/API matrix, and that every admin API route checks the same permission as the middleware.
+- Live check on a deployment: `node scripts/rbac-check.mjs` logs in as each demo account below and sends harmless requests only (bad ids, empty bodies).
+
+### Demo accounts
+
+One login per role, stored in Supabase Auth. **These are public** (this repo is public), so anyone can sign in with them; use demo data only.
+
+| Role | Email | Password | Lands on |
+|---|---|---|---|
+| Admin | `demo.admin@anargya.test` | `Anargya-a8Rn8Xl3Lq` | /admin |
+| Catalog | `demo.catalog@anargya.test` | `Anargya-uPr8bEVIoM` | /admin/products |
+| Operations | `demo.ops@anargya.test` | `Anargya-tbLaxmr08g` | /admin/orders |
+| Finance | `demo.finance@anargya.test` | `Anargya-SOrcYemcE5` | /admin |
+| Customer | `demo.customer@anargya.test` | `Anargya-KAFnldKvMd` | /marketplace |
+
+Create or reset them: paste `supabase/maintenance/demo_accounts.sql` into the Supabase SQL editor and run it (safe to run again; the last query should list 5 users). Alternative without the SQL editor: `scripts/create-demo-accounts.mjs` with `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set in the terminal (`--remove` deletes them).
+
+To change a password, edit it in `scripts/demo-accounts.mjs`, `supabase/maintenance/demo_accounts.sql` and this table, then run the SQL again.
 
 Shipping: checkout asks for the destination country (Asia list in `shipping_zones`) and, for Japan, East or West (`JP-EAST`, `JP-WEST`). The order API looks up the zone rate on the server; a zone without a rate uses `SHIPPING_FLAT_USD`. Ops and Finance edit rates, days and on/off in Admin → Shipping (`0013`).
 
