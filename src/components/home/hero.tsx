@@ -36,9 +36,18 @@ class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean
   static getDerivedStateFromError() {
     return { failed: true };
   }
+  componentDidCatch() {
+    done();
+  }
   render() {
     return this.state.failed ? <SceneFallback /> : this.props.children;
   }
+}
+
+// Same event the scene uses (kept here so the fallback path does not pull in three.js).
+function done() {
+  (window as unknown as { __anargyaProgress?: number }).__anargyaProgress = 100;
+  window.dispatchEvent(new CustomEvent("anargya:progress", { detail: 100 }));
 }
 
 function hasWebGL() {
@@ -71,7 +80,9 @@ export function Hero() {
   const [cue, setCue] = useState(true);
 
   useEffect(() => {
-    setGl(hasWebGL());
+    const ok = hasWebGL();
+    setGl(ok);
+    if (!ok) done(); // nothing to load: release the preloader at once
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) setRotating(false);
     const on = () => scrollY > 40 && setCue(false);
     addEventListener("scroll", on, { passive: true });

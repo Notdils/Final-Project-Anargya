@@ -21,6 +21,7 @@ export const JA: Record<string, string> = {
 
   // Hero
   "Nagoya, Japan · Formula EV design": "日本・名古屋｜フォーミュラEV設計",
+  "Loading": "読み込み中",
   "Formula EV parts": "フォーミュラEVのパーツと",
   "and engineering support.": "エンジニアリング支援。",
   "Explore marketplace": "マーケットプレイスを見る",

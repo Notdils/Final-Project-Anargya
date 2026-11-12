@@ -3,6 +3,8 @@ import { Ruler, Factory, Package } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Hero } from "@/components/home/hero";
+import { Preloader } from "@/components/home/preloader";
+import { PRELOADER_BOOT } from "@/components/home/preloader-boot";
 import { FlyThrough } from "@/components/home/fly-through";
 import { Coverflow } from "@/components/coverflow";
 import { listProducts } from "@/lib/catalog";
@@ -33,6 +35,11 @@ export default async function HomeView({ locale }: { locale: Locale }) {
 
   return (
     <>
+      <script dangerouslySetInnerHTML={{ __html: PRELOADER_BOOT }} />
+      <noscript>
+        <style>{".preloader{display:none}"}</style>
+      </noscript>
+      <Preloader />
       <SiteHeader variant="overlay" active="home" />
       <main id="main">
         <Hero />

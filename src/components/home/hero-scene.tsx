@@ -1,8 +1,13 @@
 "use client";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Bounds, Center, ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
+import { Bounds, Center, ContactShadows, Environment, Lightformer, OrbitControls, useGLTF, useProgress } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
+
+export function reportProgress(value: number) {
+  (window as unknown as { __anargyaProgress?: number }).__anargyaProgress = value;
+  window.dispatchEvent(new CustomEvent("anargya:progress", { detail: value }));
+}
 
 const TEAL = new THREE.Color("#006f66");
 // Glow is light, not UI ink: same hue, pushed brighter and kept out of tone mapping.
@@ -104,6 +109,9 @@ function ZoomRig({ zoom }: { zoom: number }) {
 export default function HeroScene({ rotating, zoom = 1, active = true }: { rotating: boolean; zoom?: number; active?: boolean }) {
   useEffect(() => () => useGLTF.clear("/models/e21.glb"), []);
   const [size, setSize] = useState<THREE.Vector3 | null>(null);
+  // Real download progress for the splash preloader; 100 only once the car is actually in the scene.
+  const progress = useProgress((s) => s.progress);
+  useEffect(() => reportProgress(size ? 100 : Math.min(progress, 99)), [progress, size]);
   return (
     <Canvas
       dpr={[1, 1.5]}
