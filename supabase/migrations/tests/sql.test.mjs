@@ -188,6 +188,10 @@ try { await run(`insert into bookings(name,email,organisation,topic,slot_date,sl
 for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migrations/0018_product_dimensions.sql", import.meta.url), "utf8"));
 console.log("dimensions set:", (await run(`select count(*) n from products where dimensions like '%mm%'`)).rows[0].n);
 
+// 0021: finish
+for (let i = 0; i < 2; i++) await db.exec(readFileSync(new URL("../supabase/migrations/0021_product_finish.sql", import.meta.url), "utf8"));
+console.log("finish set:", (await run(`select count(*) n from products where finish is not null and finish not like '%PLACEHOLDER%'`)).rows[0].n);
+
 // maintenance: reset test data
 await db.exec(`alter table auth.users add column if not exists raw_user_meta_data jsonb default '{}'::jsonb`);
 await run(`update auth.users set raw_user_meta_data = '{"full_name":"A","shipping_address":{"city":"x"}}' where id = $1`, [U1]);

@@ -342,3 +342,18 @@ body > main, body > #main { flex: 1 0 auto; }
 .preloader[data-leaving] { opacity: 0; visibility: hidden; }
 html[data-intro="seen"] .preloader { display: none; }
 @media (prefers-reduced-motion: reduce) { .preloader { transition: none; } }
+
+/* "Tap me" hint beside the immersive 3D button: a slow nudge toward the button */
+.tap-hint { animation: tap-hint 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.tap-hint::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  transform: translateY(-50%) rotate(45deg);
+}
+@keyframes tap-hint { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-4px); } }
+@media (prefers-reduced-motion: reduce) { .tap-hint { animation: none; } }

@@ -62,12 +62,12 @@ const MODELS: Record<string, string> = {
   "custom-vcu-bms-unit": "/models/parts/vcu-bms.glb",
   "brake-pedal-box": "/models/parts/pedal-box.glb",
 };
-// Specs from the team (11 Nov; dimensions 12 Nov). Same values as 0012_product_specs.sql and 0018_product_dimensions.sql.
-const SPECS: Record<string, Pick<Product, "material" | "weight" | "fits" | "leadTime" | "dimensions">> = {
-  "p-upright-kit": { dimensions: "300 × 260 × 300 mm per wheel assembly", material: "Aluminium, high-tensile alloy steel", weight: "4–4.5 kg per set", fits: 'Formula Student 10" or 13" wheels (PCD 4×98 / 4×100)', leadTime: "3–4 weeks" },
-  "p-aero-package": { dimensions: "Front wing 1,380 × 480 × 320 mm\nRear wing 1,150 × 420 × 450 mm\nDiffuser 1,200 × 650 × 180 mm", material: "Carbon fiber, aluminium", weight: "9–11 kg total", fits: "FSAE-standard tubular spaceframe or monocoque chassis", leadTime: "4–5 weeks" },
-  "p-vcu-bms": { dimensions: "240 × 180 × 65 mm", material: "Aluminium", weight: "1.2–1.8 kg total", fits: "EV powertrains, configured to your team's communication protocol", leadTime: "3–4 weeks" },
-  "p-pedal-box": { dimensions: "340 × 260 × 280 mm", material: "Aluminium", weight: "2.8–3.4 kg", fits: "Hydraulic braking systems", leadTime: "2–3 weeks" },
+// Specs from the team (11 Nov; dimensions and finish 12 Nov). Same values as 0012_product_specs.sql, 0018_product_dimensions.sql and 0021_product_finish.sql.
+const SPECS: Record<string, Pick<Product, "material" | "weight" | "fits" | "leadTime" | "dimensions" | "finish">> = {
+  "p-upright-kit": { finish: "Type III Hard Black Anodized (Mil-Spec)", dimensions: "300 × 260 × 300 mm per wheel assembly", material: "Aluminium, high-tensile alloy steel", weight: "4–4.5 kg per set", fits: 'Formula Student 10" or 13" wheels (PCD 4×98 / 4×100)', leadTime: "3–4 weeks" },
+  "p-aero-package": { finish: "UV-Resistant Glossy Clear Coat", dimensions: "Front wing 1,380 × 480 × 320 mm\nRear wing 1,150 × 420 × 450 mm\nDiffuser 1,200 × 650 × 180 mm", material: "Carbon fiber, aluminium", weight: "9–11 kg total", fits: "FSAE-standard tubular spaceframe or monocoque chassis", leadTime: "4–5 weeks" },
+  "p-vcu-bms": { finish: "Anodized Natural Silver / Matte Black, Laser-Etched", dimensions: "240 × 180 × 65 mm", material: "Aluminium", weight: "1.2–1.8 kg total", fits: "EV powertrains, configured to your team's communication protocol", leadTime: "3–4 weeks" },
+  "p-pedal-box": { finish: "Semi-Gloss Coating", dimensions: "340 × 260 × 280 mm", material: "Aluminium", weight: "2.8–3.4 kg", fits: "Hydraulic braking systems", leadTime: "2–3 weeks" },
 };
 // Overview text from the team (11 Nov). Same as supabase/migrations/0015_product_overview.sql.
 const OVERVIEW: Record<string, string> = {

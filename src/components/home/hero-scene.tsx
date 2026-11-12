@@ -1,7 +1,7 @@
 "use client";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Bounds, Center, ContactShadows, Environment, Lightformer, OrbitControls, useGLTF, useProgress } from "@react-three/drei";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 export function reportProgress(value: number) {
@@ -82,11 +82,38 @@ function Platform({ radius }: { radius: number }) {
   );
 }
 
-/** Tighter framing on wide screens; portrait screens need room so the nose and wing stay in view. */
-function Framed({ children }: { children: React.ReactNode }) {
+/** Fades every material inside to `show` (0 or 1) and hides the group once invisible. */
+function FadeGroup({ show, children }: { show: boolean; children: React.ReactNode }) {
+  const ref = useRef<THREE.Group>(null);
+  const level = useRef(show ? 1 : 0);
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => invalidate(), [show, invalidate]);
+  useFrame((_, dt) => {
+    const g = ref.current;
+    const target = show ? 1 : 0;
+    if (!g || Math.abs(level.current - target) < 0.002) return;
+    level.current = THREE.MathUtils.damp(level.current, target, 6, dt);
+    if (Math.abs(level.current - target) < 0.002) level.current = target;
+    g.visible = level.current > 0;
+    g.traverse((o) => {
+      const mat = (o as THREE.Mesh).material as THREE.Material | undefined;
+      if (!mat) return;
+      mat.userData.baseOpacity ??= mat.opacity;
+      mat.transparent = true;
+      mat.opacity = mat.userData.baseOpacity * level.current;
+    });
+    invalidate();
+  });
+  return <group ref={ref}>{children}</group>;
+}
+
+/** Tighter framing on wide screens; portrait screens need room so the nose and wing stay in view.
+ *  Immersive mode frames the car alone, larger, in the middle of the full screen. */
+function Framed({ immersive, children }: { immersive: boolean; children: React.ReactNode }) {
   const aspect = useThree((st) => st.size.width / st.size.height);
+  const margin = immersive ? (aspect < 1.2 ? 1.2 : 0.8) : aspect < 1.2 ? 1.02 : 0.78;
   return (
-    <Bounds fit observe margin={aspect < 1.2 ? 1.02 : 0.78}>
+    <Bounds fit observe margin={margin} maxDuration={0.8}>
       {children}
     </Bounds>
   );
@@ -106,7 +133,17 @@ function ZoomRig({ zoom }: { zoom: number }) {
   return null;
 }
 
-export default function HeroScene({ rotating, zoom = 1, active = true }: { rotating: boolean; zoom?: number; active?: boolean }) {
+export default function HeroScene({
+  rotating,
+  zoom = 1,
+  active = true,
+  immersive = false,
+}: {
+  rotating: boolean;
+  zoom?: number;
+  active?: boolean;
+  immersive?: boolean;
+}) {
   useEffect(() => () => useGLTF.clear("/models/e21.glb"), []);
   const [size, setSize] = useState<THREE.Vector3 | null>(null);
   // Real download progress for the splash preloader; 100 only once the car is actually in the scene.
@@ -130,10 +167,14 @@ export default function HeroScene({ rotating, zoom = 1, active = true }: { rotat
       <pointLight position={[0, 0.25, 0]} color="#006f66" intensity={6} distance={6} decay={2} />
       <Suspense fallback={null}>
         {/* platform sits outside Bounds so the camera frames the car, not the plinth */}
-        <Framed>
+        <Framed immersive={immersive}>
           <E21 onSize={setSize} />
         </Framed>
-        {size && <Platform radius={Math.max(size.x, size.z) * 0.56} />}
+        {size && (
+          <FadeGroup show={!immersive}>
+            <Platform radius={Math.max(size.x, size.z) * 0.56} />
+          </FadeGroup>
+        )}
         <ContactShadows frames={1} position={[0, 0.004, 0]} opacity={0.7} scale={14} blur={2.6} far={4} resolution={512} color="#000000" />
         {/* dark studio: softboxes only, no external HDR download */}
         <Environment resolution={256} frames={1}>
