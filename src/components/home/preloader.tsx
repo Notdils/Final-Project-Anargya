@@ -86,7 +86,7 @@ export function Preloader() {
     >
       <div className="flex w-[min(320px,calc(100vw-48px))] flex-col items-center gap-6">
         <div className="flex items-center gap-3 text-white">
-          <BrandMark className="size-8 text-sm" />
+          <BrandMark className="h-8 w-11" />
           <span className="text-xl font-semibold tracking-[0.24em]">ANARGYA</span>
         </div>
         <div className="h-0.5 w-full overflow-hidden rounded-full bg-white/15">

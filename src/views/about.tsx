@@ -3,8 +3,9 @@ import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { CapabilityTabs } from "@/components/capability-tabs";
+import { PosterHero } from "@/components/about/poster-hero";
+import { POSTER_BOOT } from "@/components/about/poster-boot";
 import { lp, translator, type Locale } from "@/i18n";
-
 
 const FLOW = [
   ["Design", "Concept, CAD, simulation"],
@@ -18,28 +19,10 @@ export default function AboutView({ locale }: { locale: Locale }) {
   const L = (p: string) => lp(p, locale);
   return (
     <>
-      <SiteHeader variant="overlay" active="about" />
+      <SiteHeader active="about" />
       <main id="main">
-        <section aria-labelledby="about-title" className="bg-stage pb-12 pt-28 text-white md:pb-20 md:pt-32">
-          <div className="container-x flex flex-col gap-12 md:gap-20">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6">
-              <div className="flex flex-col gap-4">
-                <p className="eyebrow text-neutral-400">{t("About Anargya")}</p>
-                <h1 id="about-title" className="text-[40px] font-semibold leading-[44px] tracking-[-0.03em] md:text-[56px] md:leading-[56px] xl:text-[80px] xl:leading-[80px]">
-                  {t("Engineering-led.")}
-                  <br />
-                  {t("Partner-built.")}
-                </h1>
-              </div>
-              <p className="max-w-[360px] text-neutral-400 md:text-lg">
-                {t("A Nagoya-based EV engineering company. We design Formula Student components in-house and help teams get their cars built, inspected and racing.")}
-              </p>
-            </div>
-            <figure className="grid h-[280px] place-items-center rounded-xl bg-[#171717] font-mono text-xs uppercase tracking-wider text-neutral-400 md:h-[440px] xl:h-[560px]">
-              {t("Studio / workshop photo")}
-            </figure>
-          </div>
-        </section>
+        <PosterHero />
+        <script dangerouslySetInnerHTML={{ __html: POSTER_BOOT }} />
 
         <section aria-labelledby="story-title" className="container-x grid gap-4 py-12 md:grid-cols-[240px_1fr] md:gap-6 md:py-20 xl:grid-cols-[368px_1fr] xl:py-24">
           <div className="flex flex-col gap-3 md:sticky md:top-24 md:self-start">

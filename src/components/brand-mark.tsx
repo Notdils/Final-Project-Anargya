@@ -1,9 +1,11 @@
-// [PLACEHOLDER] logo slot next to the wordmark. Replace the span with the graphic design team's SVG
-// (e.g. <img src="/brand/logo.svg" width={24} height={24} alt="" />) when it arrives.
+// Anargya "A" mark from the graphic design team (public/brand/logo.webp, 512 × 378).
+// Drawn as a mask over currentColor, so it follows the text colour: white on the dark home
+// header and splash, black on light pages.
 export function BrandMark({ className = "" }: { className?: string }) {
   return (
-    <span aria-hidden className={`inline-grid size-6 shrink-0 place-items-center rounded-md border border-dashed border-current text-[10px] font-semibold opacity-80 ${className}`}>
-      A
-    </span>
+    <span
+      aria-hidden
+      className={`inline-block h-6 w-[33px] shrink-0 bg-current [mask:url(/brand/logo.webp)_center/contain_no-repeat] ${className}`}
+    />
   );
 }

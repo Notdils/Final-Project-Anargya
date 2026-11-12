@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
-import { CurrencySwitch } from "@/components/currency";
+import { CurrencySwitch, useCurrency } from "@/components/currency";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, ShoppingCart, X } from "lucide-react";
@@ -26,6 +26,8 @@ export function HeaderClient({
 }) {
   const { ready: authReady, signedIn, isAdmin } = useAuth();
   const t = useT();
+  const { rates } = useCurrency();
+  const hasRates = Object.values(rates).some(Boolean); // same rule as CurrencySwitch: USD plus at least one rate
   const L = useLp();
   const locale = useLocale();
   const pathname = usePathname() ?? "/";
@@ -68,7 +70,8 @@ export function HeaderClient({
           ANARGYA
         </Link>
 
-        <ul className="hidden items-center gap-6 md:flex">
+        {/* full nav from 1120px: below that the Japanese labels collide with the actions (measured 12 Nov) */}
+        <ul className="hidden items-center gap-6 min-[1120px]:flex">
           {LINKS.map((l) => {
             const on = active === l.key;
             return (
@@ -88,7 +91,7 @@ export function HeaderClient({
         </ul>
 
         <div className="flex items-center gap-2">
-          <CurrencySwitch className={`btn hidden p-0 md:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"}`} />
+          <CurrencySwitch className={`btn hidden p-0 min-[1120px]:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"}`} />
           {/* language: segmented EN | JP, current one highlighted */}
           <nav aria-label={t("Language")} className={`inline-flex h-10 items-center gap-0.5 rounded-lg border p-1 font-mono text-xs ${dark ? "border-white/30 bg-white/5" : "border-line bg-surface"}`}>
             {(["en", "ja"] as const).map((l) => {
@@ -111,10 +114,10 @@ export function HeaderClient({
               <span className="rounded-lg bg-teal px-1.5 font-mono text-xs leading-4 text-white">{count}</span>
             )}
           </Link>
-          <Link href={accountHref} className={`btn hidden md:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"} ${authReady ? "" : "invisible"}`}>
+          <Link href={accountHref} className={`btn hidden min-[1120px]:inline-flex ${dark ? "btn-outline-dark" : "btn-outline"} ${authReady ? "" : "invisible"}`}>
             {accountLabel}
           </Link>
-          <Link href={L("/marketplace")} className="btn btn-teal hidden md:inline-flex">
+          <Link href={L("/marketplace")} className="btn btn-teal hidden min-[1120px]:inline-flex">
             {t("Shop parts")}
           </Link>
           <button
@@ -122,7 +125,7 @@ export function HeaderClient({
             aria-label={t("Open menu")}
             aria-expanded={open}
             onClick={() => setOpen(true)}
-            className={`btn px-2 md:hidden ${dark ? "btn-outline-dark" : "btn-outline"}`}
+            className={`btn px-2 min-[1120px]:hidden ${dark ? "btn-outline-dark" : "btn-outline"}`}
           >
             <Menu size={16} aria-hidden />
           </button>
@@ -160,10 +163,13 @@ export function HeaderClient({
           </li>
         </ul>
         <div className="flex flex-col gap-3 px-5">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm text-muted">{t("Currency")}</span>
-            <CurrencySwitch className="btn btn-outline p-0" />
-          </div>
+          {/* only when exchange rates are configured; otherwise the switch renders nothing */}
+          {hasRates && (
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-muted">{t("Currency")}</span>
+              <CurrencySwitch className="btn btn-outline p-0" />
+            </div>
+          )}
           <Link href={L("/marketplace")} onClick={() => setOpen(false)} className="btn btn-teal btn-lg w-full">
             {t("Shop parts")}
           </Link>

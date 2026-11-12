@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Ruler, Factory, Package } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Hero } from "@/components/home/hero";
@@ -12,13 +11,7 @@ import { listProducts } from "@/lib/catalog";
 import { GuestOnly } from "@/components/auth-state";
 import { lp, translator, type Locale } from "@/i18n";
 
-
 // Five-year roadmap from the SPD (business plan), paraphrased.
-const VALUES = [
-  [Ruler, "[PLACEHOLDER] Value 1"],
-  [Factory, "[PLACEHOLDER] Value 2"],
-  [Package, "[PLACEHOLDER] Value 3"],
-] as const;
 
 export default async function HomeView({ locale }: { locale: Locale }) {
   const t = translator(locale);
@@ -50,23 +43,6 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             <Link href={L("/marketplace")} className="btn btn-outline">{t("Explore marketplace")}</Link>
             <Link href={L("/consulting")} className="btn btn-outline">{t("Book a consultation")}</Link>
           </div>
-        </section>
-
-        <section aria-labelledby="values-title" className="container-x pb-12 md:pb-24">
-          <h2 id="values-title" className="mb-6 text-center text-[28px] font-semibold leading-9 tracking-[-0.02em] md:mb-10 md:text-4xl md:leading-[44px]">
-            {t("What we stand for")}
-          </h2>
-          <ul className="grid gap-4 md:gap-6 xl:grid-cols-3">
-            {VALUES.map(([Icon, h]) => (
-              <li key={h} className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-6">
-                <span className="grid h-10 w-10 place-items-center rounded-lg bg-teal-tint text-teal">
-                  <Icon size={24} strokeWidth={1.5} aria-hidden />
-                </span>
-                <h3 className="font-medium">{t(h)}</h3>
-                <p className="text-sm text-muted">{t("Draft. Final values come from Creative Branding.")}</p>
-              </li>
-            ))}
-          </ul>
         </section>
 
         <Coverflow products={featured} />
