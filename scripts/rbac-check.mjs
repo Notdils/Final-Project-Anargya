@@ -19,6 +19,7 @@ const CHECKS = [
   ["GET", "/admin/users", null, "Y . . . ."],
   ["GET", "/admin/inbox", null, "Y Y Y Y ."],
   ["GET", "/api/admin/support/bad", null, "Y Y Y Y ."],
+  ["DELETE", "/api/admin/support/bad/history", null, "Y . . . ."], // bad id: Admin gets 400, nobody deletes anything
   ["GET", "/api/admin/export", null, "Y . . Y ."],
   ["PATCH", "/api/admin/orders/bad", {}, "Y . Y . ."],
   ["POST", "/api/admin/orders/bad/midtrans", null, "Y . Y Y ."],

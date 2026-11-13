@@ -7,7 +7,7 @@ export type Role = StaffRole | "customer";
 
 export type Perm =
   | "overview.read" | "receipts.read" | "orders.read" | "orders.fulfil"
-  | "bookings.read" | "bookings.manage" | "products.read" | "products.write" | "users.manage" | "shipping.manage" | "support.reply";
+  | "bookings.read" | "bookings.manage" | "products.read" | "products.write" | "users.manage" | "shipping.manage" | "support.reply" | "support.delete";
 
 const PERMS: Record<StaffRole, Perm[] | "all"> = {
   admin: "all",
@@ -52,6 +52,7 @@ const API_PERMS: [RegExp, Perm][] = [
   [/^\/api\/admin\/products/, "products.write"],
   [/^\/api\/admin\/users/, "users.manage"],
   [/^\/api\/admin\/shipping/, "shipping.manage"],
+  [/^\/api\/admin\/support\/[^/]+\/history$/, "support.delete"], // delete a whole conversation: Admin only
   [/^\/api\/admin\/support/, "support.reply"],
 ];
 

@@ -694,4 +694,7 @@ export const JA: Record<string, string> = {
   "We can review your design or a part you want to change and suggest modifications.": "設計や変更したいパーツをレビューし、改良案をご提案します。",
   "Tell us a bit more here, and we will point you to the right engineer.": "こちらで詳しく教えてください。適切なエンジニアをご案内します。",
   "The best way to go deeper is a 90-minute meetup/call with our engineers. Book a consultation and we will prepare for your topic.": "より詳しくは、エンジニアとの90分の対面またはオンライン通話がおすすめです。相談を予約いただければ、テーマに合わせて準備します。",
+  "Start over": "最初からやり直す",
+  "Start a new conversation? Earlier messages will be hidden here.": "新しい会話を始めますか？これまでのメッセージはここに表示されなくなります。",
+  "Could not start over. Try again.": "やり直せませんでした。もう一度お試しください。",
 };

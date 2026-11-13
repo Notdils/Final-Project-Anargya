@@ -20,7 +20,8 @@ with expected(tbl, col, migration) as (values
   ('shipping_rates', 'rate_usd', '0025_shipping_rates_by_part.sql'),
   ('shipping_zones', 'region', '0025_shipping_rates_by_part.sql'),
   ('support_messages', 'body', '0027_support_chat.sql'),
-  ('support_messages', 'kind', '0028_support_chat_cards.sql')
+  ('support_messages', 'kind', '0028_support_chat_cards.sql'),
+  ('support_threads', 'customer_reset_at', '0029_support_chat_reset.sql')
 )
 select e.migration, e.tbl || '.' || e.col as missing
 from expected e

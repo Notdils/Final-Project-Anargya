@@ -13,10 +13,13 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Log in to chat with us.", login: true }, { status: 401 });
   const sb = supabaseService();
   if (!sb) return notReady();
-  const th = await sb.from("support_threads").select("id, customer_unread").eq("user_id", user.id).maybeSingle();
+  const th = await sb.from("support_threads").select("id, customer_unread, customer_reset_at").eq("user_id", user.id).maybeSingle();
   if (th.error) return notReady();
   if (!th.data) return NextResponse.json({ messages: [] });
-  const m = await sb.from("support_messages").select(MSG_COLS).eq("thread_id", th.data.id).order("created_at").limit(300);
+  // after "Start over" the customer only sees what came after it (staff still see everything)
+  let q = sb.from("support_messages").select(MSG_COLS).eq("thread_id", th.data.id);
+  if (th.data.customer_reset_at) q = q.gt("created_at", th.data.customer_reset_at);
+  const m = await q.order("created_at").limit(300);
   if (m.error) return notReady();
   if (th.data.customer_unread) await sb.from("support_threads").update({ customer_unread: false }).eq("id", th.data.id);
   return NextResponse.json({ messages: (m.data ?? []).map((r) => ({ ...toMessage(r), staffName: null })) });
@@ -53,4 +56,16 @@ export async function POST(req: Request) {
     if (!a.error) out.push(toMessage(a.data));
   }
   return NextResponse.json({ messages: out.map((x) => ({ ...x, staffName: null })) });
+}
+
+/** "Start over": hide the earlier conversation from the customer and show the topic chips again.
+ *  Nothing is deleted; staff keep the full history (only Admin can delete it). */
+export async function DELETE() {
+  const { user } = await currentUser();
+  if (!user) return NextResponse.json({ error: "Log in to chat with us.", login: true }, { status: 401 });
+  const sb = supabaseService();
+  if (!sb) return notReady();
+  const r = await sb.from("support_threads").update({ customer_reset_at: new Date().toISOString(), customer_unread: false }).eq("user_id", user.id);
+  if (r.error) return notReady();
+  return NextResponse.json({ ok: true });
 }

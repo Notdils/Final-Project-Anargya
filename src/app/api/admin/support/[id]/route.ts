@@ -17,8 +17,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!sb) return NextResponse.json({ error: "Not configured." }, { status: 503 });
   const m = await sb.from("support_messages").select(MSG_COLS).eq("thread_id", id).order("created_at").limit(500);
   if (m.error) return NextResponse.json({ error: "Could not load." }, { status: 500 });
-  await sb.from("support_threads").update({ staff_unread: false }).eq("id", id);
-  return NextResponse.json({ messages: (m.data ?? []).map(toMessage) });
+  const th = await sb.from("support_threads").update({ staff_unread: false }).eq("id", id).select("customer_reset_at").maybeSingle();
+  return NextResponse.json({ messages: (m.data ?? []).map(toMessage), resetAt: th.data?.customer_reset_at ?? null });
 }
 
 /** Reply as staff. The customer sees it the next time their chat panel refreshes. */

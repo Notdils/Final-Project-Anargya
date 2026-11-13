@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, CalendarDays, Headset, Minus, Package, Send, X } from "lucide-react";
+import { ArrowRight, CalendarDays, Headset, Minus, Package, RotateCcw, Send, X } from "lucide-react";
 import { useAuth } from "@/components/auth-state";
 import { Price } from "@/components/price";
 import { useLocale, useLp, useT } from "@/i18n/client";
@@ -70,6 +70,7 @@ function ChatPanel({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [min, setMin] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const time = (iso: string) => new Intl.DateTimeFormat(locale === "ja" ? "ja-JP" : "en-GB", { hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
@@ -109,6 +110,16 @@ function ChatPanel({ onClose }: { onClose: () => void }) {
     setMin(true);
   }
 
+  // "Start over": the earlier messages are hidden from the customer (the team keeps them).
+  async function startOver() {
+    setBusy(true); setErr("");
+    const res = await fetch("/api/support", { method: "DELETE" }).catch(() => null);
+    setBusy(false); setConfirmReset(false);
+    if (!res?.ok) return setErr("Could not start over. Try again.");
+    setMsgs([]); setText(""); setTopic(null);
+    inputRef.current?.focus();
+  }
+
   async function send(e?: React.FormEvent) {
     e?.preventDefault();
     const body = text.trim();
@@ -128,10 +139,22 @@ function ChatPanel({ onClose }: { onClose: () => void }) {
       <header className="flex items-center justify-between gap-2 bg-teal px-4 py-3 text-white">
         <p className="flex items-center gap-2 font-semibold"><Headset size={18} aria-hidden />{t("Anargya Customer Service")}</p>
         <div className="flex gap-1">
+          {msgs.length > 0 && !min && (
+            <button type="button" className="grid size-8 place-items-center rounded-lg hover:bg-white/15" aria-label={t("Start over")} title={t("Start over")} aria-expanded={confirmReset} onClick={() => setConfirmReset((v) => !v)}><RotateCcw size={16} aria-hidden /></button>
+          )}
           <button type="button" className="grid size-8 place-items-center rounded-lg hover:bg-white/15" aria-label={t(min ? "Expand chat" : "Minimize chat")} aria-expanded={!min} onClick={() => setMin((v) => !v)}><Minus size={16} aria-hidden /></button>
           <button type="button" className="grid size-8 place-items-center rounded-lg hover:bg-white/15" aria-label={t("Close chat")} onClick={onClose}><X size={16} aria-hidden /></button>
         </div>
       </header>
+      {!min && confirmReset && (
+        <div role="alertdialog" aria-label={t("Start over")} className="flex flex-col gap-2 border-b border-line bg-teal-tint px-4 py-3 text-sm">
+          <p>{t("Start a new conversation? Earlier messages will be hidden here.")}</p>
+          <div className="flex justify-end gap-2">
+            <button type="button" className="btn btn-outline min-h-8 px-3 text-[13px]" onClick={() => setConfirmReset(false)}>{t("Cancel")}</button>
+            <button type="button" className="btn btn-teal min-h-8 px-3 text-[13px]" disabled={busy} onClick={startOver}><RotateCcw size={14} aria-hidden />{t("Start over")}</button>
+          </div>
+        </div>
+      )}
       {!min && (
         <>
           <div ref={listRef} className="flex min-h-[240px] flex-1 flex-col gap-3 overflow-y-auto bg-surface p-4" aria-live="polite">

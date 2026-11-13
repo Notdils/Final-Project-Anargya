@@ -9,7 +9,7 @@ import { can, permForPath, homeFor, STAFF_ROLES } from "../src/lib/rbac.ts";
 let fail = 0;
 const ok = (cond, msg) => { if (!cond) { fail++; console.log("FAIL:", msg); } };
 const ROLES = [...STAFF_ROLES, "customer"];
-const PERMS = ["overview.read", "receipts.read", "orders.read", "orders.fulfil", "bookings.read", "bookings.manage", "products.read", "products.write", "users.manage", "shipping.manage", "support.reply"];
+const PERMS = ["overview.read", "receipts.read", "orders.read", "orders.fulfil", "bookings.read", "bookings.manage", "products.read", "products.write", "users.manage", "shipping.manage", "support.reply", "support.delete"];
 
 // ---------- 1. TS vs SQL ----------
 const dir = new URL("../supabase/migrations/", import.meta.url);
@@ -43,6 +43,7 @@ const MATRIX = {
   "/admin/inbox":                      "Y Y Y Y .",
   "/api/admin/support":                "Y Y Y Y .",
   [`/api/admin/support/${ID}`]:         "Y Y Y Y .",
+  [`/api/admin/support/${ID}/history`]: "Y . . . .",
   "/api/admin/export":                 "Y . . Y .",
   [`/api/admin/orders/${ID}`]:          "Y . Y . .",
   [`/api/admin/orders/${ID}/midtrans`]: "Y . Y Y .",
