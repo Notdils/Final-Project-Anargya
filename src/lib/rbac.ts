@@ -1,4 +1,4 @@
-// Role-based access for the admin area. Mirrors public.has_perm() in supabase/migrations/0011.
+// Role-based access for the admin area. Mirrors public.has_perm() (latest: supabase/migrations/0027).
 // The role lives in app_metadata.role, which only the server (service role) can change.
 
 export const STAFF_ROLES = ["admin", "catalog", "ops", "finance"] as const;
@@ -7,20 +7,20 @@ export type Role = StaffRole | "customer";
 
 export type Perm =
   | "overview.read" | "receipts.read" | "orders.read" | "orders.fulfil"
-  | "bookings.read" | "bookings.manage" | "products.read" | "products.write" | "users.manage" | "shipping.manage";
+  | "bookings.read" | "bookings.manage" | "products.read" | "products.write" | "users.manage" | "shipping.manage" | "support.reply";
 
 const PERMS: Record<StaffRole, Perm[] | "all"> = {
   admin: "all",
-  catalog: ["products.read", "products.write"],
-  ops: ["products.read", "orders.read", "orders.fulfil", "bookings.read", "bookings.manage", "shipping.manage"],
-  finance: ["overview.read", "receipts.read", "orders.read", "shipping.manage"],
+  catalog: ["products.read", "products.write", "support.reply"],
+  ops: ["products.read", "orders.read", "orders.fulfil", "bookings.read", "bookings.manage", "shipping.manage", "support.reply"],
+  finance: ["overview.read", "receipts.read", "orders.read", "shipping.manage", "support.reply"],
 };
 
 export const ROLE_INFO: Record<Role, { label: string; desc: string }> = {
   admin: { label: "Admin", desc: "Everything, including users and roles." },
-  catalog: { label: "Catalog", desc: "Products: prices, stock, images and 3D models." },
-  ops: { label: "Operations", desc: "Orders, shipping rates, consultation bookings. Products read-only." },
-  finance: { label: "Finance", desc: "Overview, receipts, exports, shipping rates. Orders read-only." },
+  catalog: { label: "Catalog", desc: "Products: prices, stock, images and 3D models. Customer chat." },
+  ops: { label: "Operations", desc: "Orders, shipping rates, consultation bookings, customer chat. Products read-only." },
+  finance: { label: "Finance", desc: "Overview, receipts, exports, shipping rates, customer chat. Orders read-only." },
   customer: { label: "Customer", desc: "No admin access." },
 };
 
@@ -40,6 +40,7 @@ export const ADMIN_SECTIONS = [
   { href: "/admin/bookings", label: "Bookings", perm: "bookings.read" },
   { href: "/admin/products", label: "Products", perm: "products.read" },
   { href: "/admin/shipping", label: "Shipping Costs", perm: "shipping.manage" },
+  { href: "/admin/inbox", label: "Inbox", perm: "support.reply" },
   { href: "/admin/users", label: "Users", perm: "users.manage" },
 ] as const satisfies readonly { href: string; label: string; perm: Perm }[];
 
@@ -51,6 +52,7 @@ const API_PERMS: [RegExp, Perm][] = [
   [/^\/api\/admin\/products/, "products.write"],
   [/^\/api\/admin\/users/, "users.manage"],
   [/^\/api\/admin\/shipping/, "shipping.manage"],
+  [/^\/api\/admin\/support/, "support.reply"],
 ];
 
 /** Permission needed for an admin page or admin API path (null = any staff role). */

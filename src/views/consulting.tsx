@@ -2,10 +2,11 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BookingForm } from "@/components/booking-form";
 import { ConsultInfo } from "@/components/consulting/consult-info";
+import { SupportChat } from "@/components/consulting/support-chat";
 import { consultFeeUsd, fxUsdIdr, hasSupabase, MIDTRANS_CLIENT_KEY, MIDTRANS_SNAP_JS } from "@/lib/env";
 import { translator, type Locale } from "@/i18n";
 
-// First screen: free slots, details and Midtrans payment; below it what a session covers, FAQ and a CTA back up. Fee and rate come from env at build time.
+// First screen: customer service chat card, then booking in three steps (slot, details, Midtrans payment); below it what a session covers, FAQ and a CTA back up. Fee and rate come from env at build time.
 export default function ConsultingView({ locale }: { locale: Locale }) {
   const t = translator(locale);
   const fee = consultFeeUsd();
@@ -21,9 +22,12 @@ export default function ConsultingView({ locale }: { locale: Locale }) {
               <p className="eyebrow text-teal">{t("Consulting")}</p>
               <h1 id="c-title" className="text-[28px] font-semibold leading-9 tracking-[-0.02em] md:text-4xl md:leading-[44px]">{t("Book a consultation")}</h1>
             </div>
-            <p className="max-w-[520px] text-sm text-muted">{t("90-minute video call with our engineers: inspection readiness, electrical and PCB, EV powertrain, documentation or design review. Times are in Japan time (JST, UTC+9).")}</p>
+            <p className="max-w-[520px] text-sm text-muted">{t("90-minute meetup/call with our engineers: inspection readiness, electrical and PCB, EV powertrain, documentation or design review. Times are in Japan time (JST, UTC+9).")}</p>
           </div>
-          <BookingForm feeUsd={fee} fx={fx} ready={ready} snapJs={MIDTRANS_SNAP_JS} clientKey={MIDTRANS_CLIENT_KEY} />
+          <div className="flex w-full max-w-[880px] flex-col gap-4 md:gap-6">
+            <SupportChat />
+            <BookingForm feeUsd={fee} fx={fx} ready={ready} snapJs={MIDTRANS_SNAP_JS} clientKey={MIDTRANS_CLIENT_KEY} />
+          </div>
         </section>
         <ConsultInfo locale={locale} feeUsd={fee} />
       </main>

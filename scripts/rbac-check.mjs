@@ -17,6 +17,8 @@ const CHECKS = [
   ["GET", "/admin/products", null, "Y Y Y . ."],
   ["GET", "/admin/shipping", null, "Y . Y Y ."],
   ["GET", "/admin/users", null, "Y . . . ."],
+  ["GET", "/admin/inbox", null, "Y Y Y Y ."],
+  ["GET", "/api/admin/support/bad", null, "Y Y Y Y ."],
   ["GET", "/api/admin/export", null, "Y . . Y ."],
   ["PATCH", "/api/admin/orders/bad", {}, "Y . Y . ."],
   ["POST", "/api/admin/orders/bad/midtrans", null, "Y . Y Y ."],

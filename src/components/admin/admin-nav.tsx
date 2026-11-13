@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, Box, CalendarClock, LayoutGrid, LogOut, Receipt, ShoppingBag, Truck, Users } from "lucide-react";
+import { ArrowLeft, Box, CalendarClock, LayoutGrid, LogOut, MessagesSquare, Receipt, ShoppingBag, Truck, Users } from "lucide-react";
 import { ADMIN_SECTIONS, ROLE_INFO, can, type Role } from "@/lib/rbac";
 
-const ICONS: Record<string, typeof Box> = { "/admin": LayoutGrid, "/admin/orders": ShoppingBag, "/admin/receipts": Receipt, "/admin/bookings": CalendarClock, "/admin/products": Box, "/admin/shipping": Truck, "/admin/users": Users };
+const ICONS: Record<string, typeof Box> = { "/admin": LayoutGrid, "/admin/orders": ShoppingBag, "/admin/receipts": Receipt, "/admin/bookings": CalendarClock, "/admin/products": Box, "/admin/shipping": Truck, "/admin/inbox": MessagesSquare, "/admin/users": Users };
 
 export function AdminNav({ email, role }: { email: string | null; role: Role | null }) {
   const path = usePathname();

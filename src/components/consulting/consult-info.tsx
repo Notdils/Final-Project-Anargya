@@ -24,7 +24,7 @@ export function ConsultInfo({ locale, feeUsd }: { locale: Locale; feeUsd: number
     ],
     ["What should I prepare?", t("Your questions, plus anything that helps us see the problem: CAD screenshots, schematics, the rule you are unsure about, or photos of the part.")],
     ["Which time zone are the slots in?", t("Slots are set in Japan time (JST, UTC+9). The form also shows each slot in your own time zone.")],
-    ["What happens after I pay?", t("Your booking is confirmed and appears in your account. We email the video call link to the address you gave before the session.")],
+    ["What happens after I pay?", t("Your booking is confirmed and appears in your account. We email the meetup/call details to the address you gave before the session.")],
     ["What if I do not finish paying?", t("Your slot is held for 15 minutes while you pay. If payment is not completed, the slot is released for others.")],
     ["Can I reschedule or cancel?", t("Email us at {email} with your booking details and we will help.", { email: CONTACT.email })],
   ];
@@ -36,7 +36,7 @@ export function ConsultInfo({ locale, feeUsd }: { locale: Locale; feeUsd: number
           <div className="flex max-w-[640px] flex-col gap-3">
             <p className="eyebrow text-teal">{t("What it covers")}</p>
             <h2 id="covers-title" className="text-[28px] font-semibold leading-9 tracking-[-0.02em] md:text-4xl md:leading-[44px]">{t("What your consultation covers")}</h2>
-            <p className="text-muted">{t("One 90-minute video call with an engineer, focused on the topic you choose when you book.")}</p>
+            <p className="text-muted">{t("One 90-minute meetup/call with an engineer, focused on the topic you choose when you book.")}</p>
           </div>
           <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {COVERS.map(([h, d], i) => (

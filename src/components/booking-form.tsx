@@ -2,8 +2,8 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, CalendarDays, Clock, Lock } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AlertCircle, ArrowLeft, ArrowRight, CalendarDays, Check, Clock, Lock } from "lucide-react";
 import { Req, useReady } from "./auth-forms";
 import { useAuth } from "./auth-state";
 import { Price } from "./price";
@@ -28,7 +28,42 @@ function Field({ id, label, error, optional, children }: { id: string; label: st
   );
 }
 
-/** One-screen paid booking: pick a free slot, fill in the details, pay with Midtrans. */
+const STEPS = ["Date & time", "Your details", "Payment"] as const;
+const DETAIL_KEYS = ["name", "email", "phone", "organisation", "topic"] as const;
+
+/** Progress bar for the three booking steps. Finished steps can be clicked to go back. */
+function Progress({ step, go }: { step: number; go: (n: number) => void }) {
+  const t = useT();
+  return (
+    <ol className="grid grid-cols-3 gap-2" aria-label={t("Booking steps")}>
+      {STEPS.map((label, i) => {
+        const n = i + 1, done = n < step, current = n === step;
+        const inner = (
+          <>
+            <span className={`h-1 w-full rounded-full ${n <= step ? "bg-teal" : "bg-line"}`} />
+            <span className={`flex items-center gap-2 text-sm ${current ? "font-semibold text-ink" : done ? "text-teal" : "text-muted"}`}>
+              <span className={`grid size-6 shrink-0 place-items-center rounded-full font-mono text-xs ${current ? "bg-teal text-white" : done ? "bg-teal-tint text-teal" : "bg-surface text-muted"}`}>
+                {done ? <Check size={14} aria-hidden /> : n}
+              </span>
+              <span className="truncate">{t(label)}</span>
+            </span>
+          </>
+        );
+        return (
+          <li key={label} aria-current={current ? "step" : undefined}>
+            {done ? (
+              <button type="button" onClick={() => go(n)} className="flex w-full flex-col gap-2 text-left hover:opacity-80">{inner}</button>
+            ) : (
+              <div className="flex flex-col gap-2">{inner}</div>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** Paid booking in three steps: pick a free slot, fill in the details, then pay with Midtrans. */
 export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: number | null; fx: number | null; ready: boolean; snapJs: string; clientKey: string }) {
   const t = useT();
   const L = useLp();
@@ -62,6 +97,30 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [fields, setFields] = useState<Fields>({});
+  const [step, setStep] = useState(1);
+  const [recap, setRecap] = useState<{ name: string; email: string; topic: string } | null>(null);
+  const topRef = useRef<HTMLDivElement>(null);
+  const go = (n: number) => {
+    setStep(n);
+    requestAnimationFrame(() => {
+      topRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      topRef.current?.focus({ preventScroll: true });
+    });
+  };
+  // Step 2 -> 3: the browser's own checks on the detail fields, shown as messages under each field.
+  function detailsOk() {
+    const f = ref.current;
+    if (!f) return false;
+    const next: Fields = {};
+    for (const k of DETAIL_KEYS) {
+      const el = f.elements.namedItem(k) as HTMLInputElement | HTMLSelectElement | null;
+      if (el && !el.checkValidity()) next[k] = [el.validity.valueMissing ? "This field is required." : "Check this field."];
+    }
+    setFields(next);
+    const first = DETAIL_KEYS.find((k) => next[k]);
+    if (first) (f.elements.namedItem(first) as HTMLElement | null)?.focus();
+    return !first;
+  }
   const { ready: formOk, check, ref } = useReady(() => Boolean(date && time));
 
   const loadTaken = () =>
@@ -112,6 +171,7 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
       if (d.date && isBookableDate(d.date)) setDate(d.date);
       if (d.time) setTime(d.time);
       setRestored(true);
+      if (d.date && d.time) setStep(3);
     }
     // Signed-in visitors: fill the remaining contact fields from their profile and saved address.
     import("@/lib/supabase/client").then(async ({ supabaseBrowser }) => {
@@ -139,12 +199,15 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
         if (data.pendingId) return router.push(L(`/consulting/booking/${data.pendingId}`));
         setErr(t(data.error ?? "Could not send the request."));
         setFields(data.fields ?? {});
+        const bad = Object.keys(data.fields ?? {});
+        if (data.taken || bad.some((k) => k === "date" || k === "time")) go(1);
+        else if (bad.length) go(2);
         if (data.taken) { setTime(""); loadTaken(); }
         return;
       }
-      const go = () => router.push(L(`/consulting/booking/${data.id}`));
+      const view = () => router.push(L(`/consulting/booking/${data.id}`));
       const goPaid = () => router.push(L(`/consulting/booking/${data.id}?paid=1`));
-      if (window.snap) window.snap.pay(data.token, { onSuccess: () => setResult({ state: "paid", go: goPaid }), onPending: () => setResult({ state: "pending", go }), onClose: go, onError: () => setErr(t("Payment failed. You can try again.")) });
+      if (window.snap) window.snap.pay(data.token, { onSuccess: () => setResult({ state: "paid", go: goPaid }), onPending: () => setResult({ state: "pending", go: view }), onClose: view, onError: () => setErr(t("Payment failed. You can try again.")) });
       else window.location.href = data.redirectUrl;
     } catch {
       setErr(t("Network error. Try again."));
@@ -160,9 +223,13 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
     <>
       <PaymentResult state={result?.state ?? null} onView={() => result?.go()} viewLabel="View booking" />
       {canPay && <Script src={snapJs} data-client-key={clientKey} strategy="afterInteractive" />}
-      <form ref={ref} onSubmit={submit} onInput={check} onChange={check} noValidate className="grid flex-1 items-start gap-4 md:gap-6 xl:grid-cols-[1fr_1fr_320px]">
+      <div ref={topRef} tabIndex={-1} className="scroll-mt-20 outline-none">
+        <Progress step={step} go={go} />
+      </div>
+      {/* All steps stay in one form (hidden, not unmounted) so nothing typed is lost when going back. */}
+      <form ref={ref} onSubmit={submit} onInput={check} onChange={check} noValidate className="flex flex-col gap-4">
         {/* 1. slot */}
-        <fieldset className="flex flex-col gap-4 rounded-xl border border-line bg-white p-5">
+        <fieldset hidden={step !== 1} className="flex flex-col gap-4 rounded-xl border border-line bg-white p-5">
           <legend className="sr-only">{t("Date")}</legend>
           <p className="flex items-center gap-2 font-semibold"><CalendarDays size={18} className="text-teal" aria-hidden />{t("Choose a date")}</p>
           <div className="grid grid-cols-5 gap-1.5 text-center font-mono text-[11px] uppercase text-muted" aria-hidden>
@@ -209,10 +276,13 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
             {local && date && <p className="text-xs text-muted">{t("Your time: {off}. JST: UTC+9.", { off: utcOffset(tz) })}{SLOTS.some((s) => slotInZone(date, s, tz).shift) ? ` ${t("−1d = the day before.")}` : ""}</p>}
             <p className="text-xs text-muted">{t("Taken times are crossed out.")}</p>
           </div>
+          <div className="flex justify-end border-t border-line pt-4">
+            <button type="button" className="btn btn-teal" disabled={!date || !time} onClick={() => go(2)}>{t("Next: your details")}<ArrowRight size={16} aria-hidden /></button>
+          </div>
         </fieldset>
 
         {/* 2. details */}
-        <fieldset className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
+        <fieldset hidden={step !== 2} className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
           <legend className="sr-only">{t("Your details")}</legend>
           <p className="font-semibold">{t("Your details")}</p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -232,15 +302,24 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
           </Field>
           {/* honeypot */}
           <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
+          <div className="flex justify-between gap-2 border-t border-line pt-4">
+            <button type="button" className="btn btn-outline" onClick={() => go(1)}><ArrowLeft size={16} aria-hidden />{t("Back")}</button>
+            <button type="button" className="btn btn-teal" onClick={() => { if (!detailsOk()) return; const f = new FormData(ref.current!); setRecap({ name: String(f.get("name") ?? ""), email: String(f.get("email") ?? ""), topic: String(f.get("topic") ?? "") }); go(3); }}>{t("Next: payment")}<ArrowRight size={16} aria-hidden /></button>
+          </div>
         </fieldset>
 
         {/* 3. summary + pay */}
-        <aside aria-labelledby="bk-sum" className="flex h-fit flex-col gap-4 rounded-xl border border-line bg-white p-5 xl:sticky xl:top-20">
+        <section hidden={step !== 3} aria-labelledby="bk-sum" className="flex flex-col gap-4 rounded-xl border border-line bg-white p-5">
           <h2 id="bk-sum" className="font-semibold">{t("Summary")}</h2>
           <dl className="flex flex-col gap-2 text-sm">
-            <div className="flex justify-between gap-3"><dt className="text-muted">{t("Session")}</dt><dd className="text-right">{t("90-minute video call")}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-muted">{t("Session")}</dt><dd className="text-right">{t("90-minute meetup/call")}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Date")}</dt><dd className="text-right">{date ? dl(date) : "-"}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Time")}</dt><dd className="text-right font-mono">{time ? (local && date ? <>{(() => { const z = slotInZone(date, time, tz, loc); return `${z.day ? `${z.day}, ` : ""}${z.time} (${utcOffset(tz)})`; })()}<span className="block text-xs text-muted">{time} JST (UTC+9)</span></> : `${time} JST (UTC+9)`) : "-"}</dd></div>
+            {recap && <>
+              <div className="flex justify-between gap-3"><dt className="text-muted">{t("Name")}</dt><dd className="text-right">{recap.name}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-muted">{t("Email")}</dt><dd className="text-right [overflow-wrap:anywhere]">{recap.email}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-muted">{t("Topic")}</dt><dd className="text-right">{t(TOPICS.find((o) => o.id === recap.topic)?.label ?? "-")}</dd></div>
+            </>}
             <div className="flex justify-between gap-3 border-t border-line pt-2"><dt className="font-semibold">{t("Fee")}</dt><dd className="font-medium">{feeUsd ? <Price usd={feeUsd} /> : t("Not set")}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Charged in IDR")}</dt><dd className="font-mono">{feeUsd && fx ? `≈ ${rupiah(Math.ceil(feeUsd * fx))}` : t("Rate not set")}</dd></div>
           </dl>
@@ -256,7 +335,8 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
             <button type="submit" className="btn btn-pay btn-lg w-full" disabled={!formOk || !canPay || busy || !authReady}>{t(busy ? "Opening Midtrans…" : "Pay and book")}</button>
           )}
           <p className="flex items-start gap-1.5 text-xs text-muted"><Lock size={14} className="mt-0.5 shrink-0 text-teal" aria-hidden />{t("The slot is held for 15 minutes while you pay. Unpaid bookings are released automatically.")}</p>
-        </aside>
+          <button type="button" className="btn btn-outline w-fit" onClick={() => go(2)}><ArrowLeft size={16} aria-hidden />{t("Back")}</button>
+        </section>
       </form>
     </>
   );

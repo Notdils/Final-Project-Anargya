@@ -36,7 +36,7 @@ export default async function BookingStatusView({ id, locale, justPaid = false }
   const when = `${dateLabel(b.slot_date, locale === "ja" ? "ja-JP" : "en-GB")} · ${b.slot_time} JST`;
   const banner =
     b.pay_status === "paid"
-      ? { cls: "bg-teal-tint", tcls: "text-teal", icon: <CalendarCheck size={20} className="text-teal" aria-hidden />, title: t("Booking confirmed"), body: t("We will email the video call link to {email} before the session.", { email: b.email }) }
+      ? { cls: "bg-teal-tint", tcls: "text-teal", icon: <CalendarCheck size={20} className="text-teal" aria-hidden />, title: t("Booking confirmed"), body: t("We will email the meetup/call details to {email} before the session.", { email: b.email }) }
       : b.pay_status === "pending"
         ? { cls: "bg-ochre-tint", tcls: "text-ink", icon: <Clock size={20} className="text-ochre" aria-hidden />, title: t(confirming ? "Confirming your payment" : "Waiting for payment"), body: open ? t("Your slot is held until {time}. If you already paid, this page updates by itself in a few seconds.", { time: jst(b.pay_expires_at!) }) : t("We are confirming your payment, please wait a moment.") }
         : { cls: "bg-surface-2", tcls: "text-ink", icon: <AlertCircle size={20} className="text-muted" aria-hidden />, title: t("Booking not completed"), body: t("No money was taken and the slot was released. You can book another time.") };
