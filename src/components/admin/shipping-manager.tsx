@@ -91,7 +91,7 @@ function ZoneRow({ z, regionName, live, onSaved }: { z: Zone; regionName: string
   return (
     <tr className="border-t border-line">
       <td className="px-4 py-3"><p className="font-medium">{z.name}</p><p className="font-mono text-xs text-muted">{z.code}{regionHint(z.code) ? ` · ${regionHint(z.code)}` : ""}</p></td>
-      <td className="px-2 py-3 text-muted">{z.kind === "jp_region" ? "Customer pays the courier on delivery" : regionName}</td>
+      <td className="px-2 py-3 text-muted">{z.kind === "jp_region" || z.code === "JP" ? "Customer pays the courier on delivery" : regionName}</td>
       <td className="px-4 py-3">
         <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
           <input type="checkbox" className="size-4 accent-[#006F66]" checked={z.active} onChange={(e) => toggle(e.target.checked)} disabled={!live || busy} />
@@ -116,7 +116,7 @@ export function ShippingManager({ zones, regions, parts, flatUsd, live }: { zone
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-[-0.02em] md:text-[28px] md:leading-9">Shipping Costs</h1>
-        <p className="text-sm text-muted">DHL Express rates in USD, per box. An order pays qty × rate for every part, by the destination&apos;s region. Japan: the customer pays the courier on delivery, so checkout charges nothing. A part without a rate uses the flat rate ({flatUsd ? `$${flatUsd}` : "free"}).</p>
+        <p className="text-sm text-muted">DHL Express rates in USD, per box. An order pays qty × rate for every part, by the destination&apos;s region. Japan (one destination): the customer pays the courier on delivery, so checkout charges nothing. A part without a rate uses the flat rate ({flatUsd ? `$${flatUsd}` : "free"}).</p>
       </header>
       {!live && <p className="flex items-start gap-2 rounded-lg bg-ochre-tint p-3 text-sm"><AlertCircle size={16} className="mt-0.5 shrink-0 text-ochre" aria-hidden />Read-only preview. Run supabase/master.sql to edit rates.</p>}
       {live && !regions.length && <p className="flex items-start gap-2 rounded-lg bg-ochre-tint p-3 text-sm"><AlertCircle size={16} className="mt-0.5 shrink-0 text-ochre" aria-hidden />DHL rates are not in the database yet. Run supabase/master.sql (migration 0025).</p>}

@@ -6,7 +6,7 @@ export type Region = { code: string; name: string; dhlZone: string | null; minDa
 export type ShippingData = { zones: Zone[]; regions: Region[]; flatUsd: number };
 export type QuoteItem = { id: string; qty: number };
 
-/** Japan is split in two. [PLACEHOLDER] split until the team confirms it with the shipping partner. */
+/** Japan used to be split East / West. Japan is now one destination (0026); this list only labels old orders. */
 export const JP_REGIONS = [
   { code: "JP-EAST", en: "East Japan", ja: "東日本", hint: "Hokkaido, Tohoku, Kanto, Chubu" },
   { code: "JP-WEST", en: "West Japan", ja: "西日本", hint: "Kansai, Chugoku, Shikoku, Kyushu, Okinawa" },
@@ -25,24 +25,24 @@ const FALLBACK_COUNTRIES: [string, string, string][] = [
   ["KZ", "Kazakhstan", "ASIA_CENTRAL"], ["UZ", "Uzbekistan", "ASIA_CENTRAL"], ["KG", "Kyrgyzstan", "ASIA_CENTRAL"],
 ];
 export const fallbackZones = (): Zone[] => [
-  ...JP_REGIONS.map((r) => ({ code: r.code, kind: "jp_region" as const, name: r.en, rateUsd: 0, minDays: null, maxDays: null, active: true, region: null })),
+  { code: "JP", kind: "country" as const, name: "Japan", rateUsd: 0, minDays: null, maxDays: null, active: true, region: null },
   ...FALLBACK_COUNTRIES.map(([code, name, region]) => ({ code, kind: "country" as const, name, rateUsd: null, minDays: null, maxDays: null, active: true, region })),
 ];
 
 export type Quote =
   | { ok: true; zone: Zone; shippingUsd: number; estimated: boolean; customerPaid: boolean; minDays: number | null; maxDays: number | null; country: string; region: string | null }
-  | { ok: false; field: "country" | "region"; error: string };
+  | { ok: false; field: "country"; error: string };
 
-/** Destination + cart -> shipping. Japan: the customer arranges and pays the courier, so 0 here.
+/** Destination + cart -> shipping. Japan (one destination): the customer pays the courier, so 0 here.
  *  Elsewhere: sum of qty x the region's DHL rate per box for each part. A part without a rate uses
  *  the zone rate or SHIPPING_FLAT_USD and the quote is marked estimated. */
-export function quote(data: ShippingData, country: string, region: string | null | undefined, items: QuoteItem[]): Quote {
+export function quote(data: ShippingData, country: string, items: QuoteItem[]): Quote {
   const cc = (country ?? "").toUpperCase();
   if (cc === "JP") {
-    if (!JP_REGIONS.some((r) => r.code === region)) return { ok: false, field: "region", error: "Choose East or West Japan." };
-    const z = data.zones.find((x) => x.code === region && x.kind === "jp_region" && x.active);
-    if (!z) return { ok: false, field: "region", error: "We do not ship to this region yet." };
-    return { ok: true, zone: z, shippingUsd: 0, estimated: false, customerPaid: true, minDays: z.minDays, maxDays: z.maxDays, country: "JP", region: z.code };
+    // One destination for all of Japan (0026). Before that migration runs, an old East/West zone stands in.
+    const z = data.zones.find((x) => x.code === "JP" && x.active) ?? data.zones.find((x) => x.kind === "jp_region" && x.active);
+    if (!z) return { ok: false, field: "country", error: "We do not ship to this country yet." };
+    return { ok: true, zone: z, shippingUsd: 0, estimated: false, customerPaid: true, minDays: z.minDays, maxDays: z.maxDays, country: "JP", region: null };
   }
   const z = data.zones.find((x) => x.kind === "country" && x.code === cc && x.active);
   if (!z) return { ok: false, field: "country", error: "We do not ship to this country yet." };
@@ -64,7 +64,7 @@ export function destinationLabel(country: string, region?: string | null, locale
 }
 
 /** Destination countries for the select: Japan first, then the active country zones. */
-export const destinationCodes = (data: ShippingData) => ["JP", ...data.zones.filter((z) => z.kind === "country" && z.active).map((z) => z.code)];
+export const destinationCodes = (data: ShippingData) => ["JP", ...data.zones.filter((z) => z.kind === "country" && z.active && z.code !== "JP").map((z) => z.code)];
 
 // Fixed names: Intl.DisplayNames differs between Node and browsers (hydration mismatch) and uses long forms.
 const NAMES: Record<string, [string, string]> = {

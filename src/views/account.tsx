@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, ChevronRight, MapPin, Package } from "lucide-react";
+import { CalendarDays, ChevronRight, Package } from "lucide-react";
 import { ProfileCard } from "@/components/profile-card";
 import { SiteHeader } from "@/components/site-header";
 import { SlimFooter } from "@/components/site-footer";
@@ -8,11 +8,11 @@ import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { jst } from "@/lib/format";
 import { orderAmount } from "@/lib/money";
 import { savedAddress, type Order } from "@/lib/orders";
-import { RemoveAddress } from "@/components/remove-address";
+import { AddressCard } from "@/components/address-card";
+import { shippingData } from "@/lib/shipping-server";
 import { reconcileOrder } from "@/lib/reconcile";
 import { topicLabel, dateLabel } from "@/lib/booking";
 import { lp, translator, type Locale } from "@/i18n";
-import { destinationLabel } from "@/lib/shipping";
 
 
 type Row = Pick<Order, "id" | "receipt_no" | "total_jpy" | "total_usd" | "status" | "created_at"> & { order_items?: { name: string; qty: number }[] };
@@ -32,7 +32,7 @@ export default async function AccountView({ locale }: { locale: Locale }) {
     await Promise.all(pending.map((o) => reconcileOrder(o.id).catch(() => {})));
     orders = await load();
   }
-  const saved = await savedAddress();
+  const [saved, shipping] = await Promise.all([savedAddress(), shippingData()]);
   type BookingRow = { id: string; slot_date: string; slot_time: string; topic: string; pay_status: string; status: string };
   const bookings: BookingRow[] = sb && user
     ? (((await sb.from("bookings").select("id, slot_date, slot_time, topic, pay_status, status").eq("user_id", user.id).order("slot_date", { ascending: false }).limit(20)).data as BookingRow[] | null) ?? [])
@@ -112,21 +112,7 @@ export default async function AccountView({ locale }: { locale: Locale }) {
 
             <aside className="flex flex-col gap-4">
               <ProfileCard name={name} phone={meta?.phone ?? null} email={user?.email ?? ""} since={user?.created_at ? jst(user.created_at).split(",")[0] : null} />
-              <section aria-labelledby="addr-title" className="flex flex-col gap-3 rounded-xl border border-line p-5">
-                <h2 id="addr-title" className="flex items-center gap-2 font-semibold"><MapPin size={18} className="text-teal" aria-hidden />{t("Shipping address")}</h2>
-                {saved ? (
-                  <>
-                    <address className="text-sm not-italic leading-6">
-                      {saved.buyer_name}<br />{saved.address}<br />{saved.city} {saved.postal_code}<br />{destinationLabel(saved.country, saved.ship_region, locale, saved.ship_country)}<br />
-                      <span className="text-muted">{saved.phone}</span>
-                    </address>
-                    <p className="text-xs text-muted">{t("Saved by you at checkout and used to fill in your next order.")}</p>
-                    <RemoveAddress />
-                  </>
-                ) : (
-                  <p className="text-sm text-muted">{t("No saved address. At checkout, tick “Save this as your shipping address” to skip typing it next time.")}</p>
-                )}
-              </section>
+              <AddressCard saved={saved} shipping={shipping} />
             </aside>
           </div>
         </div>

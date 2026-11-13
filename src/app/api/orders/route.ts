@@ -17,7 +17,7 @@ const Body = z.object({
     city: z.string().trim().min(2).max(80),
     postal: z.string().trim().regex(/^[0-9A-Za-z -]{3,10}$/),
     country: z.string().trim().regex(/^[A-Za-z]{2}$/, "Choose a country."),
-    region: z.enum(["JP-EAST", "JP-WEST"]).optional().nullable(),
+    region: z.string().max(20).optional().nullable(), // ignored: Japan is one destination (0026); old clients may still send it
     // optional delivery notes or a map link; no control characters, links must be https
     note: z.string().trim().max(300, "Keep it under 300 characters.").regex(/^[^\u0000-\u0009\u000b-\u001f\u007f]*$/, "Remove special characters.")
       .refine((s) => !/http:\/\//i.test(s), "Use a link that starts with https://.").optional().nullable(),
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   );
 
   // Shipping comes from the database (destination zone + DHL rate per part, 0013/0025), never from the client.
-  const q = quote(await shippingData(), parsed.data.contact.country, parsed.data.contact.region, merged);
+  const q = quote(await shippingData(), parsed.data.contact.country, merged);
   if (!q.ok) return NextResponse.json({ error: q.error, fields: { [q.field]: [q.error] } }, { status: 400 });
   const c = parsed.data.contact;
   const contact = { email: c.email, name: c.name, phone: c.phone, address: c.address, city: c.city, postal: c.postal, country: countryName(q.country, "en") };

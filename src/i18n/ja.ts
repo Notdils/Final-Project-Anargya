@@ -633,8 +633,6 @@ export const JA: Record<string, string> = {
   "A clear project scope, measurable technical goals, safety and quality procedures, transparent documentation and protection of intellectual property.": "明確なプロジェクト範囲、測定可能な技術目標、安全・品質手順、透明性のある書類、知的財産の保護。",
   // saved address, dimensions (12 Nov)
   "We are confirming your payment, please wait a moment.": "お支払いを確認しています。少々お待ちください。",
-  "Saved by you at checkout and used to fill in your next order.": "購入手続きで保存した住所です。次回のご注文で自動入力されます。",
-  "No saved address. At checkout, tick “Save this as your shipping address” to skip typing it next time.": "保存された住所はありません。購入手続きで「この住所を配送先として保存」にチェックすると、次回から入力を省略できます。",
   "Remove saved address": "保存した住所を削除",
   "Save this as your shipping address?": "この住所を配送先として保存しますか？",
   "This will be used for future orders.": "今後のご注文で使用されます。",
@@ -654,4 +652,9 @@ export const JA: Record<string, string> = {
   "Add parts from the marketplace, then come back here to pay.": "マーケットプレイスでパーツを追加してから、ここでお支払いください。",
   "Paid by you on delivery": "着払い（お客様負担）",
   "DHL Express, per box": "DHL Express・1箱ごと",
+  "Used to fill in your next order. You can still change it at checkout.": "次回のご注文で自動入力されます。購入手続きで変更することもできます。",
+  "No saved address yet. Add one here, or tick “Save this as your shipping address” at checkout.": "保存された住所はまだありません。ここで追加するか、購入手続きで「この住所を配送先として保存」にチェックしてください。",
+  "Address saved.": "住所を保存しました。",
+  "Add": "追加",
+  "Enter the city.": "市区町村を入力してください。",
 };

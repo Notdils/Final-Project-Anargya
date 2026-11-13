@@ -13,7 +13,7 @@ import { usd } from "@/lib/money";
 import type { SavedAddress } from "@/lib/orders";
 import { useLeaveGuard } from "@/components/leave-guard";
 import { PaymentResult } from "@/components/payment-result";
-import { JP_REGIONS, countryName, destinationCodes, quote, regionName, type ShippingData } from "@/lib/shipping";
+import { countryName, destinationCodes, quote, type ShippingData } from "@/lib/shipping";
 import { useLocale, useLp, useT } from "@/i18n/client";
 
 declare global {
@@ -22,8 +22,8 @@ declare global {
   }
 }
 
-type Fields = "email" | "name" | "phone" | "address" | "city" | "postal" | "country" | "region" | "note";
-const RULES: Record<Exclude<Fields, "country" | "region" | "note">, [RegExp, string]> = {
+type Fields = "email" | "name" | "phone" | "address" | "city" | "postal" | "country" | "note";
+const RULES: Record<Exclude<Fields, "country" | "note">, [RegExp, string]> = {
   email: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Enter a valid email."],
   name: [/^.{2,80}$/, "Enter your full name."],
   phone: [/^\+?[0-9 ()-]{6,20}$/, "Enter a valid phone number."],
@@ -64,8 +64,7 @@ export function CheckoutForm({
   // prefill from the last order: its destination code, else match the stored country name, else Japan
   const savedCode = saved?.ship_country ?? codes.find((c) => countryName(c, "en") === saved?.country || countryName(c, "ja") === saved?.country) ?? "JP";
   const [country, setCountry] = useState(codes.includes(savedCode) ? savedCode : "JP");
-  const [region, setRegion] = useState(saved?.ship_region ?? "");
-  const q = quote(shipping, country, region, lines.map((l) => ({ id: l.id, qty: l.qty })));
+  const q = quote(shipping, country, lines.map((l) => ({ id: l.id, qty: l.qty })));
   const shipUsd = q.ok ? q.shippingUsd : null;
   const total = subtotal + (lines.length && shipUsd !== null ? shipUsd : 0);
   const { ccy } = useCurrency();
@@ -81,7 +80,7 @@ export function CheckoutForm({
     setFormError("");
     const fd = new FormData(e.currentTarget);
     const keys = Object.keys(RULES) as (keyof typeof RULES)[];
-    const contact: Record<string, string | null> = { ...Object.fromEntries(keys.map((k) => [k, String(fd.get(k) ?? "").trim()])), country, region: country === "JP" ? region : null };
+    const contact: Record<string, string | null> = { ...Object.fromEntries(keys.map((k) => [k, String(fd.get(k) ?? "").trim()])), country };
     const errs: Partial<Record<Fields, string>> = {};
     for (const k of keys) if (!RULES[k][0].test(String(contact[k]))) errs[k] = RULES[k][1];
     const note = String(fd.get("note") ?? "").trim();
@@ -173,23 +172,6 @@ export function CheckoutForm({
                 {errors.country ? <p className="flex items-center gap-1.5 text-[13px] text-oxide"><AlertCircle size={14} aria-hidden /> {t(errors.country)}</p>
                   : <p id="country-hint" className="text-[13px] text-muted">{t("We ship within Asia by DHL Express. Shipping is charged per box and depends on the destination and the parts. In Japan, you pay the courier on delivery.")}</p>}
               </div>
-              {country === "JP" && (
-                <fieldset className="flex flex-col gap-2" aria-describedby="region-hint">
-                  <legend className="mb-2 text-sm font-medium">{t("Region in Japan")}</legend>
-                  {/* two options: a visible segmented choice instead of a dropdown */}
-                  <div role="radiogroup" className="grid grid-cols-2 gap-2">
-                    {JP_REGIONS.map((r) => (
-                      <label key={r.code} className={`flex h-[42px] cursor-pointer items-center justify-center gap-2 rounded-lg border text-sm font-medium transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-teal ${region === r.code ? "border-teal bg-teal-tint text-teal" : errors.region ? "border-oxide" : "border-line hover:bg-surface"}`}>
-                        <input type="radio" name="region" value={r.code} className="sr-only" checked={region === r.code}
-                          onChange={() => { setRegion(r.code); setErrors((x) => ({ ...x, region: undefined })); }} />
-                        {locale === "ja" ? r.ja : r.en}
-                      </label>
-                    ))}
-                  </div>
-                  {errors.region ? <p id="region-hint" className="flex items-center gap-1.5 text-[13px] text-oxide"><AlertCircle size={14} aria-hidden /> {t(errors.region)}</p>
-                    : <p id="region-hint" className="text-[13px] text-muted">{JP_REGIONS.map((r) => `${locale === "ja" ? r.ja : r.en}: ${t(r.hint)}`).join(" · ")}</p>}
-                </fieldset>
-              )}
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="note" className="text-sm font-medium">{t("Address details")} <span className="font-normal text-muted">({t("optional")})</span></label>
@@ -232,8 +214,8 @@ export function CheckoutForm({
           </ul>
           <dl className="flex flex-col gap-3 border-t border-line pt-4 text-sm">
             <div className="flex justify-between"><dt className="text-muted">{t("Subtotal")}</dt><dd><Price usd={subtotal} /></dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-muted">{t("Shipping")}{q.ok && <span className="block text-xs">{countryName(q.country, locale)}{q.region ? ` · ${regionName(q.region, locale)}` : ""}</span>}</dt>
-              <dd className="text-right font-mono">{shipUsd === null ? <span className="font-sans text-muted">{t(country === "JP" ? "Choose East or West" : "Choose a country")}</span> : q.ok && q.customerPaid ? <span className="font-sans">{t("Paid by you on delivery")}</span> : shipUsd ? <Price usd={shipUsd} /> : t("Included")}
+            <div className="flex justify-between gap-3"><dt className="text-muted">{t("Shipping")}{q.ok && <span className="block text-xs">{countryName(q.country, locale)}</span>}</dt>
+              <dd className="text-right font-mono">{shipUsd === null ? <span className="font-sans text-muted">{t("Choose a country")}</span> : q.ok && q.customerPaid ? <span className="font-sans">{t("Paid by you on delivery")}</span> : shipUsd ? <Price usd={shipUsd} /> : t("Included")}
                 {q.ok && q.minDays !== null && q.maxDays !== null && <span className="block font-sans text-xs text-muted">{t("{min}–{max} days", { min: q.minDays, max: q.maxDays })}</span>}
                 {q.ok && !q.customerPaid && <span className="block font-sans text-xs text-muted">{t("DHL Express, per box")}</span>}</dd></div>
             <div className="flex justify-between border-t border-line pt-3"><dt className="font-semibold">{t("Total")}</dt><dd className="text-right font-medium"><Price usd={total} />{ccy !== "USD" && <span className="block font-mono text-xs font-normal text-muted">{usd(total)} USD</span>}</dd></div>
