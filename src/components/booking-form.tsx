@@ -3,7 +3,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, ArrowRight, CalendarDays, Check, Clock, Headset, Lock } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, CalendarDays, Check, Clock, Lock } from "lucide-react";
 import { Req, useReady } from "./auth-forms";
 import { useAuth } from "./auth-state";
 import { Price } from "./price";
@@ -11,7 +11,7 @@ import { JST_TZ, SLOTS, TOPICS, ZONES, bookableDates, dateLabel, isBookableDate,
 import { rupiah } from "@/lib/format";
 import { useLocale, useLp, useT } from "@/i18n/client";
 import { PaymentResult } from "@/components/payment-result";
-import { BOOK_TOPIC, OPEN_CHAT } from "@/lib/support-topics";
+import { BOOK_TOPIC } from "@/lib/support-topics";
 
 type FieldKey = "name" | "email" | "phone" | "organisation" | "topic" | "date" | "time";
 type Fields = Partial<Record<FieldKey, string[]>>;
@@ -320,12 +320,7 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
           </div>
           <div className="flex items-center justify-between gap-2 border-t border-line pt-4">
             <button type="button" className="btn btn-outline" onClick={() => go(1)}><ArrowLeft size={16} aria-hidden />{t("Back")}</button>
-            <span className="flex items-center gap-2">
-              <button type="button" className="btn btn-teal" disabled={!date || !time} onClick={() => go(3)}>{t("Next: payment")}<ArrowRight size={16} aria-hidden /></button>
-              {/* small Customer Service shortcut, bottom right of the calendar */}
-              <button type="button" onClick={() => dispatchEvent(new Event(OPEN_CHAT))} aria-label={t("Chat with our Customer Service")} title={t("Chat with our Customer Service")}
-                className="grid size-10 shrink-0 place-items-center rounded-full border border-teal text-teal hover:bg-teal-tint"><Headset size={18} aria-hidden /></button>
-            </span>
+            <button type="button" className="btn btn-teal" disabled={!date || !time} onClick={() => go(3)}>{t("Next: payment")}<ArrowRight size={16} aria-hidden /></button>
           </div>
         </fieldset>
 

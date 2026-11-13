@@ -12,8 +12,8 @@ import { AUTO_BOOK, AUTO_REPLY, BOOK_TOPIC, GREETING, OPEN_CHAT, TOPIC_ASK, type
 
 const POLL_MS = 4000;
 
-/** Teal card above the booking calendar. Opens a floating chat with the team (bottom right).
- *  The headset button in the calendar opens the same chat through the OPEN_CHAT window event. */
+/** Teal card above the booking calendar plus a floating headset button (bottom right of the screen).
+ *  Both open the floating chat with the team; logged-out visitors go to login first. */
 export function SupportChat() {
   const t = useT();
   const L = useLp();
@@ -46,6 +46,14 @@ export function SupportChat() {
           </button>
         )}
       </section>
+      {/* floating Customer Service button, bottom right of the screen; hidden while the chat is open */}
+      {!open && (
+        <button type="button" onClick={() => dispatchEvent(new Event(OPEN_CHAT))} disabled={!ready}
+          aria-label={t("Chat with our Customer Service")} title={t("Chat with our Customer Service")}
+          className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[1050] grid size-14 place-items-center rounded-full bg-teal text-white shadow-[0_8px_24px_rgba(0,0,0,0.2)] transition-transform hover:-translate-y-0.5 hover:bg-teal-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal sm:right-6 sm:bottom-6">
+          <Headset size={24} aria-hidden />
+        </button>
+      )}
       {open && <ChatPanel onClose={() => setOpen(false)} />}
     </>
   );
