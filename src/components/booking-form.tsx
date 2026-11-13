@@ -3,7 +3,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, ArrowRight, CalendarDays, Check, Clock, Lock } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, CalendarDays, Check, Clock, Headset, Lock } from "lucide-react";
 import { Req, useReady } from "./auth-forms";
 import { useAuth } from "./auth-state";
 import { Price } from "./price";
@@ -11,6 +11,7 @@ import { JST_TZ, SLOTS, TOPICS, ZONES, bookableDates, dateLabel, isBookableDate,
 import { rupiah } from "@/lib/format";
 import { useLocale, useLp, useT } from "@/i18n/client";
 import { PaymentResult } from "@/components/payment-result";
+import { BOOK_TOPIC, OPEN_CHAT } from "@/lib/support-topics";
 
 type FieldKey = "name" | "email" | "phone" | "organisation" | "topic" | "date" | "time";
 type Fields = Partial<Record<FieldKey, string[]>>;
@@ -28,7 +29,7 @@ function Field({ id, label, error, optional, children }: { id: string; label: st
   );
 }
 
-const STEPS = ["Date & time", "Your details", "Payment"] as const;
+const STEPS = ["Your details", "Date & time", "Payment"] as const;
 const DETAIL_KEYS = ["name", "email", "phone", "organisation", "topic"] as const;
 
 /** Progress bar for the three booking steps. Finished steps can be clicked to go back. */
@@ -63,7 +64,7 @@ function Progress({ step, go }: { step: number; go: (n: number) => void }) {
   );
 }
 
-/** Paid booking in three steps: pick a free slot, fill in the details, then pay with Midtrans. */
+/** Paid booking in three steps: fill in the details, pick a free slot, then pay with Midtrans. */
 export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: number | null; fx: number | null; ready: boolean; snapJs: string; clientKey: string }) {
   const t = useT();
   const L = useLp();
@@ -107,7 +108,7 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
       topRef.current?.focus({ preventScroll: true });
     });
   };
-  // Step 2 -> 3: the browser's own checks on the detail fields, shown as messages under each field.
+  // Step 1 -> 2: the browser's own checks on the detail fields, shown as messages under each field.
   function detailsOk() {
     const f = ref.current;
     if (!f) return false;
@@ -122,6 +123,19 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
     return !first;
   }
   const { ready: formOk, check, ref } = useReady(() => Boolean(date && time));
+  // "Book a consultation" in a chat auto reply: preselect that topic and start at step 1.
+  useEffect(() => {
+    const onBook = (e: Event) => {
+      const id = (e as CustomEvent<string | null>).detail;
+      const sel = ref.current?.elements.namedItem("topic") as HTMLSelectElement | null;
+      if (sel && id && [...sel.options].some((o) => o.value === id)) sel.value = id;
+      if (ref.current) check({ currentTarget: ref.current } as React.SyntheticEvent<HTMLFormElement>);
+      go(1);
+    };
+    addEventListener(BOOK_TOPIC, onBook);
+    return () => removeEventListener(BOOK_TOPIC, onBook);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadTaken = () =>
     fetch("/api/bookings/slots", { cache: "no-store" })
@@ -200,8 +214,8 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
         setErr(t(data.error ?? "Could not send the request."));
         setFields(data.fields ?? {});
         const bad = Object.keys(data.fields ?? {});
-        if (data.taken || bad.some((k) => k === "date" || k === "time")) go(1);
-        else if (bad.length) go(2);
+        if (bad.some((k) => (DETAIL_KEYS as readonly string[]).includes(k))) go(1);
+        else if (data.taken || bad.length) go(2);
         if (data.taken) { setTime(""); loadTaken(); }
         return;
       }
@@ -228,8 +242,34 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
       </div>
       {/* All steps stay in one form (hidden, not unmounted) so nothing typed is lost when going back. */}
       <form ref={ref} onSubmit={submit} onInput={check} onChange={check} noValidate className="flex flex-col gap-4">
-        {/* 1. slot */}
-        <fieldset hidden={step !== 1} className="flex flex-col gap-4 rounded-xl border border-line bg-white p-5">
+        {/* 1. details */}
+        <fieldset hidden={step !== 1} className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
+          <legend className="sr-only">{t("Your details")}</legend>
+          <p className="font-semibold">{t("Your details")}</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field id="name" label="Full name" error={fe("name")}><input id="name" name="name" className="input" autoComplete="name" required minLength={2} maxLength={80} placeholder={t("Your name")} /></Field>
+            <Field id="email" label="Email" error={fe("email")}><input id="email" name="email" type="email" className="input" autoComplete="email" required maxLength={120} placeholder={t("you@team.com")} /></Field>
+            <Field id="phone" label="Phone" error={fe("phone")}><input id="phone" name="phone" type="tel" className="input" autoComplete="tel" required pattern="\+?[0-9 \(\)\-]{6,20}" placeholder="+81" /></Field>
+            <Field id="organisation" label="Team or company" error={fe("organisation")}><input id="organisation" name="organisation" className="input" autoComplete="organization" required minLength={2} maxLength={120} placeholder={t("Organisation")} /></Field>
+          </div>
+          <Field id="topic" label="Topic" error={fe("topic")}>
+            <select id="topic" name="topic" className="input" required defaultValue="">
+              <option value="" disabled>{t("Choose a topic")}</option>
+              {TOPICS.map((o) => <option key={o.id} value={o.id}>{t(o.label)}</option>)}
+            </select>
+          </Field>
+          <Field id="message" label="What would you like to discuss?" optional>
+            <textarea id="message" name="message" rows={3} maxLength={1000} className="input min-h-20 resize-y" placeholder={t("Optional. Your car, the problem, and your deadline.")} />
+          </Field>
+          {/* honeypot */}
+          <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
+          <div className="flex justify-end border-t border-line pt-4">
+            <button type="button" className="btn btn-teal" onClick={() => { if (!detailsOk()) return; const f = new FormData(ref.current!); setRecap({ name: String(f.get("name") ?? ""), email: String(f.get("email") ?? ""), topic: String(f.get("topic") ?? "") }); go(2); }}>{t("Next: date & time")}<ArrowRight size={16} aria-hidden /></button>
+          </div>
+        </fieldset>
+
+        {/* 2. slot */}
+        <fieldset hidden={step !== 2} className="flex flex-col gap-4 rounded-xl border border-line bg-white p-5">
           <legend className="sr-only">{t("Date")}</legend>
           <p className="flex items-center gap-2 font-semibold"><CalendarDays size={18} className="text-teal" aria-hidden />{t("Choose a date")}</p>
           <div className="grid grid-cols-5 gap-1.5 text-center font-mono text-[11px] uppercase text-muted" aria-hidden>
@@ -276,35 +316,14 @@ export function BookingForm({ feeUsd, fx, ready, snapJs, clientKey }: { feeUsd: 
             {local && date && <p className="text-xs text-muted">{t("Your time: {off}. JST: UTC+9.", { off: utcOffset(tz) })}{SLOTS.some((s) => slotInZone(date, s, tz).shift) ? ` ${t("−1d = the day before.")}` : ""}</p>}
             <p className="text-xs text-muted">{t("Taken times are crossed out.")}</p>
           </div>
-          <div className="flex justify-end border-t border-line pt-4">
-            <button type="button" className="btn btn-teal" disabled={!date || !time} onClick={() => go(2)}>{t("Next: your details")}<ArrowRight size={16} aria-hidden /></button>
-          </div>
-        </fieldset>
-
-        {/* 2. details */}
-        <fieldset hidden={step !== 2} className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
-          <legend className="sr-only">{t("Your details")}</legend>
-          <p className="font-semibold">{t("Your details")}</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field id="name" label="Full name" error={fe("name")}><input id="name" name="name" className="input" autoComplete="name" required minLength={2} maxLength={80} placeholder={t("Your name")} /></Field>
-            <Field id="email" label="Email" error={fe("email")}><input id="email" name="email" type="email" className="input" autoComplete="email" required maxLength={120} placeholder={t("you@team.com")} /></Field>
-            <Field id="phone" label="Phone" error={fe("phone")}><input id="phone" name="phone" type="tel" className="input" autoComplete="tel" required pattern="\+?[0-9 \(\)\-]{6,20}" placeholder="+81" /></Field>
-            <Field id="organisation" label="Team or company" error={fe("organisation")}><input id="organisation" name="organisation" className="input" autoComplete="organization" required minLength={2} maxLength={120} placeholder={t("Organisation")} /></Field>
-          </div>
-          <Field id="topic" label="Topic" error={fe("topic")}>
-            <select id="topic" name="topic" className="input" required defaultValue="">
-              <option value="" disabled>{t("Choose a topic")}</option>
-              {TOPICS.map((o) => <option key={o.id} value={o.id}>{t(o.label)}</option>)}
-            </select>
-          </Field>
-          <Field id="message" label="What would you like to discuss?" optional>
-            <textarea id="message" name="message" rows={3} maxLength={1000} className="input min-h-20 resize-y" placeholder={t("Optional. Your car, the problem, and your deadline.")} />
-          </Field>
-          {/* honeypot */}
-          <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
-          <div className="flex justify-between gap-2 border-t border-line pt-4">
+          <div className="flex items-center justify-between gap-2 border-t border-line pt-4">
             <button type="button" className="btn btn-outline" onClick={() => go(1)}><ArrowLeft size={16} aria-hidden />{t("Back")}</button>
-            <button type="button" className="btn btn-teal" onClick={() => { if (!detailsOk()) return; const f = new FormData(ref.current!); setRecap({ name: String(f.get("name") ?? ""), email: String(f.get("email") ?? ""), topic: String(f.get("topic") ?? "") }); go(3); }}>{t("Next: payment")}<ArrowRight size={16} aria-hidden /></button>
+            <span className="flex items-center gap-2">
+              <button type="button" className="btn btn-teal" disabled={!date || !time} onClick={() => go(3)}>{t("Next: payment")}<ArrowRight size={16} aria-hidden /></button>
+              {/* small Customer Service shortcut, bottom right of the calendar */}
+              <button type="button" onClick={() => dispatchEvent(new Event(OPEN_CHAT))} aria-label={t("Chat with our Customer Service")} title={t("Chat with our Customer Service")}
+                className="grid size-10 shrink-0 place-items-center rounded-full border border-teal text-teal hover:bg-teal-tint"><Headset size={18} aria-hidden /></button>
+            </span>
           </div>
         </fieldset>
 
