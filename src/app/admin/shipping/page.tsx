@@ -3,7 +3,7 @@ import { allZones } from "@/lib/shipping-server";
 import { listAllProducts } from "@/lib/admin-products";
 import { ShippingManager } from "@/components/admin/shipping-manager";
 
-export const metadata = { title: "Shipping Cost" };
+export const metadata = { title: "Shipping Costs" };
 
 export default async function AdminShipping() {
   await guardPage("shipping.manage");

@@ -4,10 +4,10 @@ import { BrandMark } from "@/components/brand-mark";
 import { useT } from "@/i18n/client";
 import { INTRO_KEY } from "./preloader-boot";
 
-// Splash preloader for Home: once per browser session, while the hero's 3D model downloads.
+// Splash preloader for Home: once per browser session, while the hero video loads.
 // 0 to 99% runs on a fixed clock with an ease-out curve (fast start, slow finish), the same on
-// every device. The last step to 100% waits for the real signal from hero-scene.tsx
-// ("anargya:progress" = 100, the car is in the scene), so the splash never lifts onto an empty hero.
+// every device. The last step to 100% waits for the real signal from hero.tsx
+// ("anargya:progress" = 100, the video can play), so the splash never lifts onto an empty hero.
 const DURATION_MS = 2400; // time for 0 to 99%
 const MAX_MS = 8000; // slow network or a stuck GLB: never hold the page hostage
 const easeOutCubic = (x: number) => 1 - Math.pow(1 - x, 3);

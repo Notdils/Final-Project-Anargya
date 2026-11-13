@@ -25,9 +25,9 @@ const MANIFEST: MetadataRoute.Manifest = {
   ],
   // Shown in the richer Android/desktop install dialog. Regenerate after big visual changes.
   screenshots: [
-    { src: "/screenshots/home-narrow.webp", sizes: "824x1830", type: "image/webp", form_factor: "narrow", label: "3D car hero" },
+    { src: "/screenshots/home-narrow.webp", sizes: "824x1830", type: "image/webp", form_factor: "narrow", label: "Home" },
     { src: "/screenshots/mkt-narrow.webp", sizes: "824x1830", type: "image/webp", form_factor: "narrow", label: "Featured parts" },
-    { src: "/screenshots/home-wide.webp", sizes: "1280x800", type: "image/webp", form_factor: "wide", label: "3D car hero" },
+    { src: "/screenshots/home-wide.webp", sizes: "1280x800", type: "image/webp", form_factor: "wide", label: "Home" },
     { src: "/screenshots/mkt-wide.webp", sizes: "1280x800", type: "image/webp", form_factor: "wide", label: "Featured parts" },
   ],
   shortcuts: [

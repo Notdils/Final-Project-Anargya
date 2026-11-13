@@ -111,7 +111,7 @@ function FadeGroup({ show, children }: { show: boolean; children: React.ReactNod
  *  Immersive mode frames the car alone, larger, in the middle of the full screen. */
 function Framed({ immersive, children }: { immersive: boolean; children: React.ReactNode }) {
   const aspect = useThree((st) => st.size.width / st.size.height);
-  const margin = immersive ? (aspect < 1.2 ? 1.2 : 0.8) : aspect < 1.2 ? 1.02 : 0.78;
+  const margin = immersive ? (aspect < 1.2 ? 1.2 : 0.8) : aspect < 1.2 ? 1.02 : 0.9; // card on About (4:3): keep the wings inside
   return (
     <Bounds fit observe margin={margin} maxDuration={0.8}>
       {children}

@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { PosterHero } from "@/components/about/poster-hero";
 import { POSTER_BOOT } from "@/components/about/poster-boot";
 import { Roadmap } from "@/components/about/roadmap";
+import { CarStage } from "@/components/car-stage";
 import { lp, translator, type Locale } from "@/i18n";
 
 export default function AboutView({ locale }: { locale: Locale }) {
@@ -19,10 +20,12 @@ export default function AboutView({ locale }: { locale: Locale }) {
         {/* Same teal gradient as the ANARGYA wordmark in the poster. The light end is #2B837B so white body
             text keeps 4.5:1 contrast (the poster's own fade goes lighter than that). */}
         <section aria-labelledby="story-title" className="bg-[linear-gradient(180deg,#006F66_0%,#2B837B_100%)] text-white">
-         <div className="container-x grid gap-4 py-12 md:grid-cols-[240px_1fr] md:gap-6 md:py-20 xl:grid-cols-[368px_1fr] xl:py-24">
-          <div className="flex flex-col gap-3 md:sticky md:top-24 md:self-start">
+         <div className="container-x grid gap-6 py-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:gap-10 md:py-20 xl:gap-16 xl:py-24">
+          <div className="flex flex-col gap-3 md:self-start">
             <p className="eyebrow text-white">{t("Our story")}</p>
             <h2 id="story-title" className="text-[28px] font-semibold leading-9 tracking-[-0.02em] md:text-4xl md:leading-[44px]">{t("Why we exist")}</h2>
+            {/* Not sticky: a sticky column would trap the full-screen 3D view under the header. */}
+            <CarStage className="mt-3 md:mt-5" />
           </div>
           <div className="flex max-w-[68ch] flex-col gap-6 text-white md:text-lg">
             <p>{t("Electric teams in Formula Student Japan almost doubled in four years, from 12 in 2022 to 23 in 2026. The cars keep getting harder to build: battery management, vehicle control, drivetrain and safety systems all have to work together, and many teams struggle with technical inspection, PCB design and documentation.")}</p>

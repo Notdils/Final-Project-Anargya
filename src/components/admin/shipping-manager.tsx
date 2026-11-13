@@ -115,7 +115,7 @@ export function ShippingManager({ zones, regions, parts, flatUsd, live }: { zone
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-[-0.02em] md:text-[28px] md:leading-9">Shipping Cost</h1>
+        <h1 className="text-2xl font-semibold tracking-[-0.02em] md:text-[28px] md:leading-9">Shipping Costs</h1>
         <p className="text-sm text-muted">DHL Express rates in USD, per box. An order pays qty × rate for every part, by the destination&apos;s region. Japan: the customer pays the courier on delivery, so checkout charges nothing. A part without a rate uses the flat rate ({flatUsd ? `$${flatUsd}` : "free"}).</p>
       </header>
       {!live && <p className="flex items-start gap-2 rounded-lg bg-ochre-tint p-3 text-sm"><AlertCircle size={16} className="mt-0.5 shrink-0 text-ochre" aria-hidden />Read-only preview. Run supabase/master.sql to edit rates.</p>}

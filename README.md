@@ -22,7 +22,7 @@ Test payment (Midtrans sandbox, no real money): card `4811 1111 1111 1114`, any 
 
 - Next.js 15 (App Router), React 19, TypeScript
 - Tailwind CSS v4 (tokens in `src/app/globals.css`)
-- Three.js via React Three Fiber + drei (3D car hero, part viewer)
+- Three.js via React Three Fiber + drei (E21 on About, part viewer)
 - GSAP ScrollTrigger (parallax fly-through)
 - Supabase (Postgres, Auth, RLS, Storage)
 - Midtrans Snap (sandbox), charged in IDR
@@ -35,8 +35,8 @@ Every public page also exists in Japanese under `/ja`.
 
 | Route | What |
 |---|---|
-| `/` | 3D car hero, parallax fly-through, featured parts |
-| `/about` | Story, mission and vision, five-year plan |
+| `/` | Video hero, parallax fly-through, featured parts |
+| `/about` | Story with the E21 in 3D (zoom, full screen), mission and vision, five-year plan |
 | `/marketplace` | Featured parts, filterable grid, business model, capabilities |
 | `/marketplace/[slug]` | Part detail, 3D viewer, add to cart |
 | `/consulting`, `/consulting/booking/[id]` | Book and pay for a 90-minute consultation, booking status |
