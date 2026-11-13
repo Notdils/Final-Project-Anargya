@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { PosterHero } from "@/components/about/poster-hero";
 import { POSTER_BOOT } from "@/components/about/poster-boot";
 import { Roadmap } from "@/components/about/roadmap";
+import { CommonProblems } from "@/components/about/common-problems";
 import { CarStage } from "@/components/car-stage";
 import { lp, translator, type Locale } from "@/i18n";
 
@@ -45,6 +46,8 @@ export default function AboutView({ locale }: { locale: Locale }) {
             ))}
           </div>
         </section>
+
+        <CommonProblems locale={locale} />
 
         <Roadmap locale={locale} />
 
