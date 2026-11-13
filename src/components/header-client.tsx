@@ -67,7 +67,8 @@ export function HeaderClient({
       <nav aria-label={t("Main")} className="container-x flex h-16 items-center justify-between">
         <Link href={L("/")} className="flex items-center gap-2 text-base font-semibold tracking-[0.12em]">
           <BrandMark />
-          ANARGYA
+          {/* below 360px the wordmark pushes the actions off screen; the mark alone stays, name kept for screen readers */}
+          <span className="max-[359px]:sr-only">ANARGYA</span>
         </Link>
 
         {/* full nav from 1120px: below that the Japanese labels collide with the actions (measured 12 Nov) */}

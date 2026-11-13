@@ -36,7 +36,8 @@ const DETAIL_KEYS = ["name", "email", "phone", "organisation", "topic"] as const
 function Progress({ step, go }: { step: number; go: (n: number) => void }) {
   const t = useT();
   return (
-    <ol className="grid grid-cols-3 gap-2" aria-label={t("Booking steps")}>
+    <ol className="grid grid-cols-3 gap-2 max-sm:[grid-template-columns:var(--cols)]" aria-label={t("Booking steps")}
+      style={{ "--cols": STEPS.map((_, i) => (i + 1 === step ? "minmax(0,3fr)" : "minmax(0,1fr)")).join(" ") } as React.CSSProperties}>
       {STEPS.map((label, i) => {
         const n = i + 1, done = n < step, current = n === step;
         const inner = (
@@ -46,7 +47,8 @@ function Progress({ step, go }: { step: number; go: (n: number) => void }) {
               <span className={`grid size-6 shrink-0 place-items-center rounded-full font-mono text-xs ${current ? "bg-teal text-white" : done ? "bg-teal-tint text-teal" : "bg-surface text-muted"}`}>
                 {done ? <Check size={14} aria-hidden /> : n}
               </span>
-              <span className="truncate">{t(label)}</span>
+              {/* on phones only the current step shows its name */}
+              <span className={`truncate ${current ? "" : "max-sm:sr-only"}`}>{t(label)}</span>
             </span>
           </>
         );

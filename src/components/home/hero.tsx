@@ -80,7 +80,8 @@ export function Hero() {
       )}
 
       <div className="container-x pointer-events-none absolute inset-x-0 bottom-0 pb-14 md:pb-16 short:pb-6">
-        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+        {/* side by side only from 1280px: at tablet widths the title and the three results do not fit in one row */}
+        <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
           <div className="pointer-events-auto flex flex-col gap-4 md:gap-6 short:gap-3">
             <p className="eyebrow text-neutral-400">{t("Nagoya, Japan · Formula EV design")}</p>
             <h1 id="hero-title" className="whitespace-nowrap text-[30px] font-semibold leading-9 tracking-[-0.03em] min-[400px]:text-[34px] md:text-5xl md:leading-[52px] xl:text-[64px] xl:leading-[68px] short:text-[30px] short:leading-9">
