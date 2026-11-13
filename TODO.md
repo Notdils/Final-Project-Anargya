@@ -7,7 +7,8 @@
 - [x] Logo A di navbar, footer, splash (`public/brand/logo.webp`, 12 Nov).
 - [x] GLB wheel hub + rotor (hub hitam anodize), 12 Nov. Upright terpisah belum ada.
 - [x] `_assets/` masuk `.gitignore` (12 Nov).
-- [ ] (Belum fix, PLSS ada perubahan, menunggu brief) Area pengantaran dan biaya kirim. Isi tarif dan estimasi hari per zona di Admin → Shipping setelah data PLSS datang. Putuskan daftar negara dan batas Jepang Timur/Barat (sekarang [PLACEHOLDER]: Timur = Hokkaido, Tohoku, Kanto, Chubu). Indonesia dan Myanmar nonaktif.
+- [x] Ongkir DHL dari PLSS masuk (0025): tarif per box per part per kawasan (USD, nilai tengah rentang), Jepang dibayar customer ke kurir, negara di luar daftar PLSS dimatikan, Indonesia dibuka. Jalankan `master.sql`.
+- [ ] Tanya PLSS: bea masuk dan pajak di negara tujuan ditanggung siapa (DAP/DDP).
 - [ ] Vercel env: `CONSULT_FEE_USD` (dari Finance), cek `FX_USD_IDR`, `NEXT_PUBLIC_FX_USD_JPY`, `SHIPPING_FLAT_USD`. Redeploy setelah mengubah env.
 - [ ] `npm install` di laptop (React 19.1.10, override `uuid`), lalu commit dan push.
 - [ ] Tes di production: checkout, booking konsultasi sampai `confirmed`, login EN dan JA, viewer 3D.

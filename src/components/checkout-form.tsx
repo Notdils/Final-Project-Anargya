@@ -65,7 +65,7 @@ export function CheckoutForm({
   const savedCode = saved?.ship_country ?? codes.find((c) => countryName(c, "en") === saved?.country || countryName(c, "ja") === saved?.country) ?? "JP";
   const [country, setCountry] = useState(codes.includes(savedCode) ? savedCode : "JP");
   const [region, setRegion] = useState(saved?.ship_region ?? "");
-  const q = quote(shipping, country, region);
+  const q = quote(shipping, country, region, lines.map((l) => ({ id: l.id, qty: l.qty })));
   const shipUsd = q.ok ? q.shippingUsd : null;
   const total = subtotal + (lines.length && shipUsd !== null ? shipUsd : 0);
   const { ccy } = useCurrency();
@@ -171,7 +171,7 @@ export function CheckoutForm({
                   {sorted.map((c) => <option key={c} value={c}>{countryName(c, locale, shipping.zones.find((z) => z.code === c)?.name)}</option>)}
                 </select>
                 {errors.country ? <p className="flex items-center gap-1.5 text-[13px] text-oxide"><AlertCircle size={14} aria-hidden /> {t(errors.country)}</p>
-                  : <p id="country-hint" className="text-[13px] text-muted">{t("We ship within Asia. Shipping depends on the destination.")}</p>}
+                  : <p id="country-hint" className="text-[13px] text-muted">{t("We ship within Asia by DHL Express. Shipping is charged per box and depends on the destination and the parts. In Japan, you pay the courier on delivery.")}</p>}
               </div>
               {country === "JP" && (
                 <fieldset className="flex flex-col gap-2" aria-describedby="region-hint">
@@ -233,8 +233,9 @@ export function CheckoutForm({
           <dl className="flex flex-col gap-3 border-t border-line pt-4 text-sm">
             <div className="flex justify-between"><dt className="text-muted">{t("Subtotal")}</dt><dd><Price usd={subtotal} /></dd></div>
             <div className="flex justify-between gap-3"><dt className="text-muted">{t("Shipping")}{q.ok && <span className="block text-xs">{countryName(q.country, locale)}{q.region ? ` · ${regionName(q.region, locale)}` : ""}</span>}</dt>
-              <dd className="text-right font-mono">{shipUsd === null ? <span className="font-sans text-muted">{t(country === "JP" ? "Choose East or West" : "Choose a country")}</span> : shipUsd ? <Price usd={shipUsd} /> : t("Included")}
-                {q.ok && q.zone.minDays !== null && q.zone.maxDays !== null && <span className="block font-sans text-xs text-muted">{t("{min}–{max} days", { min: q.zone.minDays, max: q.zone.maxDays })}</span>}</dd></div>
+              <dd className="text-right font-mono">{shipUsd === null ? <span className="font-sans text-muted">{t(country === "JP" ? "Choose East or West" : "Choose a country")}</span> : q.ok && q.customerPaid ? <span className="font-sans">{t("Paid by you on delivery")}</span> : shipUsd ? <Price usd={shipUsd} /> : t("Included")}
+                {q.ok && q.minDays !== null && q.maxDays !== null && <span className="block font-sans text-xs text-muted">{t("{min}–{max} days", { min: q.minDays, max: q.maxDays })}</span>}
+                {q.ok && !q.customerPaid && <span className="block font-sans text-xs text-muted">{t("DHL Express, per box")}</span>}</dd></div>
             <div className="flex justify-between border-t border-line pt-3"><dt className="font-semibold">{t("Total")}</dt><dd className="text-right font-medium"><Price usd={total} />{ccy !== "USD" && <span className="block font-mono text-xs font-normal text-muted">{usd(total)} USD</span>}</dd></div>
             <div className="flex justify-between"><dt className="text-muted">{t("Charged in IDR")}</dt><dd className="font-mono">{fx ? `≈ ${rupiah(Math.ceil(total * fx))}` : t("Rate not set")}</dd></div>
           </dl>

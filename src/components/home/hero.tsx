@@ -21,6 +21,31 @@ const AWARDS = [
   { rank: "2nd", title: "EV Class Ranking, Overseas Teams", year: "2024" },
 ] as const;
 
+/** Team footage behind the car, dimmed so the car and text stay readable. Muted, looped, no controls
+ *  (the Pause button stops it too). Not loaded at all for reduced motion, and hidden in immersive mode,
+ *  where the background stays black. Phones in portrait get a smaller centre crop. */
+function HeroVideo({ hidden, playing }: { hidden: boolean; playing: boolean }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [src, setSrc] = useState<string | null>(null);
+  useEffect(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setSrc(matchMedia("(max-width: 767px) and (orientation: portrait)").matches ? "/home/video/hero-540.mp4" : "/home/video/hero-1280.mp4");
+  }, []);
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    if (playing && !hidden) v.play().catch(() => {});
+    else v.pause();
+  }, [playing, hidden, src]);
+  if (!src) return null;
+  return (
+    <div aria-hidden className={`pointer-events-none absolute inset-0 transition-opacity duration-500 motion-reduce:transition-none ${hidden ? "opacity-0" : "opacity-100"}`}>
+      <video ref={ref} src={src} poster="/home/video/hero-poster.webp" muted loop playsInline autoPlay preload="auto" disablePictureInPicture className="size-full object-cover" />
+      <div className="absolute inset-0 bg-black/60" />
+    </div>
+  );
+}
+
 function SceneFallback() {
   const t = useT();
   return (
@@ -213,6 +238,7 @@ export function Hero() {
 
   return (
     <section ref={sectionRef} aria-labelledby="hero-title" className="relative h-svh min-h-[640px] overflow-hidden bg-stage text-white short:min-h-0">
+      <HeroVideo hidden={immersive} playing={rotating && inView} />
       {/* The stage: pinned over the hero normally; in immersive mode it becomes a full-screen dialog
           that slides from the hero's position to the top while its black backdrop covers the page. */}
       <div
@@ -266,7 +292,7 @@ export function Hero() {
               type="button"
               onClick={() => setRotating((r) => !r)}
               aria-pressed={!rotating}
-              aria-label={t(rotating ? "Pause rotation" : "Resume rotation")}
+              aria-label={t(rotating ? "Pause animation" : "Resume animation")}
               className="btn btn-outline-dark px-2"
             >
               {rotating ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}

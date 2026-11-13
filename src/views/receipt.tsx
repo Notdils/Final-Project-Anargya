@@ -132,7 +132,7 @@ export default async function ReceiptView({ id, locale, justPaid = false }: { id
                   <>
                     <div className="flex justify-between"><dt className="text-muted">{t("Subtotal")}</dt><dd className="font-mono">{usd(Number(o.subtotal_usd))}</dd></div>
                     {Number(o.discount_usd) > 0 && <div className="flex justify-between"><dt className="text-muted">{t("Voucher")} <span className="font-mono">{o.voucher_code}</span></dt><dd className="font-mono">−{usd(Number(o.discount_usd))}</dd></div>}
-                    <div className="flex justify-between"><dt className="text-muted">{t("Shipping")}</dt><dd className="font-mono">{Number(o.shipping_usd) ? usd(Number(o.shipping_usd)) : t("Included")}</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted">{t("Shipping")}</dt><dd className="font-mono">{Number(o.shipping_usd) ? usd(Number(o.shipping_usd)) : o.ship_country === "JP" ? <span className="font-sans">{t("Paid by you on delivery")}</span> : t("Included")}</dd></div>
                     <div className="flex justify-between"><dt className="font-semibold">{t("Total (USD)")}</dt><dd className="font-mono font-medium">{usd(Number(o.total_usd))}</dd></div>
                     <div className="flex justify-between"><dt className="text-muted">{t("Charged (IDR)")}</dt><dd className="font-mono">{rupiah(o.charged_idr)}</dd></div>
                     <div className="flex justify-between"><dt className="text-muted">{t("Rate")}</dt><dd className="font-mono">{Number(o.fx_usd_idr).toLocaleString(locale === "ja" ? "ja-JP" : "en-US")} IDR/USD</dd></div>

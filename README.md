@@ -42,7 +42,7 @@ Every public page also exists in Japanese under `/ja`.
 | `/consulting`, `/consulting/booking/[id]` | Book and pay for a 90-minute consultation, booking status |
 | `/cart`, `/checkout`, `/receipt/[id]` | Cart, Midtrans checkout, printable receipt |
 | `/login`, `/register`, `/forgot-password`, `/reset-password`, `/account` | Auth, password reset, order history |
-| `/admin` … | Overview, Orders, Receipts, Bookings, Products, Shipping, Users. Menu depends on the role (see Roles) |
+| `/admin` … | Overview, Orders, Receipts, Bookings, Products, Shipping (DHL rates per region and part), Users. Menu depends on the role (see Roles) |
 
 ## Run locally
 
@@ -67,7 +67,7 @@ Set them in `.env.local` locally and in Vercel → Settings → Environment Vari
 | `MIDTRANS_IS_PRODUCTION` | no | `false` |
 | `FX_USD_IDR` | no | USD → IDR rate used to charge. Checkout is disabled until it is set |
 | `NEXT_PUBLIC_FX_USD_JPY` | no | USD → JPY rate for the yen display |
-| `SHIPPING_FLAT_USD` | no | Fallback shipping when a zone has no rate (`0` = included) |
+| `SHIPPING_FLAT_USD` | no | Fallback shipping for a part that has no DHL rate yet (`0` = included) |
 | `CONSULT_FEE_USD` | no | Price of one consultation |
 
 ### Database

@@ -47,6 +47,8 @@ export const JA: Record<string, string> = {
   "Reset zoom": "ズームをリセット",
   "Pause rotation": "回転を停止",
   "Resume rotation": "回転を再開",
+  "Pause animation": "アニメーションを停止",
+  "Resume animation": "アニメーションを再開",
   "3D preview unavailable on this device": "この端末では3Dプレビューを表示できません",
   "Designing cars?": "クルマを設計中？",
   "We got you covered.": "私たちにお任せください。",
@@ -492,7 +494,7 @@ export const JA: Record<string, string> = {
   "4–5 weeks": "4〜5週間",
   // shipping by destination
   "Choose a country": "国を選択",
-  "We ship within Asia. Shipping depends on the destination.": "アジア域内へ発送します。送料はお届け先により異なります。",
+  "We ship within Asia by DHL Express. Shipping is charged per box and depends on the destination and the parts. In Japan, you pay the courier on delivery.": "DHL Expressでアジア域内へ発送します。送料は1箱ごとに、お届け先とパーツにより異なります。日本国内は着払いです。",
   "{min}–{max} days": "{min}〜{max}日",
   "Ship to": "お届け先",
   "We do not ship to this country yet.": "この国へはまだ発送していません。",
@@ -650,4 +652,6 @@ export const JA: Record<string, string> = {
   "Undo": "元に戻す",
   "This order was already submitted.": "このご注文はすでに送信されています。",
   "Add parts from the marketplace, then come back here to pay.": "マーケットプレイスでパーツを追加してから、ここでお支払いください。",
+  "Paid by you on delivery": "着払い（お客様負担）",
+  "DHL Express, per box": "DHL Express・1箱ごと",
 };

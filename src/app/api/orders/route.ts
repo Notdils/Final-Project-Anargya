@@ -48,8 +48,8 @@ export async function POST(req: Request) {
     }, {}),
   );
 
-  // Shipping comes from the destination's zone in the database (0013), never from the client.
-  const q = quote(await shippingData(), parsed.data.contact.country, parsed.data.contact.region);
+  // Shipping comes from the database (destination zone + DHL rate per part, 0013/0025), never from the client.
+  const q = quote(await shippingData(), parsed.data.contact.country, parsed.data.contact.region, merged);
   if (!q.ok) return NextResponse.json({ error: q.error, fields: { [q.field]: [q.error] } }, { status: 400 });
   const c = parsed.data.contact;
   const contact = { email: c.email, name: c.name, phone: c.phone, address: c.address, city: c.city, postal: c.postal, country: countryName(q.country, "en") };

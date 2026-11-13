@@ -1,11 +1,16 @@
 /* Anargya Corp service worker.
    - Static assets and the E21 model: cache-first.
+   - Images (logo, part renders, poster layers, optimised product images): stale-while-revalidate,
+     so they show instantly and offline, and a replaced file appears on the next visit.
    - Pages: network-first, falling back to cache, then /offline.
    - Only public pages are cached (allowlist, with or without the /ja prefix). Account, receipts,
      checkout, bookings, admin, auth and API responses never are (offline they get /offline). Logging out clears the page cache. */
 const VERSION = "anargya-v5"; // bump when precached files or icons change
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
+const IMAGES = `${VERSION}-images`;
+const IMAGE_PATH = /^\/(_next\/image|brand\/|home\/|about\/|parts\/|screenshots\/)/;
+const IMAGE_LIMIT = 80; // oldest entries are dropped past this
 const PRECACHE = ["/offline", "/ja/offline", "/models/e21.glb", "/icons/icon-192.png", "/icons/icon-512.png"];
 const PUBLIC_PAGE = /^\/(|about|consulting|marketplace(\/[a-z0-9-]+)?|cart|offline)$/;
 const stripLocale = (p) => p.replace(/^\/ja(?=\/|$)/, "") || "/";
@@ -45,6 +50,28 @@ self.addEventListener("fetch", (e) => {
         if (res.ok) { const copy = res.clone(); caches.open(STATIC).then((c) => c.put(req, copy)); }
         return res;
       })),
+    );
+    return;
+  }
+
+  // Images only: the hero video under /home/video uses range requests (206), which the Cache API cannot store.
+  if (req.destination === "image" && IMAGE_PATH.test(url.pathname)) {
+    e.respondWith(
+      caches.open(IMAGES).then(async (c) => {
+        const hit = await c.match(req);
+        const update = fetch(req)
+          .then(async (res) => {
+            if (res.ok) {
+              await c.put(req, res.clone());
+              const keys = await c.keys();
+              await Promise.all(keys.slice(0, Math.max(0, keys.length - IMAGE_LIMIT)).map((k) => c.delete(k)));
+            }
+            return res;
+          })
+          .catch(() => hit);
+        if (hit) { e.waitUntil(update); return hit; }
+        return update;
+      }),
     );
     return;
   }

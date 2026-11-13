@@ -1,7 +1,10 @@
 // Shipping by destination. Shared by the checkout form (display) and the order API (authoritative).
 
-export type Zone = { code: string; kind: "country" | "jp_region"; name: string; rateUsd: number | null; minDays: number | null; maxDays: number | null; active: boolean };
-export type ShippingData = { zones: Zone[]; flatUsd: number };
+export type Zone = { code: string; kind: "country" | "jp_region"; name: string; rateUsd: number | null; minDays: number | null; maxDays: number | null; active: boolean; region: string | null };
+/** DHL region (0025): delivery days, and a rate per box for each part. */
+export type Region = { code: string; name: string; dhlZone: string | null; minDays: number | null; maxDays: number | null; rates: Record<string, number> };
+export type ShippingData = { zones: Zone[]; regions: Region[]; flatUsd: number };
+export type QuoteItem = { id: string; qty: number };
 
 /** Japan is split in two. [PLACEHOLDER] split until the team confirms it with the shipping partner. */
 export const JP_REGIONS = [
@@ -13,34 +16,44 @@ export const regionName = (code: string | null | undefined, locale: "en" | "ja" 
   return r ? (locale === "ja" ? r.ja : r.en) : null;
 };
 
-// Fallback when Supabase is not configured (same seed as migration 0013). [PLACEHOLDER] list.
-const FALLBACK_COUNTRIES: [string, string, boolean][] = [
-  ["CN", "China", true], ["HK", "Hong Kong", true], ["MO", "Macao", true], ["TW", "Taiwan", true], ["KR", "South Korea", true], ["MN", "Mongolia", true],
-  ["SG", "Singapore", true], ["MY", "Malaysia", true], ["TH", "Thailand", true], ["VN", "Vietnam", true], ["PH", "Philippines", true], ["BN", "Brunei", true],
-  ["KH", "Cambodia", true], ["LA", "Laos", true], ["TL", "Timor-Leste", true], ["IN", "India", true], ["PK", "Pakistan", true], ["BD", "Bangladesh", true],
-  ["LK", "Sri Lanka", true], ["NP", "Nepal", true], ["BT", "Bhutan", true], ["MV", "Maldives", true], ["ID", "Indonesia", false], ["MM", "Myanmar", false],
+// Fallback when Supabase is not configured (same as migrations 0013 + 0025): countries and their DHL region.
+const FALLBACK_COUNTRIES: [string, string, string][] = [
+  ["KR", "South Korea", "ASIA_EAST"], ["TW", "Taiwan", "ASIA_EAST"], ["HK", "Hong Kong", "ASIA_EAST"], ["CN", "China", "ASIA_EAST"],
+  ["ID", "Indonesia", "ASIA_SOUTHEAST"], ["MY", "Malaysia", "ASIA_SOUTHEAST"], ["TH", "Thailand", "ASIA_SOUTHEAST"], ["SG", "Singapore", "ASIA_SOUTHEAST"], ["VN", "Vietnam", "ASIA_SOUTHEAST"], ["PH", "Philippines", "ASIA_SOUTHEAST"],
+  ["IN", "India", "ASIA_SOUTH"], ["LK", "Sri Lanka", "ASIA_SOUTH"], ["BD", "Bangladesh", "ASIA_SOUTH"], ["PK", "Pakistan", "ASIA_SOUTH"],
+  ["AE", "United Arab Emirates", "ASIA_WEST"], ["SA", "Saudi Arabia", "ASIA_WEST"], ["QA", "Qatar", "ASIA_WEST"], ["TR", "Turkey", "ASIA_WEST"], ["JO", "Jordan", "ASIA_WEST"],
+  ["KZ", "Kazakhstan", "ASIA_CENTRAL"], ["UZ", "Uzbekistan", "ASIA_CENTRAL"], ["KG", "Kyrgyzstan", "ASIA_CENTRAL"],
 ];
 export const fallbackZones = (): Zone[] => [
-  ...JP_REGIONS.map((r) => ({ code: r.code, kind: "jp_region" as const, name: r.en, rateUsd: null, minDays: null, maxDays: null, active: true })),
-  ...FALLBACK_COUNTRIES.map(([code, name, active]) => ({ code, kind: "country" as const, name, rateUsd: null, minDays: null, maxDays: null, active })),
+  ...JP_REGIONS.map((r) => ({ code: r.code, kind: "jp_region" as const, name: r.en, rateUsd: 0, minDays: null, maxDays: null, active: true, region: null })),
+  ...FALLBACK_COUNTRIES.map(([code, name, region]) => ({ code, kind: "country" as const, name, rateUsd: null, minDays: null, maxDays: null, active: true, region })),
 ];
 
 export type Quote =
-  | { ok: true; zone: Zone; shippingUsd: number; estimated: boolean; country: string; region: string | null }
+  | { ok: true; zone: Zone; shippingUsd: number; estimated: boolean; customerPaid: boolean; minDays: number | null; maxDays: number | null; country: string; region: string | null }
   | { ok: false; field: "country" | "region"; error: string };
 
-/** Destination -> shipping. Japan needs East or West; other countries need an active country zone. */
-export function quote(data: ShippingData, country: string, region?: string | null): Quote {
+/** Destination + cart -> shipping. Japan: the customer arranges and pays the courier, so 0 here.
+ *  Elsewhere: sum of qty x the region's DHL rate per box for each part. A part without a rate uses
+ *  the zone rate or SHIPPING_FLAT_USD and the quote is marked estimated. */
+export function quote(data: ShippingData, country: string, region: string | null | undefined, items: QuoteItem[]): Quote {
   const cc = (country ?? "").toUpperCase();
   if (cc === "JP") {
     if (!JP_REGIONS.some((r) => r.code === region)) return { ok: false, field: "region", error: "Choose East or West Japan." };
     const z = data.zones.find((x) => x.code === region && x.kind === "jp_region" && x.active);
     if (!z) return { ok: false, field: "region", error: "We do not ship to this region yet." };
-    return { ok: true, zone: z, shippingUsd: z.rateUsd ?? data.flatUsd, estimated: z.rateUsd === null, country: "JP", region: z.code };
+    return { ok: true, zone: z, shippingUsd: 0, estimated: false, customerPaid: true, minDays: z.minDays, maxDays: z.maxDays, country: "JP", region: z.code };
   }
   const z = data.zones.find((x) => x.kind === "country" && x.code === cc && x.active);
   if (!z) return { ok: false, field: "country", error: "We do not ship to this country yet." };
-  return { ok: true, zone: z, shippingUsd: z.rateUsd ?? data.flatUsd, estimated: z.rateUsd === null, country: cc, region: null };
+  const r = data.regions.find((x) => x.code === z.region);
+  let total = 0, estimated = false;
+  for (const it of items) {
+    const rate = r?.rates[it.id];
+    if (rate === undefined) estimated = true;
+    total += (rate ?? z.rateUsd ?? data.flatUsd) * it.qty;
+  }
+  return { ok: true, zone: z, shippingUsd: Math.round(total * 100) / 100, estimated, customerPaid: false, minDays: r?.minDays ?? z.minDays, maxDays: r?.maxDays ?? z.maxDays, country: cc, region: null };
 }
 
 /** "East Japan, Japan" style label for stored orders. */
@@ -60,6 +73,8 @@ const NAMES: Record<string, [string, string]> = {
   PH: ["Philippines", "フィリピン"], BN: ["Brunei", "ブルネイ"], KH: ["Cambodia", "カンボジア"], LA: ["Laos", "ラオス"], TL: ["Timor-Leste", "東ティモール"],
   IN: ["India", "インド"], PK: ["Pakistan", "パキスタン"], BD: ["Bangladesh", "バングラデシュ"], LK: ["Sri Lanka", "スリランカ"], NP: ["Nepal", "ネパール"],
   BT: ["Bhutan", "ブータン"], MV: ["Maldives", "モルディブ"], ID: ["Indonesia", "インドネシア"], MM: ["Myanmar", "ミャンマー"],
+  AE: ["United Arab Emirates", "アラブ首長国連邦"], SA: ["Saudi Arabia", "サウジアラビア"], QA: ["Qatar", "カタール"], TR: ["Turkey", "トルコ"], JO: ["Jordan", "ヨルダン"],
+  KZ: ["Kazakhstan", "カザフスタン"], UZ: ["Uzbekistan", "ウズベキスタン"], KG: ["Kyrgyzstan", "キルギス"],
 };
 
 /** Country name in the page language, with the zone name (from the database) as fallback. */

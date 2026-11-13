@@ -7,9 +7,11 @@ import { audit } from "@/lib/audit";
 const days = z.number().int().min(0).max(120).nullable();
 const Body = z
   .object({ rate_usd: z.number().min(0).max(100000).multipleOf(0.01).nullable(), min_days: days, max_days: days, active: z.boolean() })
-  .refine((b) => b.min_days === null || b.max_days === null || b.min_days <= b.max_days, { path: ["max_days"], message: "Must be at least the minimum." });
+  .partial()
+  .refine((b) => Object.keys(b).length > 0, { message: "Nothing to update." })
+  .refine((b) => b.min_days == null || b.max_days == null || b.min_days <= b.max_days, { path: ["max_days"], message: "Must be at least the minimum." });
 
-/** Update one shipping zone: rate (null = flat fallback), delivery days, on/off. */
+/** Update one destination: on/off (Admin → Shipping), and the older per-zone rate and days fields. */
 export async function PATCH(req: Request, { params }: { params: Promise<{ code: string }> }) {
   const g = await guardApi("shipping.manage");
   if (g.deny) return NextResponse.json({ error: "forbidden" }, { status: g.deny });
