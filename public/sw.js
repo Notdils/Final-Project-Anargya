@@ -3,7 +3,7 @@
    - Pages: network-first, falling back to cache, then /offline.
    - Only public pages are cached (allowlist, with or without the /ja prefix). Account, receipts,
      checkout, bookings, admin, auth and API responses never are (offline they get /offline). Logging out clears the page cache. */
-const VERSION = "anargya-v4"; // bump when precached files or icons change
+const VERSION = "anargya-v5"; // bump when precached files or icons change
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const PRECACHE = ["/offline", "/ja/offline", "/models/e21.glb", "/icons/icon-192.png", "/icons/icon-512.png"];

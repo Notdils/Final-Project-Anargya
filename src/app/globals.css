@@ -7,6 +7,9 @@
   10% ochre: primary actions only, text on ochre is always ink
   oxide: urgency and errors only, always with icon + text
 */
+/* Phone held sideways: wide but short. Used by the home hero, which is otherwise built for tall screens. */
+@custom-variant short (@media (orientation: landscape) and (max-height: 520px));
+
 @theme {
   --color-ink: #0a0a0a;
   --color-muted: #737373;

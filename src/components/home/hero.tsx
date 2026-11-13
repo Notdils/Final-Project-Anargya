@@ -212,7 +212,7 @@ export function Hero() {
   }, [full]);
 
   return (
-    <section ref={sectionRef} aria-labelledby="hero-title" className="relative h-svh min-h-[640px] overflow-hidden bg-stage text-white">
+    <section ref={sectionRef} aria-labelledby="hero-title" className="relative h-svh min-h-[640px] overflow-hidden bg-stage text-white short:min-h-0">
       {/* The stage: pinned over the hero normally; in immersive mode it becomes a full-screen dialog
           that slides from the hero's position to the top while its black backdrop covers the page. */}
       <div
@@ -229,7 +229,7 @@ export function Hero() {
       >
         <div
           className={`absolute inset-x-0 transition-[top,bottom] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
-            full ? "bottom-0 top-0" : "bottom-[296px] top-16 [mask-image:linear-gradient(to_bottom,black_82%,transparent)] md:bottom-[240px] xl:bottom-[200px]"
+            full ? "bottom-0 top-0" : "bottom-[296px] top-16 [mask-image:linear-gradient(to_bottom,black_82%,transparent)] md:bottom-[240px] xl:bottom-[200px] short:bottom-0 short:left-[46%] short:right-14 short:[mask-image:none]"
           }`}
           aria-label={t(full ? "E21 3D model. Drag to rotate, scroll or pinch to zoom." : "E21 3D model. Drag to rotate.")}
           role="img"
@@ -293,11 +293,11 @@ export function Hero() {
         )}
       </div>
 
-      <div className="container-x pointer-events-none absolute inset-x-0 bottom-0 pb-14 md:pb-16">
-        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <div className="pointer-events-auto flex flex-col gap-4 md:gap-6">
+      <div className="container-x pointer-events-none absolute inset-x-0 bottom-0 pb-14 md:pb-16 short:pb-6">
+        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between short:max-w-[44%] short:flex-col short:items-start short:gap-4">
+          <div className="pointer-events-auto flex flex-col gap-4 md:gap-6 short:gap-3">
             <p className="eyebrow text-neutral-400">{t("Nagoya, Japan · Formula EV design")}</p>
-            <h1 id="hero-title" className="whitespace-nowrap text-[30px] font-semibold leading-9 tracking-[-0.03em] min-[400px]:text-[34px] md:text-5xl md:leading-[52px] xl:text-[64px] xl:leading-[68px]">
+            <h1 id="hero-title" className="whitespace-nowrap text-[30px] font-semibold leading-9 tracking-[-0.03em] min-[400px]:text-[34px] md:text-5xl md:leading-[52px] xl:text-[64px] xl:leading-[68px] short:text-[30px] short:leading-9">
               {t("Parts & Consultation")}
             </h1>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -305,13 +305,13 @@ export function Hero() {
               <Link href={L("/about")} className="btn btn-outline-dark">{t("Our story")}</Link>
             </div>
           </div>
-          <section aria-labelledby="awards-title" className="pointer-events-auto flex flex-col gap-3">
+          <section aria-labelledby="awards-title" className="pointer-events-auto flex flex-col gap-3 short:gap-2">
             <h2 id="awards-title" className="eyebrow text-neutral-400">{t("FSAE Japan results")}</h2>
-            <ul className="grid grid-cols-3 gap-4 md:flex md:gap-8">
+            <ul className="grid grid-cols-3 gap-4 md:flex md:gap-8 short:grid short:gap-4">
               {AWARDS.map((a) => (
                 <li key={a.title} className="flex max-w-[176px] flex-col gap-1 border-l border-teal pl-3">
-                  <span className="whitespace-nowrap text-lg font-semibold leading-6 md:text-2xl md:leading-8">{t(a.rank)}</span>
-                  <span className="text-xs leading-4 text-neutral-300 [word-break:keep-all] md:text-sm md:leading-5">{t(a.title)}</span>
+                  <span className="whitespace-nowrap text-lg font-semibold leading-6 md:text-2xl md:leading-8 short:text-lg short:leading-6">{t(a.rank)}</span>
+                  <span className="text-xs leading-4 text-neutral-300 [word-break:keep-all] md:text-sm md:leading-5 short:text-xs short:leading-4">{t(a.title)}</span>
                   <span className="font-mono text-xs text-neutral-400">{a.year}</span>
                 </li>
               ))}
@@ -322,7 +322,7 @@ export function Hero() {
 
       <div
         aria-hidden
-        className={`absolute bottom-4 left-1/2 flex -translate-x-1/2 md:hidden xl:flex flex-col items-center gap-1 text-neutral-400 transition-opacity duration-300 md:bottom-6 ${cue ? "opacity-100" : "opacity-0"}`}
+        className={`absolute bottom-4 left-1/2 flex -translate-x-1/2 md:hidden xl:flex short:hidden flex-col items-center gap-1 text-neutral-400 transition-opacity duration-300 md:bottom-6 ${cue ? "opacity-100" : "opacity-0"}`}
       >
         <span className="eyebrow hidden md:block">{t("Scroll")}</span>
         <ChevronDown size={20} className="scroll-cue" />

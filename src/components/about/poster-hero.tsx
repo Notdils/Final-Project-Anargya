@@ -8,7 +8,7 @@ import { POSTER_ID } from "./poster-boot";
 // 1080 × 1350 canvas, so they stack without per-layer positioning; the sakura branch is cropped
 // and hung from the section corner). The stage shows the canvas down to y = 1190; the poster's own text and footer layers are not used (they name the
 // university), the copy below is real HTML text instead.
-// The poster's A logo is not repeated here; it lives in the header (BrandMark).
+// The poster's logo is not repeated here; it lives in the header (BrandMark).
 // Motion, once on load: ANARGYA rises from behind its baseline, the car shrinks from large into
 // its place, then the sakura and copy settle in. CSS lives in globals.css (.poster-*).
 const useIso = typeof window === "undefined" ? useEffect : useLayoutEffect;
