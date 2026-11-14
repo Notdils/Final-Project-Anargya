@@ -240,6 +240,19 @@ body {
   will-change: transform, opacity;
   opacity: 0;
 }
+/* Anargya mark as thin line art: stroke stays 1px however large the plane is projected */
+.mp__plane {
+  overflow: visible;
+  color: #fff;
+}
+.mp__plane path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  opacity: 0.35;
+  vector-effect: non-scaling-stroke;
+}
 @media (max-width: 768px) {
   .mp {
     --mp-length: 220vh;

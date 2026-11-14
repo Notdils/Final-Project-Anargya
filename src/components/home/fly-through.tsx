@@ -21,6 +21,14 @@ const OBJECTS: Obj[] = [
   { name: "Rear wing", src: "rear-wing", w: 791, h: 466, x: 0.3, y: 0.5, z: 4100, size: 12, tilt: -6, mobile: true },
 ];
 
+// Line art of the Anargya mark (traced from public/brand/logo.webp, 512 x 329). Two planes the camera
+// flies through: one behind the headline in wave 1, a smaller one deep in wave 3.
+const LOGO_PATH = "M262.8 314.0 L262.2 310.5 L175.0 185.5 L172.0 182.5 L152.2 180.2 L18.2 183.5 L10.8 184.2 L6.8 187.8 L5.5 193.0 L4.8 301.8 L7.5 307.5 L16.8 313.0 L20.5 314.5 L254.2 318.8 L259.2 318.2 L261.5 316.8 Z M260.8 11.8 L274.8 32.0 L277.5 34.5 L474.0 34.0 L479.0 35.5 L482.5 38.8 L484.2 44.0 L485.8 138.5 L487.5 139.8 L503.2 139.5 L508.2 138.5 L509.5 73.2 L509.2 31.5 L506.5 25.2 L497.5 17.0 L494.2 15.5 Z M10.2 14.2 L7.2 20.5 L7.0 26.0 L5.5 30.0 L5.2 43.5 L3.8 45.2 L2.8 128.8 L4.2 134.5 L4.2 140.2 L6.8 143.5 L9.0 144.2 L169.2 142.5 L182.5 142.5 L189.0 143.5 L318.2 319.0 L323.5 324.2 L379.2 323.2 L479.5 325.8 L481.5 324.8 L487.0 324.8 L493.8 322.2 L501.2 317.0 L504.5 307.8 L506.2 183.8 L503.0 179.2 L500.2 177.8 L496.0 177.2 L324.0 178.2 L253.2 87.2 L197.8 9.8 L193.0 6.0 L187.2 5.0 L125.2 3.5 L37.8 4.0 L24.8 5.0 L20.0 6.5 L15.8 9.0 Z";
+const PLANES = [
+  { key: "logo-a", x: 0, y: 0.04, z: 2250, size: 44, tilt: 0 },
+  { key: "logo-b", x: 0.05, y: -0.06, z: 3800, size: 30, tilt: -4 },
+];
+
 const CFG = { focal: 1000, travel: 3700, fogFar: 3200, fogNear: 2600, nearFade: 400, nearClip: 260, scrub: 0.6, mouse: 0.08, mouseEase: 0.15 };
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
@@ -40,7 +48,7 @@ export function FlyThrough() {
     const items = [...section.querySelectorAll<HTMLElement>(".mp__obj")].map((el) => ({
       el,
       x: +el.dataset.x!, y: +el.dataset.y!, z: +el.dataset.z!, size: +el.dataset.size!,
-      tilt: +(el.dataset.tilt ?? 0), hidden: false,
+      tilt: +(el.dataset.tilt ?? 0), plane: el.classList.contains("mp__plane"), hidden: false,
     }));
     const state = { p: 0, fade: 0, mx: 0, my: 0 };
     let W = 0, H = 0;
@@ -66,7 +74,7 @@ export function FlyThrough() {
         const px = (it.x - state.mx * CFG.mouse) * (W / 2) * s;
         const py = (it.y - state.my * CFG.mouse) * (H / 2) * s;
         it.el.style.transform = `translate(${W / 2 + px}px, ${H / 2 + py}px) rotate(${it.tilt}deg) scale(${s})`;
-        it.el.style.zIndex = String(Math.round(s * 100));
+        it.el.style.zIndex = it.plane ? "1" : String(Math.round(s * 100)); // line art always behind the parts
       }
     };
 
@@ -149,6 +157,18 @@ export function FlyThrough() {
             ))}
           </span>
         </h2>
+
+        {PLANES.map((l) => (
+          <svg
+            key={l.key}
+            viewBox="0 0 512 329"
+            className="mp__obj mp__plane"
+            data-x={l.x} data-y={l.y} data-z={l.z} data-size={l.size} data-tilt={l.tilt}
+            aria-hidden
+          >
+            <path d={LOGO_PATH} />
+          </svg>
+        ))}
 
         {OBJECTS.map((o) => (
           // eslint-disable-next-line @next/next/no-img-element -- projected every frame by render(); a plain img keeps the transform cheap
